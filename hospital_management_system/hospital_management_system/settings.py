@@ -16,7 +16,7 @@ SECRET_KEY = os.getenv(
 )
 
 # DEBUG
-DEBUG = os.getenv("DEBUG", "False") == "True"
+DEBUG = True
 
 # ALLOWED_HOSTS
 ALLOWED_HOSTS = ["*"]
