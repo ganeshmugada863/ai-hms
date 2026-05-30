@@ -142,7 +142,7 @@ class ChatBot:
         is_yes = clean_msg in positive_replies or any(w in positive_replies for w in clean_msg.split())
         is_no = clean_msg in negative_replies or any(w in negative_replies for w in clean_msg.split())
         
-        disclaimer = "Nenu doctor kadu. Idi general information matrame. Final ga doctor tho consult cheyandi."
+        disclaimer = "I am not a doctor. I cannot diagnose diseases or prescribe medicines. This is general guidance only. Please consult a qualified doctor for proper medical evaluation."
         
         # ==========================================
         # STATE MACHINE TRANSITIONS
@@ -539,10 +539,12 @@ class ChatBot:
         # GREETINGS
         if any(w in clean_msg.split() for w in ['hello', 'hi', 'hey', 'namaste']) or any(w in clean_msg for w in ['నమస్కారం', 'నమస్తే']):
             resp = (
-                "Hello! Nenu **MediBot** 🏥, mee Hospital AI Assistant.\n"
-                "I am professional, polite and here to help. Doctor availability, appointment booking, "
-                "or details check process chesthanu. English/Telugu blend lo chat cheyyandi!\n\n"
-                "How can I help you today?"
+                "Hello! 👋 I am your **HMS AI Medical Appointment Assistant** 🏥.\n\n"
+                "I can help you:\n"
+                "• Describe your symptoms\n"
+                "• Find the right specialist doctor\n"
+                "• Book appointments\n\n"
+                "Please describe your symptoms or health concern, and I will recommend the appropriate specialist for you."
             )
             ChatMessage.objects.create(session=session, role='bot', content=resp)
             return {'response': resp, 'analysis': None}
@@ -661,8 +663,12 @@ class ChatBot:
         
         if not extracted:
             resp = (
-                "Hi! Nenu **MediBot** 🏥. Mee problems or symptoms describe cheyyandi (e.g. 'I have head pain and fever'). "
-                f"Nenu options matching doctors suggestion process chesthanu. \n\n*{disclaimer}*"
+                "Hello! I can help you find the right doctor and book an appointment. 🏥\n\n"
+                "Please describe your symptoms or health concern. For example:\n"
+                "• 'I have chest pain and difficulty breathing'\n"
+                "• 'I have a skin rash for 3 days'\n"
+                "• 'My child has fever and cough'\n\n"
+                f"*{disclaimer}*"
             )
             ChatMessage.objects.create(session=session, role='bot', content=resp)
             return {'response': resp, 'analysis': None}
@@ -715,7 +721,7 @@ class ChatBot:
             symptom_definitions += f"- **{item['name'].capitalize()}**: {desc}\n"
             
         categories_extracted = list(set([item['category'] for item in extracted]))
-        health_area = "General Medicine"
+        health_area = "General Physician"
         if 'neurological' in categories_extracted:
             health_area = "Neurology"
         elif 'cardiovascular' in categories_extracted:
@@ -724,6 +730,28 @@ class ChatBot:
             health_area = "Pulmonology"
         elif 'gastrointestinal' in categories_extracted:
             health_area = "Gastroenterology"
+        elif 'dermatological' in categories_extracted or 'skin' in categories_extracted:
+            health_area = "Dermatology"
+        elif 'musculoskeletal' in categories_extracted or 'orthopedic' in categories_extracted:
+            health_area = "Orthopedics"
+        elif 'ophthalmological' in categories_extracted or 'eye' in categories_extracted:
+            health_area = "Ophthalmology"
+        elif 'ent' in categories_extracted or 'ear' in categories_extracted:
+            health_area = "ENT"
+        elif 'psychiatric' in categories_extracted or 'mental' in categories_extracted:
+            health_area = "Psychiatry"
+        elif 'pediatric' in categories_extracted:
+            health_area = "Pediatrics"
+        elif 'gynecological' in categories_extracted:
+            health_area = "Gynecology"
+        elif 'renal' in categories_extracted or 'kidney' in categories_extracted:
+            health_area = "Nephrology"
+        elif 'endocrine' in categories_extracted or 'hormonal' in categories_extracted:
+            health_area = "Endocrinology"
+        elif 'rheumatological' in categories_extracted or 'joint' in categories_extracted:
+            health_area = "Rheumatology"
+        elif 'dental' in categories_extracted or 'tooth' in categories_extracted:
+            health_area = "Dental"
             
         area_explanation = (
             f"\nThese symptoms map to **{health_area}** department conditions.\n"

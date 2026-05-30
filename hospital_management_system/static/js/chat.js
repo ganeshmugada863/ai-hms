@@ -64,8 +64,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Reset message container
         messagesContainer.innerHTML = '';
         appendBotMessage({
-            content: "Hello! I am your AI Health Assistant. Please tell me what symptoms you are experiencing today. I can help evaluate risks, predict potential conditions, and recommend next steps.",
-            translated_content: "నమస్కారం! నేను మీ AI హెల్త్ అసిస్టెంట్. ఈరోజు మీకు ఉన్న అనారోగ్య లక్షణాలు లేదా సమస్యల గురించి చెప్పండి."
+            content: "Hello! 👋 I am your **HMS AI Medical Appointment Assistant** 🏥\n\nI can help you:\n• Describe your symptoms\n• Find the right specialist doctor\n• Book appointments\n\nPlease describe your symptoms or health concern, and I will recommend the appropriate specialist for you."
         });
 
         activeSessionTitle.textContent = "New Conversation";
@@ -83,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (languageCode === 'te') {
             userInputField.placeholder = "మీ సమస్యలను వివరించండి (ఉదా: 'నాకు రెండు రోజులుగా జ్వరం మరియు తలనొప్పి ఉంది')...";
         } else {
-            userInputField.placeholder = "Describe how you feel (e.g., 'I have a headache and fever for 2 days')...";
+            userInputField.placeholder = "Describe your symptoms or health concern...";
         }
     }
 
@@ -259,8 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
             sendBtn.disabled = false;
 
             appendBotMessage({
-                content: "I am having difficulty connecting to my analytical backend. Please try again. If your symptoms are severe, please consult a real doctor.",
-                translated_content: "నాయనలారా, సమాచార మార్పిడిలో సమస్య తలెత్తింది. దయచేసి మళ్ళీ ప్రయత్నించండి."
+                content: "I'm sorry, I'm experiencing a temporary connection issue. Please try again in a moment. If you are experiencing a medical emergency, please call emergency services or visit the nearest hospital immediately."
             });
             scrollToBottom();
         });

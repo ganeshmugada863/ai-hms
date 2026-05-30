@@ -1,7 +1,7 @@
 {% extends 'base_dashboard.html' %}
 {% load static %}
 
-{% block title %}Smart AI Health Assistant | MediCare{% endblock %}
+{% block title %}HMS AI Medical Appointment Assistant | MediCare{% endblock %}
 
 {% block active_patient_ai_chat %}active{% endblock %}
 
@@ -81,7 +81,7 @@
 </style>
 {% endblock %}
 
-{% block header_title %}Smart AI Health Assistant{% endblock %}
+{% block header_title %}HMS AI Medical Appointment Assistant{% endblock %}
 
 {% block content %}
 <div class="chat-dashboard-container">
@@ -131,8 +131,7 @@
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <div class="disclaimer-text">
-                    <p><strong>Disclaimer:</strong> This chatbot is an AI-assisted tool designed to evaluate symptoms and provide assistive information. It does <strong>not</strong> constitute official medical advice, diagnosis, or treatment. In case of severe symptoms or an emergency, please contact medical services immediately.</p>
-                    <p class="font-telugu"><strong>గమనిక:</strong> ఈ చాట్‌బాట్ కృత్రిమ మేధస్సు (AI) ద్వారా పనిచేస్తుంది. ఇది కేవలం సూచనల కొరకు మాత్రమే. ఇది వైద్యుని సంప్రదింపులకు ప్రత్యామ్నాయం కాదు. అత్యవసర పరిస్థితిలో వెంటనే వైద్యుడిని లేదా ఆసుపత్రిని సంప్రదించండి.</p>
+                    <p><strong>⚠️ Important Notice:</strong> I am <strong>not</strong> a doctor. I <strong>cannot</strong> diagnose diseases, prescribe medicines, or provide treatment plans. I can only help you describe symptoms, find the right specialist, and book appointments. For emergencies, call emergency services immediately.</p>
                 </div>
             </div>
 
@@ -144,8 +143,9 @@
                     </div>
                     <div class="message-bubble-wrapper">
                         <div class="message-bubble">
-                            <p>Hello! I am your AI Health Assistant. Please tell me what symptoms you are experiencing today. I can help evaluate risks, predict potential conditions, and recommend next steps.</p>
-                            <p class="font-telugu" style="margin-top: 8px;">నమస్కారం! నేను మీ AI హెల్త్ అసిస్టెంట్. ఈరోజు మీకు ఉన్న అనారోగ్య లక్షణాలు లేదా సమస్యల గురించి చెప్పండి.</p>
+                            <p>Hello! 👋 I am your <strong>HMS AI Medical Appointment Assistant</strong> 🏥</p>
+                            <p style="margin-top: 8px;">I can help you:<br>• Describe your symptoms<br>• Find the right specialist doctor<br>• Book appointments</p>
+                            <p style="margin-top: 8px;">Please describe your symptoms or health concern, and I will recommend the appropriate specialist for you.</p>
                         </div>
                     </div>
                 </div>
@@ -166,7 +166,7 @@
                     <i class="fas fa-paperclip"></i>
                 </button>
                 <input type="file" id="mediaFileInput" accept="image/*,application/pdf" style="display: none;">
-                <input type="text" id="userInputField" placeholder="Describe how you feel or ask MediBot..." autocomplete="off">
+                <input type="text" id="userInputField" placeholder="Describe your symptoms or health concern..." autocomplete="off">
                 <button type="submit" class="send-message-btn" id="sendBtn" title="Send Message">
                     <i class="fas fa-paper-plane"></i>
                 </button>
