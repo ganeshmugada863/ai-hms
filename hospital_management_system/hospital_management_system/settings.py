@@ -21,6 +21,17 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 # ALLOWED_HOSTS
 ALLOWED_HOSTS = ["*"]
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.hf.space',
+    'https://*.huggingface.co',
+]
+
+custom_domain = os.getenv("CUSTOM_DOMAIN")
+if custom_domain:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{custom_domain}')
+    CSRF_TRUSTED_ORIGINS.append(f'https://*.{custom_domain}')
+
 
 # Application definition
 
