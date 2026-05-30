@@ -1,19 +1,24 @@
 import os
-import dj_database_url
 from pathlib import Path
+from dotenv import load_dotenv
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Try to load environment variables from .env if it exists
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    pass
+# Load environment variables
+load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-DEBUG = False
+# SECRET_KEY
+SECRET_KEY = os.getenv(
+    "SECRET_KEY",
+    "django-insecure-temporary-build-key"
+)
+
+# DEBUG
+DEBUG = os.getenv("DEBUG", "False") == "True"
+
+# ALLOWED_HOSTS
 ALLOWED_HOSTS = ["*"]
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -101,11 +106,14 @@ WSGI_APPLICATION = 'hospital_management_system.wsgi.application'
 
 
 # Database
-db_url = os.getenv("DATABASE_URL")
-if db_url:
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL:
     DATABASES = {
-        'default': dj_database_url.parse(db_url)
+        "default": dj_database_url.parse(DATABASE_URL)
     }
+    # Remove pgbouncer automatically
+    if "OPTIONS" in DATABASES["default"]:
+        DATABASES["default"]["OPTIONS"].pop("pgbouncer", None)
 else:
     DATABASES = {
         'default': {
@@ -141,9 +149,15 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 STATICFILES_DIRS = [BASE_DIR / 'static']
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+STATICFILES_STORAGE = (
+    'whitenoise.storage.CompressedManifestStaticFilesStorage'
+)
+
 WHITENOISE_MANIFEST_STRICT = False
 
 
@@ -172,4 +186,3 @@ AI_ASSISTANT = {
 
 # Login Redirects Configuration
 LOGIN_URL = '/auth/login/'
-
