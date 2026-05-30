@@ -1315,4 +1315,196 @@ body {
     .welcome-hero { flex-direction: column; text-align: center; gap: 20px; }
     .doctor-controls-header { flex-direction: column; align-items: stretch; }
     .controls-left, .controls-right { justify-content: space-between; }
+
+    /* Mobile Bottom Navigation Bar Overrides */
+    html body .container {
+        display: block !important;
+    }
+    
+    html body .container nav.sidebar {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        top: auto !important;
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        height: 65px !important;
+        background-color: var(--sidebar-bg) !important;
+        border-top: 1px solid var(--border-color) !important;
+        border-right: none !important;
+        flex-direction: row !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        z-index: 9999 !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        white-space: nowrap !important;
+        transition: none !important;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08) !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    html body .container nav.sidebar::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    html body .container nav.sidebar:hover,
+    html body .container.sidebar-was-expanded nav.sidebar {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        height: 65px !important;
+    }
+
+    html body .container nav.sidebar .sidebar-header,
+    html body .container nav.sidebar .sidebar-section-title,
+    html body .container nav.sidebar .sidebar-footer,
+    html body .container nav.sidebar .sidebar-user {
+        display: none !important;
+    }
+
+    html body .container nav.sidebar .sidebar-menu {
+        display: flex !important;
+        flex-direction: row !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        list-style: none !important;
+        flex: none !important;
+    }
+
+    html body .container nav.sidebar .sidebar-menu li {
+        margin: 0 !important;
+        display: inline-block !important;
+        position: relative !important;
+    }
+
+    html body .container nav.sidebar .sidebar-menu a {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 8px 16px !important;
+        height: 65px !important;
+        min-width: 75px !important;
+        text-align: center !important;
+        border-radius: 0 !important;
+        border-left: none !important;
+        color: var(--text-muted) !important;
+        transition: background-color 0.2s ease !important;
+    }
+
+    html body .container nav.sidebar .sidebar-menu a i {
+        font-size: 18px !important;
+        margin-right: 0 !important;
+        margin-bottom: 2px !important;
+    }
+
+    html body .container nav.sidebar .sidebar-menu span {
+        position: static !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        font-size: 10px !important;
+        font-weight: 500 !important;
+        margin-top: 2px !important;
+        display: block !important;
+    }
+
+    html body .container nav.sidebar .sidebar-menu li.active a {
+        border-left: none !important;
+        border-bottom: 3px solid var(--primary-blue) !important;
+        background: transparent !important;
+        color: var(--primary-blue) !important;
+    }
+    
+    html body .container.sidebar-was-expanded nav.sidebar .sidebar-menu li.active a {
+        border-left: none !important;
+    }
+
+    /* Dropdown inside bottombar */
+    html body .container nav.sidebar .sidebar-menu-dropdown {
+        position: absolute !important;
+        bottom: 65px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        background-color: var(--sidebar-bg) !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 12px 12px 0 0 !important;
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15) !important;
+        padding: 8px 0 !important;
+        display: none;
+        list-style: none !important;
+        min-width: 150px !important;
+        z-index: 10001 !important;
+        animation: slideUp 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    html body .container nav.sidebar .sidebar-menu-dropdown li {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    html body .container nav.sidebar .sidebar-menu-dropdown a {
+        flex-direction: row !important;
+        justify-content: flex-start !important;
+        height: auto !important;
+        padding: 10px 16px !important;
+        font-size: 13px !important;
+    }
+    
+    html body .container nav.sidebar .sidebar-menu-dropdown a span {
+        font-size: 13px !important;
+        margin-top: 0 !important;
+    }
+
+    html body .container nav.sidebar .sidebar-menu-dropdown-toggle i.fa-chevron-down {
+        position: static !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        margin-top: 2px !important;
+        font-size: 8px !important;
+    }
+
+    /* Main Content Adjustments */
+    html body .container .main-content {
+        margin-left: 0 !important;
+        margin-bottom: 80px !important;
+        padding: 15px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Top actions - settings gear visibility */
+    .header-actions {
+        justify-content: space-between !important;
+        width: 100% !important;
+        gap: 8px !important;
+    }
+
+    .header-user-badge {
+        width: 42px !important;
+        padding: 0 !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+    }
+
+    .header-user-info {
+        display: none !important;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translate(-50%, 10px);
+        }
+        to {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+    }
 }
