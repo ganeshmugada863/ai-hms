@@ -7,7 +7,7 @@ psycopg2-binary==2.9.10
 dj-database-url==2.3.0
 
 tensorflow==2.21.0
-keras==3.8.0
+keras==3.14.1
 numpy==1.26.4
 scipy==1.14.1
 scikit-learn==1.5.2
