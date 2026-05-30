@@ -45,7 +45,7 @@ def chat_view(request):
         
     return render(request, 'ai_assistant/chat.html', {
         'patient': patient,
-        'title': 'Smart AI Health Assistant'
+        'title': 'HMS AI Medical Appointment Assistant'
     })
 
 
@@ -423,10 +423,9 @@ def api_upload_media(request):
                 )
                 # Let bot respond to confirm upload
                 resp = (
-                    f"Nenu mee file ni confirm chesanu: **{uploaded_file.name}**.\n"
-                    f"Idi secure path `/media/uploads/patient_{patient.id}/doctor_{doctor.id}/{uploaded_file.name}` lo store cheyabadindi. "
-                    f"Dr. {doctor.user.last_name} matrame deenni chudagalaru.\n\n"
-                    f"Nenu doctor kadu. Idi general information matrame. Final ga doctor tho consult cheyandi."
+                    f"Your file has been received: **{uploaded_file.name}**.\n"
+                    f"It has been securely stored and is only accessible by Dr. {doctor.user.last_name}.\n\n"
+                    f"I am not a doctor. I cannot diagnose diseases or prescribe medicines. Please consult a qualified doctor for proper medical evaluation."
                 )
                 ChatMessage.objects.create(session=session, role='bot', content=resp)
         
