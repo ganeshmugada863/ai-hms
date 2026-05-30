@@ -32,6 +32,12 @@ if custom_domain:
     CSRF_TRUSTED_ORIGINS.append(f'https://{custom_domain}')
     CSRF_TRUSTED_ORIGINS.append(f'https://*.{custom_domain}')
 
+# Cookie settings for iframe compatibility on Hugging Face Spaces
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
+
 
 # Application definition
 
