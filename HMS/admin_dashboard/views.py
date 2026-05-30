@@ -17,6 +17,7 @@ from departments.models import Department
 from medical_records.models import MedicalRecord
 
 
+@admin_required
 def admin_dashboard(request):
     # AI Ranking Logic for Best Doctor
     best_doctor = DoctorProfile.objects.annotate(

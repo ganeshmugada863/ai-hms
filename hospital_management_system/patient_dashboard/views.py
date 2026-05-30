@@ -11,6 +11,7 @@ from medical_records.models import MedicalRecord
 from patients.models import PatientProfile
 
 
+@patient_required
 def patient_dashboard(request):
     patient, created = PatientProfile.objects.get_or_create(user=request.user)
     search_query = request.GET.get('q', '')
