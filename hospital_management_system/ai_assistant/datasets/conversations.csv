@@ -1,0 +1,198 @@
+intent,pattern,response,response_te,language,category
+greeting,hello,Hello! I am your AI Medical Assistant. How can I help you today?,నమస్కారం! నేను మీ వైద్య సహాయకుడిని. ఈరోజు నేను మీకు ఎలా సహాయపడగలను?,en,general
+greeting,hi,Hello! How can I help you with your symptoms today?,నమస్కారం! మీ ఆరోగ్య సమస్యలను వివరించండి. నేను మీకు సహాయం చేస్తాను.,en,general
+greeting,hey,Hi there! Please tell me what symptoms or health concerns you are experiencing.,హాయ్! మీకు ఉన్న ఆరోగ్య సమస్యల గురించి చెప్పండి.,en,general
+greeting,good morning,Good morning! I am here to help you. What symptoms are you experiencing?,శుభోదయం! మీ ఆరోగ్య సమస్యలేమిటో చెప్పండి.,en,general
+greeting,good afternoon,Good afternoon! How can I assist you with your health concerns today?,మధ్యాహ్న వందనం! ఈరోజు మీ ఆరోగ్యానికి సంబంధించి నేను ఏవిధంగా సహాయపడగలను?,en,general
+greeting,good evening,Good evening! What symptoms or health concerns can I help you evaluate?,శుభసాయంత్రం! మీకు ఉన్న ఆరోగ్య సమస్యల గురించి నాతో పంచుకోండి.,en,general
+greeting,namaste,Namaste! I am your AI Medical Assistant. Please tell me your symptoms.,నమస్తే! నేను మీ ఏఐ వైద్య సహాయకుడిని. దయచేసి మీ లక్షణాలను తెలియజేయండి.,en,general
+greeting,anyone there,Hello! Yes I am here. How can I assist you with your health today?,హలో! నేను ఇక్కడే ఉన్నాను. ఈరోజు మీ ఆరోగ్యానికి సంబంధించి నేను ఏవిధంగా సహాయపడగలను?,en,general
+greeting,namaskaram,Hello! Namaskaram. How can I help you with your health concerns today?,హలో! నమస్కారం. ఈరోజు మీ ఆరోగ్య సమస్యలకు సంబంధించి నేను ఏవిధంగా సహాయపడగలను?,en,general
+greeting,naku help kavali,Hello! I am here to help you. Please tell me what symptoms you have.,హలో! నేను మీకు సహాయం చేయడానికి సిద్ధంగా ఉన్నాను. దయచేసి మీ లక్షణాలను చెప్పండి.,te,general
+farewell,bye,Goodbye! Take care of your health and consult a doctor if symptoms persist.,వెళ్లి వస్తాను! మీ ఆరోగ్యాన్ని జాగ్రత్తగా చూసుకోండి మరియు అవసరమైతే వైద్యుడిని సంప్రదించండి.,en,general
+farewell,goodbye,Goodbye! Wishing you a speedy recovery. Feel free to chat if you feel unwell again.,సెలవు! మీరు త్వరగా కోలుకోవాలని కోరుకుంటున్నాను.,en,general
+farewell,thanks bye,You are welcome! Take care and goodbye.,ధన్యవాదాలు! సెలవు.,en,general
+farewell,see you,Goodbye! Take care and stay healthy.,సెలవు! ఆరోగ్యంగా ఉండండి.,en,general
+farewell,tata,Goodbye! Have a healthy day ahead.,వెళ్లి వస్తాను! శుభదినం.,en,general
+thanks,thank you,You are welcome! I am glad I could help. Please consult a doctor for official advice.,మీకు స్వాగతం! నేను సహాయపడగలిగినందుకు సంతోషిస్తున్నాను. దయచేసి అధికారిక సలహా కోసం వైద్యుడిని సంప్రదించండి.,en,general
+thanks,thanks,You are welcome! Stay healthy and take care.,మీకు స్వాగతం! ఆరోగ్యంగా ఉండండి.,en,general
+thanks,thank you so much,It is my pleasure to help. Let me know if you need anything else.,సహాయపడటం నా బాధ్యత. మీకు ఇంకేమైనా సహాయం కావాలంటే చెప్పండి.,en,general
+thanks,thanks helper,Glad to assist! Keep tracking your health.,సహాయపడగలిగినందుకు సంతోషంగా ఉంది. మీ ఆరోగ్యం జాగ్రత్త.,en,general
+thanks,dhanyavadalu,You are welcome! (ధన్యవాదాలు!) Take care of your health.,ధన్యవాదాలు! మీ ఆరోగ్యాన్ని జాగ్రత్తగా చూసుకోండి.,te,general
+thanks,chala thanks,You are welcome! Glad to help. (చాలా ధన్యవాదాలు!),ధన్యవాదాలు! సహాయపడగలిగినందుకు సంతోషంగా ఉంది.,te,general
+emergency,chest pain,Warning: Chest pain can be a sign of a cardiac emergency. Please go to the nearest hospital immediately.,హెచ్చరిక: ఛాతీ నొప్పి గుండెపోటుకు సంకేతం కావచ్చు. దయచేసి వెంటనే సమీప ఆసుపత్రికి వెళ్ళండి.,en,emergency
+emergency,heart attack,Warning: Severe chest pain and numbness can indicate a heart attack. Please call emergency services now.,హెచ్చరిక: తీవ్రమైన ఛాతీ నొప్పి మరియు తిమ్మిరి గుండెపోటును సూచించవచ్చు. దయచేసి వెంటనే అత్యవసర సేవలను సంప్రదించండి.,en,emergency
+emergency,breathing difficulty,Warning: Difficulty breathing is a serious symptom. Please seek emergency medical care immediately.,హెచ్చరిక: శ్వాస తీసుకోవడంలో ఇబ్బంది అనేది తీవ్రమైన లక్షణం. దయచేసి వెంటనే అత్యవసర వైద్య సహాయం తీసుకోండి.,en,emergency
+emergency,unconscious,Warning: Loss of consciousness is a critical emergency. Please call an ambulance immediately.,హెచ్చరిక: స్పృహ తప్పడం అనేది అత్యవసర పరిస్థితి. దయచేసి వెంటనే అంబులెన్స్ పిలవండి.,en,emergency
+emergency,severe bleeding,Warning: Uncontrolled or severe bleeding requires immediate medical attention. Please go to the ER.,హెచ్చరిక: తీవ్రమైన రక్తస్రావం కోసం వెంటనే అత్యవసర వైద్య సహాయం అవసరం.,en,emergency
+emergency,seizure,Warning: Active or recent seizures require urgent medical care. Please protect the patient and call ER.,హెచ్చరిక: ఫిట్స్ (మూర్ఛ) రావడం అత్యవసర పరిస్థితి. దయచేసి వెంటనే వైద్య సహాయం తీసుకోండి.,en,emergency
+emergency,stroke,Warning: Face drooping arm weakness or speech difficulty are signs of a stroke. Go to ER immediately.,హెచ్చరిక: ముఖం పక్కకుపోవడం మరియు మాట పడిపోవడం పక్షవాతం యొక్క లక్షణాలు. వెంటనే అత్యవసర చికిత్స తీసుకోండి.,en,emergency
+emergency,gunde noppi,Warning: Chest pain (Gunde noppi) is a major emergency. Go to the hospital immediately.,హెచ్చరిక: ఛాతీ నొప్పి (గుండె నొప్పి) అత్యవసర పరిస్థితి. వెంటనే ఆసుపత్రికి వెళ్ళండి.,te,emergency
+emergency,oopiri adaledu,Warning: Breathing difficulty (Oopiri adaledu) is a severe emergency. Go to ER.,హెచ్చరిక: శ్వాస ఆడకపోవడం తీవ్రమైన అత్యవసర పరిస్థితి. వెంటనే అత్యవసర చికిత్స తీసుకోండి.,te,emergency
+symptom_report,i have fever,I understand you have a fever. How long have you had this elevated temperature?,మీకు జ్వరం ఉందని నేను అర్థం చేసుకున్నాను. ఈ జ్వరం ఎంతకాలంగా ఉంది?,en,symptom
+symptom_report,i have headache,I note that you have a headache. Is the pain sharp throbbing or dull?,మీకు తలనొప్పి ఉందని నేను గమనించాను. ఈ నొప్పి ఎలా ఉంది?,en,symptom
+symptom_report,i have cough,You mentioned having a cough. Is it a dry cough or do you have phlegm?,మీకు దగ్గు ఉందని చెప్పారు. అది పొడి దగ్గా లేక కఫంతో ఉందా?,en,symptom
+symptom_report,i feel nauseous,Nausea can be uncomfortable. Have you experienced any vomiting or stomach pain?,వికారం అసౌకర్యంగా ఉంటుంది. మీకు వాంతులు లేదా కడుపు నొప్పి కూడా ఉన్నాయా?,en,symptom
+symptom_report,my joint hurts,Joint pain can limit movement. Are you experiencing any swelling or stiffness in the joints?,కీళ్ల నొప్పులు కదలికలను పరిమితం చేస్తాయి. కీళ్లలో వాపు లేదా బిగుతు ఉందా?,en,symptom
+symptom_report,i have skin rash,A skin rash can have many causes. Is it itchy red or peeling?,చర్మంపై దద్దుర్లు అనేక కారణాల వల్ల రావచ్చు. అది దురదగా ఉందా?,en,symptom
+symptom_report,tala noppi ga undi,I understand you have a headache. Let me know if you also have fever or dizziness.,మీకు తలనొప్పి ఉన్నట్లు అర్థమైంది. జ్వరం లేదా కళ్ళు తిరగడం కూడా ఉందో చెప్పండి.,te,symptom
+symptom_report,naku jwaram vachindi,I understand you have a fever. Since how many days are you suffering?,మీకు జ్వరం వచ్చిందని అర్థమైంది. ఎన్ని రోజుల నుండి జ్వరం ఉంది?,te,symptom
+symptom_report,daggu ga undi,You reported having a cough. Is there mucus or blood in your sputum?,మీకు దగ్గు ఉన్నట్లు చెప్పారు. కఫం లేదా రక్తం పడుతుందా?,te,symptom
+symptom_report,kadupu noppi,Abdominal pain can have several causes. Do you have nausea or diarrhea?,కడుపు నొప్పికి అనేక కారణాలు ఉండవచ్చు. వికారం లేదా విరేచనాలు ఉన్నాయా?,te,symptom
+symptom_report,ontlo nala ga undi,You feel unwell. Do you have body pain fever or fatigue?,మీ ఒంట్లో నలతగా ఉందన్నారు. ఒంటి నొప్పులు జ్వరం లేదా అలసట ఉన్నాయా?,te,symptom
+duration_question,since 2 days,I record that this has been going on for two days. Are the symptoms getting worse?,ఇది రెండు రోజుల నుండి ఉందని గమనించాను. లక్షణాలు తీవ్రమవుతున్నాయా?,en,symptom
+duration_question,from 3 days,Understood since three days. Are you taking any medications for this?,మూడు రోజుల నుండి అని అర్థమైంది. దీని కోసం ఏదైనా మందులు వాడుతున్నారా?,en,symptom
+duration_question,since a week,A week is a long time. Please consult a doctor soon. Do you have any other symptoms?,వారం రోజులు అనేది చాలా ఎక్కువ సమయం. దయచేసి త్వరగా వైద్యుడిని సంప్రదించండి.,en,symptom
+duration_question,ninnటి నుండి,Since yesterday. Did it start suddenly or gradually?,నిన్నటి నుండి. ఇది హఠాత్తుగా ప్రారంభమైందా లేదా నెమ్మదిగానా?,te,symptom
+duration_question,moodu rola nundi,From three days. Have you noticed any other symptoms during this time?,మూడు రోజుల నుండి. ఈ సమయంలో ఇతర లక్షణాలను ఏమైనా గమనించారా?,te,symptom
+severity_question,severe pain,Severe pain requires prompt evaluation. Please consider booking an appointment with a specialist.,తీవ్రమైన నొప్పికి తక్షణ పరిశీలన అవసరం. దయచేసి వైద్యుడిని సంప్రదించండి.,en,symptom
+severity_question,mild symptoms,Since it is mild rest and hydration should help. Monitor if it gets worse.,ఇది తేలికపాటి లక్షణాలు కాబట్టి విశ్రాంతి మరియు నీరు తీసుకోవడం సహాయపడుతుంది.,en,symptom
+severity_question,chala ekkuva noppi,Understood that it is severe pain. (చాలా ఎక్కువ నొప్పి). Please take rest and consult a doctor.,నొప్పి చాలా ఎక్కువగా ఉందని అర్థమైంది. దయచేసి వైద్యుడిని సంప్రదించండి.,te,symptom
+severity_question,konchem noppi,Mild pain. Monitor it closely and take rest.,కొంచెం నొప్పి. దానిని గమనిస్తూ విశ్రాంతి తీసుకోండి.,te,symptom
+appointment_request,book appointment,You can book an appointment with our doctors through the Appointment section in the dashboard.,మీరు డాష్‌బోర్డ్‌లోని అపాయింట్‌మెంట్ విభాగం ద్వారా వైద్యులతో అపాయింట్‌మెంట్ బుక్ చేసుకోవచ్చు.,en,general
+appointment_request,doctor consult,I can suggest doctor matching based on your symptoms. Would you like to check suggested doctors?,నేను మీ లక్షణాల ఆధారంగా వైద్యులను సూచించగలను. సూచించిన వైద్యులను తనిఖీ చేయాలా?,en,general
+appointment_request,appointment naku kavali,To book an appointment please navigate to Book Appointment in the patient dashboard menu.,అపాయింట్‌మెంట్ బుక్ చేసుకోవడానికి దయచేసి పేషెంట్ డాష్‌బోర్డ్‌లో 'బుక్ అపాయింట్‌మెంట్' కి వెళ్లండి.,te,general
+general_health,how to stay healthy,Eating a balanced diet exercising regularly and getting enough sleep are keys to staying healthy.,సమతుల్య ఆహారం క్రమం తప్పకుండా వ్యాయామం మరియు తగినంత నిద్ర ఆరోగ్యంగా ఉండటానికి కీలకం.,en,general
+general_health,diet tips,Try to include fresh vegetables fruits whole grains and lean proteins in your diet. Drink plenty of water.,మీ ఆహారంలో తాజా కూరగాయలు పండ్లు మరియు తృణధాన్యాలు ఉండేలా చూసుకోండి. నీరు ఎక్కువగా త్రాగాలి.,en,general
+general_health,arogyam ga undatam ela,To stay healthy eat fresh food exercise daily sleep 8 hours and drink 3-4 liters of water.,ఆరోగ్యంగా ఉండటానికి తాజా ఆహారం తినండి వ్యాయామం చేయండి మరియు 8 గంటలు నిద్రపోండి.,te,general
+followup,yes,Please describe it further or list any other symptoms you are experiencing.,దయచేసి దాని గురించి మరికొంత వివరించండి లేదా ఇతర లక్షణాలను చెప్పండి.,en,general
+followup,no,Alright. Let me analyze the symptoms you have reported so far.,సరే. మీరు ఇప్పటివరకు తెలియజేసిన లక్షణాలను నేను విశ్లేషిస్తాను.,en,general
+followup,avunu,Please tell me more details about it.,దయచేసి దాని గురించి మరిన్ని వివరాలు తెలియజేయండి.,te,general
+followup,ledu,Okay. I will proceed with the symptoms you already mentioned.,సరే. మీరు చెప్పిన లక్షణాలతో నేను ముందుకు వెళ్తాను.,te,general
+greeting,good morning doc,Hello! I am your AI assistant here. How can I assist you with your health today?,హలో! నేను ఇక్కడే ఉన్నాను. మీ ఆరోగ్యానికి సంబంధించి ఎలా సహాయపడగలను?,en,general
+greeting,hello doctor,Hello! I am your AI Medical Assistant. Please describe the symptoms you are experiencing.,హలో! నేను మీ ఏఐ వైద్య సహాయకుడిని. దయచేసి మీ లక్షణాలను తెలియజేయండి.,en,general
+symptom_report,i have migraine,I note that you have a migraine. Have you experienced any nausea sensitivity to light or dizziness?,పార్శ్వపు నొప్పి (మైగ్రేన్) ఉందా. మీకు వికారం కాంతికి సున్నితత్వం లేదా కళ్ళు తిరగడం ఉందా?,en,symptom
+symptom_report,i have diabetes,Diabetes requires careful monitoring of blood sugar. Are you experiencing frequent urination or excessive thirst?,మధుమేహం ఉందా. మీకు తరచుగా మూత్రవిసర్జన లేదా ఎక్కువ దాహం వేయడం వంటి లక్షణాలు ఉన్నాయా?,en,symptom
+symptom_report,i have asthma,Asthma makes breathing difficult. Are you experiencing wheezing cough or chest tightness?,ఉబ్బసం ఉందా. మీకు పిల్లికూతలు దగ్గు లేదా ఛాతీ బిగుతుగా ఉండటం వంటి లక్షణాలు ఉన్నాయా?,en,symptom
+symptom_report,i have arthritis,Arthritis affects the joints. Do you have joint pain swelling or stiffness?,కీళ్లవాతం ఉందా. మీకు కీళ్ల నొప్పులు వాపు లేదా కీళ్ల బిగుతుగా ఉండటం వంటి లక్షణాలు ఉన్నాయా?,en,symptom
+symptom_report,i have dermatitis,Dermatitis causes skin irritation. Do you have a skin rash itching or dry skin?,చర్మ శోధము ఉందా. మీకు చర్మంపై దద్దుర్లు దురద లేదా పొడి చర్మం వంటి లక్షణాలు ఉన్నాయా?,en,symptom
+symptom_report,i have runny nose,A runny nose is common with colds. Do you also have a sore throat sneezing or fever?,ముక్కు కారడం ఉందా. మీకు గొంతు నొప్పి తుమ్ములు లేదా జ్వరం కూడా ఉన్నాయా?,en,symptom
+symptom_report,i have sore throat,A sore throat can indicate an infection. Do you have difficulty swallowing or fever?,గొంతు నొప్పి ఉందా. మీకు మింగడంలో ఇబ్బంది లేదా జ్వరం ఉందా?,en,symptom
+symptom_report,i have heart racing,Palpitations or heart racing can be concerning. Do you have any chest pain or shortness of breath?,గుండె కొట్టుకోవడం వేగంగా ఉందా. మీకు ఛాతీ నొప్పి లేదా శ్వాస ఆడకపోవడం ఉందా?,en,symptom
+symptom_report,i feel dizzy,Dizziness can be caused by various issues. Have you experienced any headache or fainting?,కళ్ళు తిరగడం ఉందా. మీకు తలనొప్పి లేదా స్పృహ తప్పడం జరిగిందా?,en,symptom
+symptom_report,i have blood in urine,Warning: Blood in urine requires urgent medical evaluation. Please book an appointment with a Nephrologist.,హెచ్చరిక: మూత్రంలో రక్తం పడటం అత్యవసర పరిస్థితి. వెంటనే నెఫ్రాలజిస్ట్‌ను సంప్రదించండి.,en,emergency
+symptom_report,i have dark urine,Dark urine can indicate dehydration or liver issues. Are you experiencing fever or yellow eyes?,చిక్కటి మూత్రం ఉందా. మీకు జ్వరం లేదా కళ్ళు పచ్చబడటం వంటి లక్షణాలు ఉన్నాయా?,en,symptom
+symptom_report,i have yellow eyes,Yellow eyes can be a sign of jaundice. Do you have abdominal pain nausea or yellow skin?,కళ్ళు పచ్చబడటం కామెర్ల సంకేతం కావచ్చు. కడుపు నొప్పి లేదా వికారం ఉందా?,en,symptom
+symptom_report,i have yellow skin,Yellow skin can indicate liver or gallbladder issues. Do you have yellow eyes or stomach pain?,చర్మం పచ్చబడటం కాలేయ సమస్యను సూచించవచ్చు. కడుపు నొప్పి ఉందా?,en,symptom
+symptom_report,i have joint pain,Joint pain can be due to arthritis or injury. Is there swelling redness or stiffness?,కీళ్ల నొప్పులు ఉన్నాయా. వాపు ఎరుపు లేదా కీళ్ల బిగుతుగా ఉందా?,en,symptom
+symptom_report,i have muscle cramps,Muscle cramps are common after exercise. Are you experiencing muscle weakness or joint pain?,కండరాల తిమ్మిరి ఉందా. కండరాల బలహీనత లేదా కీళ్ల నొప్పి ఉందా?,en,symptom
+symptom_report,i have stiff neck,A stiff neck with fever and headache requires immediate medical checkup. Do you have these symptoms?,మెడ బిగుసుకుపోవడం జ్వరం మరియు తలనొప్పితో ఉంటే వెంటనే పరీక్షించుకోవాలి.,en,emergency
+symptom_report,i have dry skin,Dry skin is common in dry weather. Are you also experiencing itching skin rash or peeling?,పొడి చర్మం ఉందా. మీకు దురద చర్మంపై దద్దుర్లు లేదా పొట్టు రాలడం ఉందా?,en,symptom
+symptom_report,i have red skin,Red skin can be due to sunburn allergy or infection. Is it itchy or painful?,చర్మం ఎర్రబడటం ఉందా. అది దురదగా లేదా నొప్పితో ఉందా?,en,symptom
+symptom_report,i have skin peeling,Skin peeling can occur as a rash heals. Do you have dry skin itching or rash?,చర్మం పొట్టు రాలడం ఉందా. పొడి చర్మం దురద లేదా దద్దుర్లు ఉన్నాయా?,en,symptom
+symptom_report,i have blurred vision,Blurred vision requires prompt eye evaluation. Do you have eye redness pain or double vision?,మసక చూపు ఉందా. కళ్ళు ఎర్రబడటం నొప్పి లేదా రెండుగా కనిపించడం ఉందా?,en,symptom
+symptom_report,i have painful urination,Painful urination is a common symptom of UTI. Do you have frequent urination or blood in urine?,మూత్రవిసర్జనలో నొప్పి యూరినరీ ఇన్ఫెక్షన్ లక్షణం కావచ్చు.,en,symptom
+symptom_report,i have frequent urination,Frequent urination can be due to UTI or diabetes. Do you have excessive thirst or painful urination?,తరచుగా మూత్రవిసర్జన ఉందా. ఎక్కువ దాహం లేదా మూత్రంలో నొప్పి ఉందా?,en,symptom
+symptom_report,i have loss of smell,Loss of smell is common with viral infections. Do you have a cold cough fever or loss of taste?,వాసన కోల్పోవడం ఉందా. జలుబు దగ్గు జ్వరం లేదా రుచి కోల్పోవడం ఉందా?,en,symptom
+symptom_report,i have loss of taste,Loss of taste often accompanies loss of smell. Do you have fever cold or cough?,రుచి కోల్పోవడం ఉందా. జ్వరం జలుబు లేదా దగ్గు ఉందా?,en,symptom
+symptom_report,i have bloating,Bloating can be caused by gas or indigestion. Do you have stomach pain heartburn or flatulence?,కడుపు ఉబ్బరం ఉందా. కడుపు నొప్పి గుండెల్లో మంట లేదా గ్యాస్ ఉందా?,en,symptom
+symptom_report,i have flatulence,Flatulence or gas can be due to diet. Do you have stomach pain bloating or acid reflux?,గ్యాస్ సమస్య ఉందా. కడుపు నొప్పి కడుపు ఉబ్బరం లేదా రిఫ్లక్స్ ఉందా?,en,symptom
+symptom_report,i have weight loss,Unexplained weight loss requires checkup. Are you experiencing fatigue excessive hunger or thirst?,బరువు తగ్గడం ఉందా. అలసట ఎక్కువ ఆకలి లేదా దాహం వేయడం ఉందా?,en,symptom
+symptom_report,i have hair loss,Hair loss can be due to stress or nutrition. Are you experiencing dry skin or fatigue?,జుట్టు రాలడం ఉందా. పొడి చర్మం లేదా అలసట ఉందా?,en,symptom
+symptom_report,i have back pain,Back pain can be musculoskeletal. Do you have neck pain muscle cramps or stiffness?,నడుము నొప్పి ఉందా. మెడ నొప్పి కండరాల తిమ్మిరి ఉందా?,en,symptom
+symptom_report,i have neck pain,Neck pain can be from poor posture. Do you have back pain headache or stiff neck?,మెడ నొప్పి ఉందా. నడుము నొప్పి తలనొప్పి లేదా మెడ బిగుతు ఉందా?,en,symptom
+symptom_report,i have dry mouth,Dry mouth can be due to dehydration. Do you have excessive thirst bad breath or dry skin?,నోరు ఎండిపోవడం ఉందా. ఎక్కువ దాహం నోటి దుర్వాసన ఉందా?,en,symptom
+symptom_report,i have bad breath,Bad breath can be due to oral hygiene. Do you have dry mouth or bleeding gums?,నోటి దుర్వాసన ఉందా. నోరు ఎండిపోవడం లేదా చిగుళ్ల నుండి రక్తం రావడం ఉందా?,en,symptom
+symptom_report,i have bleeding gums,Bleeding gums can be a sign of gingivitis. Do you have toothache or bad breath?,చిగుళ్ల నుండి రక్తం రావడం ఉందా. పంటి నొప్పి లేదా నోటి దుర్వాసన ఉందా?,en,symptom
+symptom_report,i have toothache,A toothache requires a dentist visit. Do you have bleeding gums or bad breath?,పంటి నొప్పి ఉందా. చిగుళ్ల నుండి రక్తం రావడం లేదా దుర్వాసన ఉందా?,en,symptom
+symptom_report,i have ear pain,Ear pain can indicate an infection. Do you have fever sore throat or hearing loss?,చెవి నొప్పి ఉందా. జ్వరం గొంతు నొప్పి లేదా వినే శక్తి తగ్గడం ఉందా?,en,symptom
+symptom_report,i have hearing loss,Hearing loss requires audiologist exam. Do you have ear pain dizziness or headache?,వినే శక్తి తగ్గడం ఉందా. చెవి నొప్పి కళ్ళు తిరగడం లేదా తలనొప్పి ఉందా?,en,symptom
+symptom_report,i have nosebleed,A nosebleed can be due to dry air. Do you have a runny nose sneezing or headache?,ముక్కు నుండి రక్తం రావడం ఉందా. ముక్కు కారడం లేదా తలనొప్పి ఉందా?,en,symptom
+symptom_report,i have hoarseness,Hoarseness or voice change can be from laryngitis. Do you have sore throat or cough?,గొంతు బొంగురుపోవడం ఉందా. గొంతు నొప్పి లేదా దగ్గు ఉందా?,en,symptom
+symptom_report,i have double vision,Double vision requires immediate neurological/ophthalmic check. Do you have blurred vision or headache?,రెండుగా కనిపించడం ఉందా. మసక చూపు లేదా తలనొప్పి ఉందా?,en,emergency
+symptom_report,i have eye redness,Eye redness can be conjunctivitis. Do you have eye itching burning eyes or sore eyes?,కళ్ళు ఎర్రబడటం ఉందా. కళ్ల దురద కళ్ల మంటలు లేదా నొప్పులు ఉన్నాయా?,en,symptom
+symptom_report,i have eye itching,Eye itching can be allergic. Do you have eye redness burning eyes or runny nose?,కళ్ల దురద ఉందా. కళ్ళు ఎర్రబడటం కళ్ల మంటలు లేదా ముక్కు కారడం ఉందా?,en,symptom
+symptom_report,i have burning eyes,Burning eyes can be due to strain. Do you have eye redness dry eyes or blurred vision?,కళ్ల మంటలు ఉన్నాయా. కళ్ళు ఎర్రబడటం ఎండిపోవడం ఉందా?,en,symptom
+symptom_report,i have dry eyes,Dry eyes can be due to screen time. Do you have burning eyes blurred vision or eye redness?,కళ్ళు ఎండిపోవడం ఉందా. కళ్ల మంటలు మసక చూపు ఉందా?,en,symptom
+symptom_report,i have night sweats,Night sweats can have various causes. Do you have fever weight loss or fatigue?,రాత్రిపూట చెమటలు ఉన్నాయా. జ్వరం బరువు తగ్గడం లేదా అలసట ఉందా?,en,symptom
+symptom_report,i have panic attacks,Panic attacks are intense anxiety episodes. Do you have anxiety insomnia or mood swings?,భయాందోళనలు ఉన్నాయా. ఆందోళన నిద్రలేమి లేదా మూడ్ మార్పులు ఉన్నాయా?,en,symptom
+symptom_report,i have mood swings,Mood swings can indicate stress. Do you have irritability anxiety or depression?,మూడ్ మార్పులు ఉన్నాయా. చిరాకు ఆందోళన లేదా నిరాశ ఉందా?,en,symptom
+symptom_report,i have irritability,Irritability can be due to lack of sleep. Do you have insomnia fatigue or anxiety?,చిరాకు ఉందా. నిద్రలేమి అలసట లేదా ఆందోళన ఉందా?,en,symptom
+symptom_report,i have cold hands,Cold hands can be circulation-related. Do you have cold feet fatigue or numbness?,చల్లని చేతులు ఉన్నాయా. చల్లని పాదాలు అలసట లేదా తిమ్మిరి ఉందా?,en,symptom
+symptom_report,i have cold feet,Cold feet often accompany cold hands. Do you have cold hands fatigue or numbness?,చల్లని పాదాలు ఉన్నాయా. చల్లని చేతులు అలసట లేదా తిమ్మిరి ఉందా?,en,symptom
+symptom_report,i have body weakness,Body weakness requires rest. Do you have fever muscle weakness or fatigue?,శరీర బలహీనత ఉందా. జ్వరం కండరాల బలహీనత లేదా అలసట ఉందా?,en,symptom
+symptom_report,i have muscle weakness,Muscle weakness can be neurological. Do you have body weakness body pain or joint pain?,కండరాల బలహీనత ఉందా. శరీర బలహీనత ఒంటి నొప్పులు ఉన్నాయా?,en,symptom
+symptom_report,i have swollen feet,Swollen feet can indicate fluid retention. Do you have swollen joints fatigue or dark urine?,పాదాల వాపు ఉందా. కీళ్ల వాపు అలసట లేదా చిక్కటి మూత్రం ఉందా?,en,symptom
+symptom_report,i have sleep apnea,Sleep apnea disrupts breathing. Do you have snoring fatigue or insomnia?,నిద్రలో శ్వాస నిలిచిపోవడం ఉందా. గురక అలసట లేదా నిద్రలేమి ఉందా?,en,symptom
+symptom_report,i have snoring,Snoring can be related to sleep apnea. Do you have sleep apnea daytime fatigue or dry mouth?,గురక ఉందా. నిద్రలో శ్వాస నిలిచిపోవడం అలసట ఉందా?,en,symptom
+symptom_report,i have frequent sneezing,Frequent sneezing is common in allergies. Do you have runny nose itchy eyes or skin rash?,తరచుగా తుమ్ములు ఉన్నాయా. ముక్కు కారడం కళ్ల దురద ఉందా?,en,symptom
+symptom_report,i have sneezing attacks,Sneezing attacks can be allergic. Do you have runny nose itchy eyes or sore throat?,तुమ్ముల దాడులు ఉన్నాయా. ముక్కు కారడం కళ్ల దురద ఉందా?,en,symptom
+symptom_report,i have stomach bloat,Bloating can be uncomfortable. Do you have flatulence abdominal pain or heartburn?,కడుపు ఉబ్బరం ఉందా. గ్యాస్ సమస్య కడుపు నొప్పి ఉందా?,en,symptom
+symptom_report,i have hives,Hives are itchy raised welts on skin. Do you have skin rash itching or swelling?,దద్దుర్లు ఉన్నాయా. చర్మంపై దద్దుర్లు దురద లేదా వాపు ఉందా?,en,symptom
+symptom_report,i have skin blisters,Skin blisters can be from burn or infection. Are they itchy red or painful?,చర్మంపై పొక్కులు ఉన్నాయా. అవి దురదగా ఎర్రగా లేదా నొప్పితో ఉన్నాయా?,en,symptom
+symptom_report,i have slow healing cuts,Slow healing cuts can be a sign of diabetes. Do you have excessive thirst or frequent urination?,నెమ్మదిగా తగ్గే గాయాలు ఉన్నాయా. ఎక్కువ దాహం లేదా తరచుగా మూత్రవిసర్జన ఉందా?,en,symptom
+symptom_report,i have easy bruising,Easy bruising requires medical evaluation. Do you have skin peeling rash or fatigue?,సులభంగా కమిలిపోవడం ఉందా. చర్మం పొట్టు రాలడం అలసట ఉందా?,en,symptom
+symptom_report,i have excessive thirst,Excessive thirst can indicate diabetes. Do you have frequent urination or excessive hunger?,ఎక్కువ దాహం వేస్తుందా. తరచుగా మూత్రవిసర్జన లేదా ఎక్కువ ఆకలి ఉందా?,en,symptom
+symptom_report,i have excessive hunger,Excessive hunger can be related to metabolism. Do you have excessive thirst or weight loss?,ఎక్కువ ఆకలి వేస్తుందా. ఎక్కువ దాహం లేదా బరువు తగ్గడం ఉందా?,en,symptom
+symptom_report,i have abdominal distension,Abdominal distension is visible stomach swelling. Do you have stomach pain nausea or vomiting?,కడుపు ఉబ్బరం ఉందా. కడుపు నొప్పి వికారం లేదా వాంతులు ఉన్నాయా?,en,symptom
+symptom_report,i have urinary incontinence,Urinary incontinence is loss of bladder control. Do you have frequent or painful urination?,మూత్ర నియంత్రణ లేకపోవడం ఉందా. తరచుగా లేదా నొప్పితో కూడిన మూత్రవిసర్జన ఉందా?,en,symptom
+symptom_report,i have blood in sputum,Warning: Blood in sputum is a serious symptom. Please seek immediate pulmonology consultation.,హెచ్చరిక: కఫంలో రక్తం పడటం అత్యవసర పరిస్థితి. వెంటనే వైద్యుడిని సంప్రదించండి.,en,emergency
+symptom_report,i have phlegm,Phlegm indicates respiratory irritation. Do you have cough fever or sore throat?,కఫం ఉందా. దగ్గు జ్వరం లేదా గొంతు నొప్పి ఉందా?,en,symptom
+symptom_report,i have stiff joints,Stiff joints can be due to arthritis. Do you have joint pain swelling or body pain?,కీళ్ల బిగుతు ఉందా. కీళ్ల నొప్పులు వాపు లేదా ఒంటి నొప్పులు ఉన్నాయా?,en,symptom
+symptom_report,i have swollen joints,Swollen joints require rheumatology review. Do you have joint pain or stiffness?,కీళ్ల వాపు ఉందా. కీళ్ల నొప్పులు లేదా బిగుతు ఉందా?,en,symptom
+symptom_report,i have joint swelling,Swelling in joints indicates inflammation. Do you have joint pain or stiffness?,కీళ్ల వాపు ఉందా. కీళ్ల నొప్పులు లేదా బిగుతు ఉందా?,en,symptom
+symptom_report,i have heel pain,Heel pain can be plantar fasciitis. Do you have joint pain or muscle cramps?,మడమ నొప్పి ఉందా. కీళ్ల నొప్పి లేదా కండరాల తిమ్మిరి ఉందా?,en,symptom
+symptom_report,i have mouth ulcers,Mouth ulcers can be due to vitamin deficiency. Do you have bleeding gums or bad breath?,నోటి పూత ఉందా. చిగుళ్ల నుండి రక్తం లేదా నోటి దుర్వాసన ఉందా?,en,symptom
+symptom_report,i have difficulty swallowing,Difficulty swallowing requires urgent ENT exam. Do you have sore throat or hoarseness?,మింగడంలో ఇబ్బంది ఉందా. గొంతు నొప్పి లేదా గొంతు బొంగురుపోవడం ఉందా?,en,symptom
+symptom_report,i have chest tightness,Warning: Chest tightness can indicate cardiovascular or respiratory emergencies. Go to ER.,హెచ్చరిక: ఛాతీ బిగుతు గుండె లేదా శ్వాసకోశ అత్యవసర పరిస్థితి కావచ్చు.,en,emergency
+symptom_report,i have pale stools,Pale stools can be a liver or gallbladder concern. Do you have abdominal pain or yellow eyes?,లేత రంగు మలం ఉందా. కడుపు నొప్పి లేదా కళ్ళు పచ్చబడటం ఉన్నాయా?,en,symptom
+symptom_report,i have severe itching,Severe itching can be allergic or systemic. Do you have skin rash or dry skin?,తీవ్రమైన దురద ఉందా. చర్మంపై దద్దుర్లు లేదా పొడి చర్మం ఉందా?,en,symptom
+symptom_report,i feel confused,Warning: Confusion can indicate severe systemic illness or neurological emergencies. Go to ER.,హెచ్చరిక: గందరగోళం అనేది తీవ్రమైన నరాల లేదా వ్యవస్థాగత అత్యవసర పరిస్థితి.,en,emergency
+symptom_report,i have memory loss,Memory loss can be neurological. Do you have confusion dizziness or headache?,జ్ఞాపకశక్తి తగ్గడం ఉందా. గందరగోళం కళ్ళు తిరగడం లేదా తలనొప్పి ఉందా?,en,symptom
+symptom_report,i have tremor,Tremors require neurological evaluation. Do you have dizziness numbness or weakness?,వణుకు ఉందా. కళ్ళు తిరగడం తిమ్మిరి లేదా బలహీనత ఉందా?,en,symptom
+symptom_report,i have seizures,Warning: Seizures require immediate medical care. Protect the patient and seek emergency help.,హెచ్చరిక: ఫిట్స్ (మూర్ఛ) రావడం అత్యవసర పరిస్థితి. వెంటనే అత్యవసర చికిత్స తీసుకోండి.,en,emergency
+symptom_report,i fainted,Warning: Fainting requires medical investigation. Please seek immediate help.,హెచ్చరిక: స్పృహ తప్పడం అత్యవసర పరిస్థితి. వెంటనే వైద్య సహాయం తీసుకోండి.,en,emergency
+symptom_report,i have burning urination,Burning during urination is a common symptom of UTI. Do you have frequent urination?,మూత్రవిసర్జనలో మంట ఉందా. తరచుగా మూత్రవిసర్జన ఉందా?,en,symptom
+symptom_report,i have double sight,Double sight is double vision. Do you have blurred vision or headache?,రెండుగా కనిపించడం ఉందా. మసక చూపు లేదా తలనొప్పి ఉందా?,en,emergency
+symptom_report,i have sneezing,Sneezing is common in colds and allergies. Do you have runny nose itchy eyes or sore throat?,తుమ్ములు ఉన్నాయా. ముక్కు కారడం కళ్ల దురద లేదా గొంతు నొప్పి ఉందా?,en,symptom
+symptom_report,i feel weak,Weakness or fatigue requires rest. Do you have fever body pain or joint pain?,బలహీనత లేదా అలసట ఉందా. జ్వరం ఒంటి నొప్పులు లేదా కీళ్ల నొప్పులు ఉన్నాయా?,en,symptom
+symptom_report,i feel anxious,Anxiety can cause palpitations or breathing difficulty. Do you have insomnia or irritability?,ఆందోళనగా ఉందా. నిద్రలేమి లేదా చిరాకు ఉందా?,en,symptom
+symptom_report,i feel depressed,Depression affects daily function. Do you have insomnia weight loss or fatigue?,నిరాశగా ఉందా. నిద్రలేమి బరువు తగ్గడం లేదా అలసట ఉందా?,en,symptom
+symptom_report,i have sleep problems,Sleep problems or insomnia require sleep hygiene. Do you have headache fatigue or irritability?,నిద్ర సమస్యలు ఉన్నాయా. తలనొప్పి అలసట లేదా చిరాకు ఉందా?,en,symptom
+symptom_report,i have skin patches,Skin patches can be psoriasis or dermatitis. Are they itchy dry or red?,చర్మంపై పచ్చలు ఉన్నాయా. అవి దురదగా పొడిగా లేదా ఎర్రగా ఉన్నాయా?,en,symptom
+symptom_report,i have joint stiffness,Joint stiffness is common in arthritis. Do you have joint pain swelling or body pain?,కీళ్ల బిగుతు ఉందా. కీళ్ల నొప్పులు వాపు లేదా ఒంటి నొప్పులు ఉన్నాయా?,en,symptom
+symptom_report,i have swollen feet,Swollen feet require medical review. Do you have swollen joints fatigue or dark urine?,పాదాల వాపు ఉందా. కీళ్ల వాపు అలసట లేదా చిక్కటి మూత్రం ఉందా?,en,symptom
+symptom_report,i have snoring,Snoring can affect sleep quality. Do you have sleep apnea fatigue or dry mouth?,గురక ఉందా. నిద్రలో శ్వాస నిలిచిపోవడం అలసట ఉందా?,en,symptom
+symptom_report,i have sneezing,Sneezing is common in colds and allergies. Do you have runny nose itchy eyes or sore throat?,తుమ్ములు ఉన్నాయా. ముక్కు కారడం కళ్ల దురద లేదా గొంతు నొప్పి ఉందా?,en,symptom
+symptom_report,i have cold hands,Cold hands can be circulation-related. Do you have cold feet fatigue or numbness?,చల్లని చేతులు ఉన్నాయా. చల్లని పాదాలు అలసట లేదా తిమ్మిరి ఉందా?,en,symptom
+symptom_report,i have cold feet,Cold feet often accompany cold hands. Do you have cold hands fatigue or numbness?,చల్లని పాదాలు ఉన్నాయా. చల్లని చేతులు అలసట లేదా తిమ్మిరి ఉందా?,en,symptom
+symptom_report,i have body weakness,Body weakness requires rest. Do you have fever muscle weakness or fatigue?,శరీర బలహీనత ఉందా. జ్వరం కండరాల బలహీనత లేదా అలసట ఉందా?,en,symptom
+symptom_report,i have muscle weakness,Muscle weakness can be neurological. Do you have body weakness body pain or joint pain?,కండరాల బలహీనత ఉందా. శరీర బలహీనత ఒంటి నొప్పులు ఉన్నాయా?,en,symptom
+symptom_report,i have swollen feet,Swollen feet can indicate fluid retention. Do you have swollen joints fatigue or dark urine?,పాదాల వాపు ఉందా. కీళ్ల వాపు అలసట లేదా చిక్కటి మూత్రం ఉందా?,en,symptom
+symptom_report,i have sleep apnea,Sleep apnea disrupts breathing. Do you have snoring fatigue or insomnia?,నిద్రలో శ్వాస నిలిచిపోవడం ఉందా. గురక అలసట లేదా నిద్రలేమి ఉందా?,en,symptom
+symptom_report,i have snoring,Snoring can be related to sleep apnea. Do you have sleep apnea daytime fatigue or dry mouth?,గురక ఉందా. నిద్రలో శ్వాస నిలిచిపోవడం అలసట ఉందా?,en,symptom
+symptom_report,i have frequent sneezing,Frequent sneezing is common in allergies. Do you have runny nose itchy eyes or skin rash?,తరచుగా తుమ్ములు ఉన్నాయా. ముక్కు కారడం కళ్ల దురద ఉందా?,en,symptom
+symptom_report,i have sneezing attacks,Sneezing attacks can be allergic. Do you have runny nose itchy eyes or sore throat?,తుమ్ముల దాడులు ఉన్నాయా. ముక్కు కారడం కళ్ల దురద ఉందా?,en,symptom
+symptom_report,i have stomach bloat,Bloating can be uncomfortable. Do you have flatulence abdominal pain or heartburn?,కడుపు ఉబ్బరం ఉందా. గ్యాస్ సమస్య కడుపు నొప్పి ఉందా?,en,symptom
+symptom_report,i have hives,Hives are itchy raised welts on skin. Do you have skin rash itching or swelling?,దద్దుర్లు ఉన్నాయా. చర్మంపై దద్దుర్లు దురద లేదా వాపు ఉందా?,en,symptom
+symptom_report,i have skin blisters,Skin blisters can be from burn or infection. Are they itchy red or painful?,చర్మంపై పొక్కులు ఉన్నాయా. అవి దురదగా ఎర్రగా లేదా నొప్పితో ఉన్నాయా?,en,symptom
+symptom_report,i have slow healing cuts,Slow healing cuts can be a sign of diabetes. Do you have excessive thirst or frequent urination?,నెమ్మదిగా తగ్గే గాయాలు ఉన్నాయా. ఎక్కువ దాహం లేదా తరచుగా మూత్రవిసర్జన ఉందా?,en,symptom
+symptom_report,i have easy bruising,Easy bruising requires medical evaluation. Do you have skin peeling rash or fatigue?,సులభంగా కమిలిపోవడం ఉందా. చర్మం పొట్టు రాలడం అలసట ఉందా?,en,symptom
+symptom_report,i have excessive thirst,Excessive thirst can indicate diabetes. Do you have frequent urination or excessive hunger?,ఎక్కువ దాహం వేస్తుందా. తరచుగా మూత్రవిసర్జన లేదా ఎక్కువ ఆకలి ఉందా?,en,symptom
+symptom_report,i have excessive hunger,Excessive hunger can be related to metabolism. Do you have excessive thirst or weight loss?,ఎక్కువ ఆకలి వేస్తుందా. ఎక్కువ దాహం లేదా బరువు తగ్గడం ఉందా?,en,symptom
+symptom_report,i have abdominal distension,Abdominal distension is visible stomach swelling. Do you have stomach pain nausea or vomiting?,కడుపు ఉబ్బరం ఉందా. కడుపు నొప్పి వికారం లేదా వాంతులు ఉన్నాయా?,en,symptom
+symptom_report,i have urinary incontinence,Urinary incontinence is loss of bladder control. Do you have frequent or painful urination?,మూత్ర నియంత్రణ లేకపోవడం ఉందా. తరచుగా లేదా నొప్పితో కూడిన మూత్రవిసర్జన ఉందా?,en,symptom
+symptom_report,i have blood in sputum,Warning: Blood in sputum is a serious symptom. Please seek immediate pulmonology consultation.,హెచ్చరిక: కఫంలో రక్తం పడటం అత్యవసర పరిస్థితి. వెంటనే వైద్యుడిని సంప్రదించండి.,en,emergency
+symptom_report,i have phlegm,Phlegm indicates respiratory irritation. Do you have cough fever or sore throat?,కఫం ఉందా. దగ్గు జ్వరం లేదా గొంతు నొప్పి ఉందా?,en,symptom
+symptom_report,i have stiff joints,Stiff joints can be due to arthritis. Do you have joint pain swelling or body pain?,కీళ్ల బిగుతు ఉందా. కీళ్ల నొప్పులు వాపు లేదా ఒంటి నొప్పులు ఉన్నాయా?,en,symptom
+symptom_report,i have swollen joints,Swollen joints require rheumatology review. Do you have joint pain or stiffness?,కీళ్ల వాపు ఉందా. కీళ్ల నొప్పులు లేదా బిగుతు ఉందా?,en,symptom
+symptom_report,i have joint swelling,Swelling in joints indicates inflammation. Do you have joint pain or stiffness?,కీళ్ల వాపు ఉందా. కీళ్ల నొప్పులు లేదా బిగుతు ఉందా?,en,symptom
+symptom_report,i have heel pain,Heel pain can be plantar fasciitis. Do you have joint pain or muscle cramps?,మడమ నొప్పి ఉందా. కీళ్ల నొప్పి లేదా కండరాల తిమ్మిరి ఉందా?,en,symptom
+symptom_report,i have mouth ulcers,Mouth ulcers can be due to vitamin deficiency. Do you have bleeding gums or bad breath?,నోటి పూత ఉందా. చిగుళ్ల నుండి రక్తం లేదా నోటి దుర్వాసన ఉందా?,en,symptom
+symptom_report,i have difficulty swallowing,Difficulty swallowing requires urgent ENT exam. Do you have sore throat or hoarseness?,మింగడంలో ఇబ్బంది ఉందా. గొంతు నొప్పి లేదా గొంతు బొంగురుపోవడం ఉందా?,en,symptom
+symptom_report,i have chest tightness,Warning: Chest tightness can indicate cardiovascular or respiratory emergencies. Go to ER.,హెచ్చరిక: ఛాతీ బిగుతు గుండె లేదా శ్వాసకోశ అత్యవసర పరిస్థితి కావచ్చు.,en,emergency
+symptom_report,i have pale stools,Pale stools can be a liver or gallbladder concern. Do you have abdominal pain or yellow eyes?,లేత రంగు మలం ఉందా. కడుపు నొప్పి లేదా కళ్ళు పచ్చబడటం ఉన్నాయా?,en,symptom
+symptom_report,i have severe itching,Severe itching can be allergic or systemic. Do you have skin rash or dry skin?,తీవ్రమైన దురద ఉందా. చర్మంపై దద్దుర్లు లేదా పొడి చర్మం ఉందా?,en,symptom
+symptom_report,i feel confused,Warning: Confusion can indicate severe systemic illness or neurological emergencies. Go to ER.,హెచ్చరిక: గందరగోళం అనేది తీవ్రమైన నరాల లేదా వ్యవస్థాగత అత్యవసర పరిస్థితి.,en,emergency
+symptom_report,i have memory loss,Memory loss can be neurological. Do you have confusion dizziness or headache?,జ్ఞాపకశక్తి తగ్గడం ఉందా. గందరగోళం కళ్ళు తిరగడం లేదా తలనొప్పి ఉందా?,en,symptom
+symptom_report,i have tremor,Tremors require neurological evaluation. Do you have dizziness numbness or weakness?,వణుకు ఉందా. కళ్ళు తిరగడం తిమ్మిరి లేదా బలహీనత ఉందా?,en,symptom
+symptom_report,i have seizures,Warning: Seizures require immediate medical care. Protect the patient and seek emergency help.,హెచ్చరిక: ఫిట్స్ (మూర్ఛ) రావడం అత్యవసర పరిస్థితి. వెంటనే అత్యవసర చికిత్స తీసుకోండి.,en,emergency
+symptom_report,i fainted,Warning: Fainting requires medical investigation. Please seek immediate help.,హెచ్చరిక: స్పృహ తప్పడం అత్యవసర పరిస్థితి. వెంటనే వైద్య సహాయం తీసుకోండి.,en,emergency
+symptom_report,i have burning urination,Burning during urination is a common symptom of UTI. Do you have frequent urination?,మూత్రవిసర్జనలో మంట ఉందా. తరచుగా మూత్రవిసర్జన ఉందా?,en,symptom
+symptom_report,i have double sight,Double sight is double vision. Do you have blurred vision or headache?,రెండుగా కనిపించడం ఉందా. మసక చూపు లేదా తలనొప్పి ఉందా?,en,emergency
+symptom_report,i have sneezing,Sneezing is common in colds and allergies. Do you have runny nose itchy eyes or sore throat?,తుమ్ములు ఉన్నాయా. ముక్కు కారడం కళ్ల దురద లేదా గొంతు నొప్పి ఉందా?,en,symptom
+symptom_report,i feel weak,Weakness or fatigue requires rest. Do you have fever body pain or joint pain?,బలహీనత లేదా అలసట ఉందా. జ్వరం ఒంటి నొప్పులు లేదా కీళ్ల నొప్పులు ఉన్నాయా?,en,symptom
+symptom_report,i feel anxious,Anxiety can cause palpitations or breathing difficulty. Do you have insomnia or irritability?,ఆందోళనగా ఉందా. నిద్రలేమి లేదా చిరాకు ఉందా?,en,symptom
+symptom_report,i feel depressed,Depression affects daily function. Do you have insomnia weight loss or fatigue?,నిరాశగా ఉందా. నిద్రలేమి బరువు తగ్గడం లేదా అలసట ఉందా?,en,symptom
+symptom_report,i have sleep problems,Sleep problems or insomnia require sleep hygiene. Do you have headache fatigue or irritability?,నిద్ర సమస్యలు ఉన్నాయా. తలనొప్పి అలసట లేదా చిరాకు ఉందా?,en,symptom
+symptom_report,i have skin patches,Skin patches can be psoriasis or dermatitis. Are they itchy dry or red?,చర్మంపై పచ్చలు ఉన్నాయా. అవి దురదగా పొడిగా లేదా ఎర్రగా ఉన్నాయా?,en,symptom

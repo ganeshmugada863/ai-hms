@@ -1,0 +1,129 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Live Chat - MediCare{% endblock %}
+
+{% block header_title %}Live Consultation Chat{% endblock %}
+{% block header_subtitle %}Real-time messaging with your healthcare provider{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 250px);
+        background: var(--panel-bg);
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+    .chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .message {
+        max-width: 70%;
+        padding: 12px 18px;
+        border-radius: 15px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    .message.received {
+        align-self: flex-start;
+        background: rgba(255,255,255,0.05);
+        color: var(--text-main);
+        border-bottom-left-radius: 2px;
+    }
+    .message.sent {
+        align-self: flex-end;
+        background: var(--primary-blue);
+        color: white;
+        border-bottom-right-radius: 2px;
+    }
+    .chat-input-area {
+        padding: 20px;
+        background: rgba(0,0,0,0.1);
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        gap: 15px;
+    }
+    .chat-input {
+        flex: 1;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 12px 20px;
+        color: white;
+        font-family: inherit;
+    }
+    .send-btn {
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+        padding: 0 25px;
+        border-radius: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <div class="chat-messages" id="chatMessages">
+        <div class="message received">
+            Hello! How can I help you today?
+        </div>
+        {% if result %}
+        <div class="message received">
+            {{ result }}
+        </div>
+        {% endif %}
+    </div>
+    <div class="chat-input-area">
+        <input type="text" class="chat-input" id="chatInput" placeholder="Type your message here...">
+        <button class="send-btn" id="sendBtn">
+            <span>Send</span>
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const chatMessages = document.getElementById('chatMessages');
+
+    function appendMessage(text, type) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${type}`;
+        msgDiv.textContent = text;
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    sendBtn.addEventListener('click', () => {
+        const text = chatInput.value.trim();
+        if (text) {
+            appendMessage(text, 'sent');
+            chatInput.value = '';
+            
+            // Simulated response
+            setTimeout(() => {
+                appendMessage("Thank you for your message. A doctor will be with you shortly.", 'received');
+            }, 1000);
+        }
+    });
+
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendBtn.click();
+    });
+</script>
+{% endblock %}

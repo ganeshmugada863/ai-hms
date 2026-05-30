@@ -1,0 +1,37 @@
+/* Consultations Design */
+.consult-container {
+    display: flex;
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.consult-option {
+    flex: 1;
+    background: #0f0f1b;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: 0.3s;
+}
+
+.consult-option:hover {
+    background: #16162a;
+    border-color: #4facfe;
+    transform: translateY(-10px);
+}
+
+.consult-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.icon-video { background: rgba(79, 172, 254, 0.1); color: #4facfe; }
+.icon-audio { background: rgba(0, 242, 254, 0.1); color: #00f2fe; }
+.icon-chat { background: rgba(6, 190, 182, 0.1); color: #06beb6; }

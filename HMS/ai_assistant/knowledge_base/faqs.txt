@@ -1,0 +1,11 @@
+Question: What are the registration charges for Sri Lakshmi Hospital?
+Answer: Registration fee at Sri Lakshmi Hospital is Rs 100 for general consultation and Rs 250 for specialty consultation.
+
+Question: What are Sri Lakshmi Hospital timings?
+Answer: Sri Lakshmi Hospital outpatient department is open from Monday to Saturday from 9:00 AM to 5:00 PM. Emergency services are available 24/7.
+
+Question: Can I cancel my consultation?
+Answer: Yes, consultations can be cancelled up to 2 hours before the scheduled time for a full refund.
+
+Question: How can I view my billing history?
+Answer: Patients can view bill details in their patient dashboard under the billing tab.

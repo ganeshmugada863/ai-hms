@@ -1,0 +1,81 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Reminders - MediCare{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/reminders.css' %}">
+{% endblock %}
+
+{% block header_title %}Reminders{% endblock %}
+{% block header_subtitle %}Keep track of your health schedule{% endblock %}
+
+{% block content %}
+<div class="section">
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
+        <!-- Create Reminder -->
+        <div class="panel">
+            <h3 style="margin-bottom: 20px;">Add New Reminder</h3>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Title</label>
+                    {{ form.reminder_title }}
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    {{ form.reminder_type }}
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    {{ form.reminder_date }}
+                </div>
+                <div class="form-group">
+                    <label>Time</label>
+                    {{ form.reminder_time }}
+                    <div class="time-slots" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px;">
+                        <button type="button" class="time-btn" onclick="setTime('08:00')">08:00 AM</button>
+                        <button type="button" class="time-btn" onclick="setTime('12:00')">12:00 PM</button>
+                        <button type="button" class="time-btn" onclick="setTime('18:00')">06:00 PM</button>
+                        <button type="button" class="time-btn" onclick="setTime('21:00')">09:00 PM</button>
+                    </div>
+                </div>
+                <script>
+                    function setTime(time) {
+                        document.querySelector('input[name="reminder_time"]').value = time;
+                    }
+                </script>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 20px;">
+                    <i class="fas fa-plus"></i> Set Reminder
+                </button>
+            </form>
+        </div>
+
+        <!-- Reminders List -->
+        <div>
+            <h3 style="margin-bottom: 20px;">Your Schedule</h3>
+            {% for rem in reminders %}
+            <div class="reminder-card">
+                <div style="display: flex; align-items: center;">
+                    <div class="reminder-type-icon type-{{ rem.reminder_type }}">
+                        {% if rem.reminder_type == 'medicine' %}<i class="fas fa-pills"></i>
+                        {% elif rem.reminder_type == 'appointment' %}<i class="fas fa-calendar-check"></i>
+                        {% else %}<i class="fas fa-user-md"></i>{% endif %}
+                    </div>
+                    <div style="flex-grow: 1;">
+                        <h4 style="margin: 0; font-weight: 600;">{{ rem.reminder_title }}</h4>
+                        <p class="subtext" style="margin: 5px 0 0;">{{ rem.reminder_date }} at {{ rem.reminder_time }}</p>
+                    </div>
+                    <div>
+                        <span class="status {% if rem.is_completed %}completed{% else %}pending{% endif %}">
+                            {% if rem.is_completed %}Done{% else %}Active{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="no-data">No reminders set. Stay healthy!</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

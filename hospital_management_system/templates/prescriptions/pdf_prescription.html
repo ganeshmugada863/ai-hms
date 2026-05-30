@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Prescription - MediCare</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; }
+        .prescription-box { border: 2px solid #eee; padding: 30px; max-width: 800px; margin: auto; }
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #00d2ff; padding-bottom: 20px; }
+        .hospital-info h1 { color: #00d2ff; margin: 0; }
+        .details { margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .medication-box { margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
+        .footer { margin-top: 50px; font-size: 0.8rem; color: #999; text-align: center; }
+        @media print {
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="text-align: center; margin-bottom: 20px;">
+        <button onclick="window.print()" style="padding: 10px 20px; background: #00d2ff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Print / Download as PDF
+        </button>
+    </div>
+
+    <div class="prescription-box">
+        <div class="header">
+            <div class="hospital-info">
+                <h1>MediCare Hospital</h1>
+                <p>123 Healthcare Ave, Medical City</p>
+            </div>
+            <div class="prescription-id" style="text-align: right;">
+                <p><strong>Date:</strong> {{ prescription.prescribed_date }}</p>
+                <p><strong>ID:</strong> #PRES-{{ prescription.id }}</p>
+            </div>
+        </div>
+
+        <div class="details">
+            <div>
+                <h4>Patient Info:</h4>
+                <p><strong>Name:</strong> {{ prescription.patient.user.username }}</p>
+                <p><strong>Age/Gender:</strong> N/A</p>
+            </div>
+            <div style="text-align: right;">
+                <h4>Doctor Info:</h4>
+                <p><strong>Dr.</strong> {{ prescription.doctor.user.username }}</p>
+                <p><strong>Specialization:</strong> {{ prescription.doctor.specialization }}</p>
+            </div>
+        </div>
+
+        <div class="medication-box">
+            <h2 style="color: #444;">Rx</h2>
+            <div style="font-size: 1.2rem; padding: 20px; background: #f9f9f9; border-radius: 10px;">
+                <p><strong>Diagnosis:</strong> {{ prescription.diagnosis }}</p>
+                <p><strong>Medicines:</strong> {{ prescription.medicines }}</p>
+            </div>
+            <div style="margin-top: 20px;">
+                <h4>Dosage Instructions:</h4>
+                <p>{{ prescription.dosage_instructions }}</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>This is a computer-generated prescription. Valid without physical signature.</p>
+            <p>© 2026 MediCare Hospital Management System</p>
+        </div>
+    </div>
+</body>
+</html>

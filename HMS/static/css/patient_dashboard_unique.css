@@ -1,0 +1,354 @@
+/* ============================================================
+   Patient Dashboard — Isolated Pearl & Azure Wellness Theme
+   ============================================================ */
+
+:root {
+    --primary-blue: #2563eb; /* Royal Blue */
+    --accent-cyan: #06b6d4;  /* Teal-Cyan */
+    --sidebar-bg: #ffffff;   /* Pure White Sidebar */
+    --main-bg: linear-gradient(135deg, #f4f7fc 0%, #eef2f7 100%); /* Fresh Azure Gradient */
+    --text-main: #1e293b;    /* Slate Dark Main Text */
+    --text-muted: #64748b;   /* Slate Muted Text */
+    --border-color: #e2e8f0;  /* Clean light divider borders */
+    --hover-bg: rgba(37, 99, 235, 0.05); /* Soft Blue Hover Tint */
+    --panel-bg: #ffffff;     /* Pure White Card Panel */
+}
+
+body.dark-mode {
+    --sidebar-bg: #111827 !important;
+    --main-bg: linear-gradient(135deg, #090d16 0%, #05070c 100%) !important;
+    --text-main: #f8fafc !important;
+    --text-muted: #94a3b8 !important;
+    --border-color: #1e293b !important;
+    --hover-bg: rgba(59, 130, 246, 0.1) !important;
+    --panel-bg: #111827 !important;
+}
+
+/* Sidebar & Background Override */
+body {
+    background: var(--main-bg) !important;
+    color: var(--text-main) !important;
+}
+
+body.dark-mode {
+    background: var(--main-bg) !important;
+    color: var(--text-main) !important;
+}
+
+body .sidebar {
+    background-color: var(--sidebar-bg) !important;
+    border-right: 1px solid var(--border-color) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02) !important;
+    backdrop-filter: none !important;
+}
+
+body.dark-mode .sidebar {
+    background-color: var(--sidebar-bg) !important;
+    border-right: 1px solid var(--border-color) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+    backdrop-filter: none !important;
+}
+
+body .sidebar-header h2, body.dark-mode .sidebar-header h2 {
+    background: linear-gradient(to right, var(--primary-blue), var(--accent-cyan)) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+body .user-avatar-sidebar, body.dark-mode .user-avatar-sidebar {
+    background-color: var(--hover-bg) !important;
+    border: 2px solid var(--border-color) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
+}
+
+body .user-name-sidebar, body.dark-mode .user-name-sidebar {
+    color: var(--text-main) !important;
+}
+
+body .sidebar-menu a, body.dark-mode .sidebar-menu a {
+    color: var(--text-muted) !important;
+}
+
+body .sidebar-menu a:hover, body.dark-mode .sidebar-menu a:hover {
+    background-color: var(--hover-bg) !important;
+    color: var(--primary-blue) !important;
+}
+
+body .sidebar-menu li.active a, body.dark-mode .sidebar-menu li.active a {
+    background: rgba(37, 99, 235, 0.08) !important;
+    color: var(--primary-blue) !important;
+    border-left: 4px solid var(--primary-blue) !important;
+    font-weight: 600 !important;
+}
+
+/* Top Action Header Override - Transparent header with padding reset for alignment */
+body .header, body.dark-mode .header {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+body .header h1, body.dark-mode .header h1 {
+    color: var(--text-main) !important;
+}
+
+body .navbar-search input,
+body .top-action-bar-search input {
+    background: #f8fafc !important;
+    border: 1.5px solid #3b82f6 !important; /* Premium Blue border */
+    color: #1e293b !important;
+    padding: 12px 20px 12px 50px !important;
+    border-radius: 10px !important;
+    height: 42px !important;
+}
+body.dark-mode .navbar-search input,
+body.dark-mode .top-action-bar-search input {
+    background: #111827 !important;
+    border: 1.5px solid #3b82f6 !important; /* Premium Blue border */
+    color: #f8fafc !important;
+    padding: 12px 20px 12px 50px !important;
+    border-radius: 10px !important;
+    height: 42px !important;
+}
+
+body .navbar-search input:focus,
+body .top-action-bar-search input:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15) !important;
+}
+body.dark-mode .navbar-search input:focus,
+body.dark-mode .top-action-bar-search input:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25) !important;
+}
+
+body .mode-pill-toggler {
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    height: 42px !important;
+}
+body.dark-mode .mode-pill-toggler {
+    background: #0f172a !important;
+    border: 1px solid #1e293b !important;
+    height: 42px !important;
+}
+
+body .mode-pill-btn {
+    color: #64748b !important;
+}
+body.dark-mode .mode-pill-btn {
+    color: #94a3b8 !important;
+}
+
+body .mode-pill-btn.active {
+    background: #ffffff !important;
+    color: #3b82f6 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+}
+body.dark-mode .mode-pill-btn.active {
+    background: #1e293b !important;
+    color: #3b82f6 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+}
+
+body .header-action-btn-circle {
+    background: #ffffff !important;
+    color: #1e293b !important;
+    border: 1px solid #e2e8f0 !important;
+    height: 42px !important;
+    width: 42px !important;
+}
+body.dark-mode .header-action-btn-circle {
+    background: #111827 !important;
+    color: #f8fafc !important;
+    border: 1px solid #1e293b !important;
+    height: 42px !important;
+    width: 42px !important;
+}
+
+body .header-action-btn-circle:hover {
+    color: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+    background: #f8fafc !important;
+}
+body.dark-mode .header-action-btn-circle:hover {
+    color: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+    background: #1f2937 !important;
+}
+
+body .header-user-badge {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    height: 42px !important;
+}
+body.dark-mode .header-user-badge {
+    background: #111827 !important;
+    border: 1px solid #1e293b !important;
+    height: 42px !important;
+}
+
+body .header-user-badge:hover {
+    border-color: #3b82f6 !important;
+    background: #f8fafc !important;
+}
+body.dark-mode .header-user-badge:hover {
+    border-color: #3b82f6 !important;
+    background: #1f2937 !important;
+}
+
+body .header-user-name {
+    color: #1e293b !important;
+}
+body.dark-mode .header-user-name {
+    color: #f8fafc !important;
+}
+
+/* Stat Cards Override */
+body .stat-card, body.dark-mode .stat-card {
+    background: var(--panel-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 10px 30px rgba(79, 110, 247, 0.03) !important;
+    border-radius: 20px !important;
+    backdrop-filter: none !important;
+}
+
+body .stat-card:hover, body.dark-mode .stat-card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 15px 35px rgba(37, 99, 235, 0.08) !important;
+    border-color: var(--primary-blue) !important;
+}
+
+body .stat-card h3, body.dark-mode .stat-card h3 {
+    color: var(--primary-blue) !important;
+}
+
+body .stat-card p, body.dark-mode .stat-card p {
+    color: var(--text-muted) !important;
+}
+
+/* Welcome Hero Override */
+body .welcome-hero, body.dark-mode .welcome-hero {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-cyan) 100%) !important;
+    box-shadow: 0 15px 30px rgba(37, 99, 235, 0.2) !important;
+    border-radius: 20px !important;
+}
+
+/* Section Box Override */
+body .section, body.dark-mode .section {
+    background: var(--panel-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 10px 30px rgba(79, 110, 247, 0.03) !important;
+    border-radius: 20px !important;
+    backdrop-filter: none !important;
+}
+
+body .section:hover, body.dark-mode .section:hover {
+    box-shadow: 0 15px 35px rgba(79, 110, 247, 0.06) !important;
+}
+
+body .section h2, body.dark-mode .section h2 {
+    color: var(--text-main) !important;
+}
+
+/* Action Buttons Override */
+body .action-btn {
+    background: #f8fafc !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 16px !important;
+    color: var(--text-main) !important;
+}
+body.dark-mode .action-btn {
+    background: #1e293b !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 16px !important;
+    color: var(--text-main) !important;
+}
+
+body .action-btn:hover {
+    border-color: var(--primary-blue) !important;
+    background: rgba(37, 99, 235, 0.04) !important;
+    color: var(--primary-blue) !important;
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.06) !important;
+}
+body.dark-mode .action-btn:hover {
+    border-color: var(--primary-blue) !important;
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: var(--primary-blue) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+}
+
+body .action-btn i, body.dark-mode .action-btn i {
+    color: var(--primary-blue) !important;
+}
+
+/* Table Override */
+body .data-table th {
+    background: #f8fafc !important;
+    color: var(--text-muted) !important;
+    border-bottom: 2px solid var(--border-color) !important;
+}
+body.dark-mode .data-table th {
+    background: #0f172a !important;
+    color: var(--text-muted) !important;
+    border-bottom: 2px solid var(--border-color) !important;
+}
+
+body .data-table td, body.dark-mode .data-table td {
+    color: var(--text-main) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+body .data-table tr:hover td {
+    background: rgba(37, 99, 235, 0.02) !important;
+}
+body.dark-mode .data-table tr:hover td {
+    background: rgba(59, 130, 246, 0.05) !important;
+}
+
+body .btn-primary, body.dark-mode .btn-primary {
+    background: var(--primary-blue) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15) !important;
+    border-radius: 12px !important;
+}
+
+body .btn-primary:hover, body.dark-mode .btn-primary:hover {
+    background: #1d4ed8 !important;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25) !important;
+}
+
+body .btn-small, body.dark-mode .btn-small {
+    background: rgba(37, 99, 235, 0.08) !important;
+    color: var(--primary-blue) !important;
+    border-radius: 8px !important;
+}
+
+body .btn-small:hover, body.dark-mode .btn-small:hover {
+    background: var(--primary-blue) !important;
+    color: #ffffff !important;
+}
+
+/* AI Assistant badge override */
+body .ai-assistant-badge, body.dark-mode .ai-assistant-badge {
+    background: rgba(37, 99, 235, 0.06) !important;
+    border: 1px solid rgba(37, 99, 235, 0.2) !important;
+    border-radius: 12px !important;
+}
+
+body .ai-assistant-badge a, body.dark-mode .ai-assistant-badge a {
+    color: var(--primary-blue) !important;
+}
+
+body .floating-ai-btn, body.dark-mode .floating-ai-btn {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-cyan) 100%) !important;
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3) !important;
+}
+
+body .floating-ai-btn:hover, body.dark-mode .floating-ai-btn:hover {
+    box-shadow: 0 15px 30px rgba(37, 99, 235, 0.5) !important;
+}

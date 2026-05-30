@@ -1,0 +1,303 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hospital Management System</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Lora:wght@600&display=swap" rel="stylesheet">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+body {
+    background-color: #050811;
+    color: #f8fafc;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 80px;
+    background: rgba(10, 15, 30, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+    color: #f8fafc;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+.logo {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(to right, #10b981, #06b6d4);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.logo span {
+    color: #f8fafc;
+    -webkit-text-fill-color: #f8fafc;
+    font-weight: 300;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.register-btn,
+.login-btn {
+    padding: 10px 24px;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.register-btn {
+    background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+    color: white;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+.register-btn:hover {
+    background: linear-gradient(135deg, #059669 0%, #0891b2 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.login-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.login-btn:hover {
+    color: white;
+    background: rgba(16, 185, 129, 0.1);
+    border-color: #10b981;
+}
+
+.row {
+    position: relative;
+    height: 65vh;
+    margin: 40px auto;
+    width: 90%;
+    max-width: 1400px;
+    border-radius: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-size: cover;
+    background-position: center;
+    transition: background-image 1.5s ease-in-out;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.row::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(5, 8, 17, 0.85) 0%, rgba(5, 8, 17, 0.5) 100%);
+    border-radius: 24px;
+}
+
+.col-md-12 {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 0 40px;
+}
+
+.row h1 {
+    font-family: 'Lora', serif;
+    font-size: 3.5rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+    color: white;
+    background: linear-gradient(to bottom, #ffffff 0%, #cbd5e1 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.row p {
+    color: #e2e8f0;
+    font-size: 1.3rem;
+    font-weight: 400;
+    margin-bottom: 24px;
+}
+
+.row button {
+    padding: 14px 36px;
+    border-radius: 30px;
+    border: none;
+    background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+}
+
+.row button:hover {
+    background: linear-gradient(135deg, #059669 0%, #0891b2 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+    width: 90%;
+    max-width: 1400px;
+    margin: 20px auto 60px auto;
+}
+
+.card {
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    border-color: #10b981;
+    box-shadow: 0 15px 30px rgba(16, 185, 129, 0.25);
+}
+
+.card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    transition: all 0.5s ease;
+}
+
+.card:hover img {
+    transform: scale(1.08);
+}
+
+.card h4 {
+    margin: 16px 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+@media(max-width: 1100px) {
+    .navbar { padding: 20px 40px; }
+    .cards { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media(max-width: 768px) {
+    .row h1 { font-size: 2.5rem; }
+    .row p { font-size: 1.1rem; }
+    .cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media(max-width: 500px) {
+    .navbar { padding: 15px 20px; }
+    .logo { font-size: 22px; }
+    .cards { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <div class="logo">Medi<span>Care</span></div>
+
+    <div class="nav-buttons">
+        <a href="{% url 'login' %}" class="login-btn">Login</a>
+        <a href="{% url 'register' %}" class="register-btn">Register</a>
+    </div>
+</nav>
+
+<div class="row">
+    <div class="col-md-12">
+        <h1>Advanced Hospital Management</h1>
+        <p>Smart • Secure • Efficient Healthcare</p>
+        <a href="{% url 'register' %}"><button>Get Started</button></a>
+    </div>
+</div>
+
+<div class="cards">
+
+    <div class="card">
+        <img src="{% static 'images/Cardiology-scaled.jpg' %}">
+        <h4>Cardiology</h4>
+    </div>
+
+    <div class="card">
+        <img src="{% static 'images/Digital Brain Network Neurology Backdrop Stock Video-HD.webp' %}">
+        <h4>Neurology</h4>
+    </div>
+
+    <div class="card">
+        <img src="{% static 'images/OIP.webp' %}">
+        <h4>Orthopedics</h4>
+    </div>
+
+    <div class="card">
+        <img src="{% static 'images/1000_F_993459145_yV2O2afgAAqPmIK3crGDT0HAhUL0T49B.jpg' %}">
+        <h4>Pulmonology</h4>
+    </div>
+
+    <div class="card">
+        <img src="{% static 'images/Cardiology-scaled.jpg' %}">
+        <h4>Emergency Care</h4>
+    </div>
+
+</div>
+
+<script>
+const heroImages = [
+    "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=1200&q=80"
+];
+
+const hero = document.querySelector(".row");
+
+function changeHero() {
+    let r = Math.floor(Math.random() * heroImages.length);
+    hero.style.backgroundImage = `url('${heroImages[r]}')`;
+}
+
+changeHero();
+setInterval(changeHero, 8000);
+</script>
+
+</body>
+</html>

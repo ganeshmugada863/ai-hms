@@ -1,0 +1,352 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --bg-dark: #373a43;
+    /* The outer background color */
+    --card-bg: #1d1e24;
+    /* The inner dark card color */
+    --card-light: #2c2d33;
+    /* Slightly lighter for inner boxes */
+    --text-white: #ffffff;
+    --text-muted: #9ca3af;
+    --green-accent: #2dd4bf;
+    /* The mint green accent */
+    --border-color: #3b3c43;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+body {
+    background-color: var(--bg-dark);
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+    min-height: 100vh;
+}
+
+.profile-wrapper {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Common Card Style */
+.dark-card {
+    background-color: var(--card-bg);
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
+    width: 100%;
+}
+
+/* Card Header with Green Dash */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.card-title {
+    color: var(--text-white);
+    font-size: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-title::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 24px;
+    background-color: var(--green-accent);
+    border-radius: 10px;
+}
+
+/* Buttons in Header */
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--text-white);
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary-dark {
+    background-color: var(--green-accent);
+    color: #111;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+/* Profile Info Section */
+.profile-info-row {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #3b3c43;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-white);
+    font-size: 30px;
+    border: 3px solid var(--card-light);
+}
+
+.profile-details {
+    display: flex;
+    flex: 1;
+    gap: 40px;
+}
+
+.detail-block h2 {
+    color: var(--text-white);
+    font-size: 24px;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.detail-item .label {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.detail-item .value {
+    color: var(--text-white);
+    font-size: 15px;
+    font-weight: 500;
+}
+
+/* Stats Row */
+.stats-row {
+    display: flex;
+    gap: 15px;
+}
+
+.stat-box {
+    background-color: var(--card-light);
+    border-radius: 16px;
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.stat-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    background-color: #3b3c43;
+    color: var(--text-white);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+}
+
+.stat-text .value {
+    color: var(--text-white);
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.stat-text .label {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+/* History / Appointments List */
+.history-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.history-card {
+    background-color: var(--card-light);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.history-date {
+    color: var(--text-white);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.history-date i {
+    color: var(--text-muted);
+}
+
+.badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.badge.on-time {
+    background-color: rgba(45, 212, 191, 0.1);
+    color: var(--green-accent);
+}
+
+.badge.late {
+    background-color: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+}
+
+.badge.absent {
+    background-color: rgba(156, 163, 175, 0.1);
+    color: #9ca3af;
+}
+
+.history-times {
+    display: flex;
+    justify-content: space-between;
+}
+
+.time-block .label {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.time-block .value {
+    color: var(--text-white);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 30px;
+}
+
+.page-item {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.page-item:hover {
+    background-color: var(--card-light);
+}
+
+.page-item.active {
+    border-color: var(--border-color);
+    color: var(--text-white);
+}
+
+/* Form Styling within Dark Theme */
+.edit-form-section {
+    margin-top: 20px;
+    background-color: var(--card-light);
+    padding: 30px;
+    border-radius: 16px;
+    display: none;
+    /* Hidden by default */
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.form-control,
+.form-select {
+    width: 100%;
+    background-color: #3b3c43;
+    border: 1px solid var(--border-color);
+    color: var(--text-white);
+    padding: 12px 15px;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--green-accent);
+}
+
+.btn-save {
+    background-color: var(--green-accent);
+    color: #111;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+}

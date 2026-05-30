@@ -1,0 +1,72 @@
+[
+    {
+        "symptoms": ["sharp chest pain", "breathless", "heart racing", "palpitations", "chest pressure", "arm pain with chest pain"],
+        "disease": "Potential Myocardial Infarction or Angina",
+        "department": "Cardiology",
+        "severity": "High",
+        "solution": "Immediate medical intervention is required. Prescriptions may include Aspirin, Nitroglycerin, or Beta-blockers. Recommend immediate ECG and Troponin tests."
+    },
+    {
+        "symptoms": ["chronic headache", "dizziness", "numbness", "seizure", "blurred vision", "weakness on one side"],
+        "disease": "Neurological Disorder (Migraine / Stroke Risk)",
+        "department": "Neurology",
+        "severity": "High",
+        "solution": "Urgent neurological evaluation. Possible MRI or CT scan of the brain. Avoid sudden movements and rest immediately."
+    },
+    {
+        "symptoms": ["joint pain", "bone fracture", "back pain", "muscle stiffness", "knee pain", "swollen joints"],
+        "disease": "Osteoarthritis or Musculoskeletal Injury",
+        "department": "Orthopedics",
+        "severity": "Medium",
+        "solution": "Rest, Ice, Compression, and Elevation (RICE). Over-the-counter NSAIDs like Ibuprofen may be prescribed. X-ray recommended if pain persists."
+    },
+    {
+        "symptoms": ["skin rash", "itching", "acne", "burn", "redness on skin", "hives"],
+        "disease": "Dermatitis or Allergic Reaction",
+        "department": "Dermatology",
+        "severity": "Low",
+        "solution": "Apply topical hydrocortisone or prescribe oral antihistamines (e.g., Cetirizine). Avoid known allergens and use mild soap."
+    },
+    {
+        "symptoms": ["child fever", "baby vomiting", "infant crying continuously", "pediatric rash"],
+        "disease": "Pediatric Infection",
+        "department": "Pediatrics",
+        "severity": "Medium",
+        "solution": "Monitor temperature closely. Acetaminophen for infants may be recommended. Ensure the child stays hydrated and consult the pediatrician."
+    },
+    {
+        "symptoms": ["stomach ache", "acid reflux", "bloating", "severe diarrhea", "vomiting blood", "abdominal pain"],
+        "disease": "Gastroenteritis or Peptic Ulcer",
+        "department": "Gastroenterology",
+        "severity": "Medium",
+        "solution": "Prescribe antacids or Proton Pump Inhibitors (e.g., Omeprazole). Advise a bland diet (BRAT) and oral rehydration salts."
+    },
+    {
+        "symptoms": ["fever", "cold", "mild cough", "flu", "tiredness", "weakness", "sore throat"],
+        "disease": "Viral Infection (Common Cold/Flu)",
+        "department": "General Medicine",
+        "severity": "Low",
+        "solution": "Rest and hydration. Over-the-counter antipyretics like Paracetamol. Cough syrups for symptomatic relief."
+    },
+    {
+        "symptoms": ["shortness of breath", "wheezing", "chronic cough", "coughing up blood"],
+        "disease": "Asthma or Respiratory Infection",
+        "department": "Pulmonology",
+        "severity": "High",
+        "solution": "Use a bronchodilator (e.g., Albuterol inhaler). If severe, steroids may be required. Immediate oxygen saturation check advised."
+    },
+    {
+        "symptoms": ["anxiety", "depression", "panic attacks", "insomnia", "feeling sad", "hallucinations"],
+        "disease": "Anxiety Disorder / Depression",
+        "department": "Psychiatry",
+        "severity": "Medium",
+        "solution": "Cognitive Behavioral Therapy (CBT) recommendation. Possible prescription of SSRIs depending on psychiatric evaluation."
+    },
+    {
+        "symptoms": ["unexplained weight loss", "lump in breast", "chronic fatigue", "night sweats"],
+        "disease": "Suspected Malignancy",
+        "department": "Oncology",
+        "severity": "High",
+        "solution": "Requires urgent comprehensive screening, biopsy, and oncology consultation. Blood tests and tumor markers evaluation."
+    }
+]

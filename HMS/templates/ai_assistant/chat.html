@@ -1,0 +1,209 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Smart AI Health Assistant | MediCare{% endblock %}
+
+{% block active_patient_ai_chat %}active{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/chat.css' %}">
+<style>
+    /* Enforce fixed viewport, no scroll layout on chatbot page */
+    html, body {
+        height: 100vh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    .container {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow: hidden !important;
+    }
+    
+    .main-content {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 15px !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        max-width: none !important;
+    }
+    
+    .header {
+        margin-bottom: 15px !important;
+        padding: 10px 20px !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .chat-dashboard-container {
+        flex: 1 !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        gap: 15px !important;
+        overflow: hidden !important;
+    }
+
+    .chat-sessions-sidebar {
+        height: 100% !important;
+        overflow: hidden !important;
+    }
+
+    .chat-workspace {
+        height: 100% !important;
+        overflow: hidden !important;
+        flex: 1 !important;
+    }
+    
+    .chat-history-viewport {
+        flex: 1 !important;
+        overflow-y: auto !important;
+    }
+
+    /* Custom thin scrollbars */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: rgba(156, 163, 175, 0.4);
+        border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(156, 163, 175, 0.7);
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}Smart AI Health Assistant{% endblock %}
+
+{% block content %}
+<div class="chat-dashboard-container">
+    <!-- Chat Sidebar: Past Conversations -->
+    <aside class="chat-sessions-sidebar">
+        <div class="sidebar-action-header">
+            <h3>Conversations</h3>
+            <button id="newChatBtn" class="new-chat-btn" title="Start New Chat">
+                <i class="fas fa-plus"></i> New
+            </button>
+        </div>
+        <div class="sessions-list" id="sessionsList">
+            <div class="session-skeleton">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+            </div>
+            <!-- Dynamic Sessions injected via JS -->
+        </div>
+    </aside>
+
+    <!-- Main Chat Workspace -->
+    <section class="chat-workspace">
+        <!-- Chat Header details -->
+        <div class="chat-workspace-header">
+            <div class="session-info">
+                <h4 id="activeSessionTitle">New Conversation</h4>
+                <p id="activeSessionMeta">Select or start a chat to begin symptom evaluation</p>
+            </div>
+            <div class="chat-controls">
+                <!-- Bilingual Toggle Switch -->
+                <div class="language-toggle-wrapper">
+                    <span class="lang-label">English</span>
+                    <label class="switch">
+                        <input type="checkbox" id="langToggle">
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="lang-label font-telugu">తెలుగు</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat History Viewport -->
+        <div class="chat-history-viewport" id="chatViewport">
+            <!-- Medical Disclaimer Banner inside Viewport -->
+            <div class="medical-disclaimer-card persistent-banner">
+                <div class="disclaimer-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="disclaimer-text">
+                    <p><strong>Disclaimer:</strong> This chatbot is an AI-assisted tool designed to evaluate symptoms and provide assistive information. It does <strong>not</strong> constitute official medical advice, diagnosis, or treatment. In case of severe symptoms or an emergency, please contact medical services immediately.</p>
+                    <p class="font-telugu"><strong>గమనిక:</strong> ఈ చాట్‌బాట్ కృత్రిమ మేధస్సు (AI) ద్వారా పనిచేస్తుంది. ఇది కేవలం సూచనల కొరకు మాత్రమే. ఇది వైద్యుని సంప్రదింపులకు ప్రత్యామ్నాయం కాదు. అత్యవసర పరిస్థితిలో వెంటనే వైద్యుడిని లేదా ఆసుపత్రిని సంప్రదించండి.</p>
+                </div>
+            </div>
+
+            <!-- Conversation messages will flow here -->
+            <div class="messages-container" id="messagesContainer">
+                <div class="welcome-message-bot">
+                    <div class="bot-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-bubble-wrapper">
+                        <div class="message-bubble">
+                            <p>Hello! I am your AI Health Assistant. Please tell me what symptoms you are experiencing today. I can help evaluate risks, predict potential conditions, and recommend next steps.</p>
+                            <p class="font-telugu" style="margin-top: 8px;">నమస్కారం! నేను మీ AI హెల్త్ అసిస్టెంట్. ఈరోజు మీకు ఉన్న అనారోగ్య లక్షణాలు లేదా సమస్యల గురించి చెప్పండి.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="typingIndicator" class="typing-indicator hidden">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <form class="chat-input-bar" id="chatInputForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="chat-input-wrapper">
+                <button type="button" class="upload-media-btn" id="mediaUploadBtn" title="Upload Media (Images/PDFs)">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <input type="file" id="mediaFileInput" accept="image/*,application/pdf" style="display: none;">
+                <input type="text" id="userInputField" placeholder="Describe how you feel or ask MediBot..." autocomplete="off">
+                <button type="submit" class="send-message-btn" id="sendBtn" title="Send Message">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </form>
+    </section>
+    <!-- Side Analysis Panel -->
+    <aside class="chat-analysis-panel">
+        <div class="panel-section">
+            <h3>Extracted Symptoms</h3>
+            <div class="symptom-chips-container" id="symptomChips">
+                <p class="empty-placeholder">No symptoms extracted yet.</p>
+            </div>
+        </div>
+        
+        <div class="panel-section">
+            <h3>Allergy Alerts</h3>
+            <div class="allergy-alerts-container" id="allergyAlerts">
+                <p class="empty-placeholder">No active warnings.</p>
+            </div>
+        </div>
+    </aside>
+
+</div>
+
+<!-- CSRF Config for AJAX -->
+<script>
+    const csrfToken = '{{ csrf_token }}';
+    const sendApiUrl = '{% url "ai_assistant:api_send" %}';
+    const historyApiUrl = '{% url "ai_assistant:api_history" %}';
+    const sessionsApiUrl = '{% url "ai_assistant:api_sessions" %}';
+    const uploadApiUrl = '{% url "ai_assistant:api_upload" %}';
+    const logCallApiUrl = '{% url "ai_assistant:api_log_call" %}';
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/chat.js' %}"></script>
+{% endblock %}
+

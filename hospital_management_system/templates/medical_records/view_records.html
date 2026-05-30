@@ -1,0 +1,194 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Clinical Records Archive - MediCare{% endblock %}
+
+{% block active_patient_records %}active{% endblock %}
+{% block active_records %}active{% endblock %}
+
+
+{% block content %}
+<div class="dashboard-grid">
+    {% if patient %}
+    <div class="section" style="padding: 0; overflow: hidden; margin-bottom: 30px;">
+        <div class="welcome-hero" style="margin-bottom: 0; border-radius: 20px; padding: 25px 40px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div>
+                    <h2 style="font-size: 24px; margin: 0;">Patient: {{ patient.user.username }}</h2>
+                    <p style="opacity: 0.8; font-size: 14px; margin-top: 4px;">Verified Electronic Health Record (EHR)</p>
+                </div>
+            </div>
+            <div style="display: flex; gap: 15px; margin-top: 15px;">
+                <span style="background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; font-size: 12px;"><i class="fas fa-envelope"></i> {{ patient.user.email }}</span>
+                <span style="background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; font-size: 12px;"><i class="fas fa-phone"></i> {{ patient.phone|default:"No Phone" }}</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Clinical Upload Section (Initially Hidden) -->
+    <div id="uploadFormSection" class="section" style="display: none; border: 1px solid var(--primary-blue); animation: fadeIn 0.3s ease;">
+        <div class="section-header">
+            <h2><i class="fas fa-file-medical"></i> Secure Clinical Upload</h2>
+            <button onclick="toggleUploadForm()" class="btn-small"><i class="fas fa-times"></i> Close Archive</button>
+        </div>
+        <form method="post" enctype="multipart/form-data" action="{% if is_doctor %}{% url 'upload_medical_record' %}{% else %}{% url 'patient_upload_medical_record' %}{% endif %}" class="form-card" style="box-shadow: none; border: none; padding: 0; background: transparent;">
+            {% csrf_token %}
+            <div class="form-grid">
+                {% for field in upload_form %}
+                    <div class="form-group">
+                        <label>{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="field-error"><i class="fas fa-exclamation-triangle"></i> {{ field.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            <div style="margin-top: 25px;">
+                <button type="submit" class="btn-primary" style="width: 100%;">
+                    <i class="fas fa-cloud-upload-alt"></i> Finalize Report Archive
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Records Table Section -->
+    <div class="section">
+        <div class="section-header">
+            <h2><i class="fas fa-layer-group"></i> Clinical Report Registry</h2>
+            <button onclick="toggleUploadForm()" class="btn-small" id="toggleBtn" style="background: var(--primary-blue); color: #fff;">
+                <i class="fas fa-upload"></i> New Clinical Record
+            </button>
+        </div>
+        
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Archive Preview</th>
+                        <th>Clinical Detail</th>
+                        <th>Medical Attribution</th>
+                        <th>Archive Type</th>
+                        <th>Registered Date</th>
+                        <th style="text-align: center;">Clinical Access</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td style="width: 100px;">
+                            <div class="report-preview-container">
+                                {% if record.report_file.url|lower|slice:"-4:" == ".png" or record.report_file.url|lower|slice:"-4:" == ".jpg" or record.report_file.url|lower|slice:"-5:" == ".jpeg" %}
+                                    <img src="{{ record.report_file.url }}" alt="Preview" class="report-img-preview">
+                                {% else %}
+                                    <div class="report-icon-preview">
+                                        <i class="fas fa-file-contract"></i>
+                                        <span>PDF</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--text-main);">{{ record.report_name }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">Ref: #REC-{{ record.id|add:8000 }}</div>
+                        </td>
+                        <td>
+                            <div style="font-size: 13px;"><strong>From:</strong> {{ record.from_info }}</div>
+                            <div style="font-size: 13px;"><strong>To:</strong> {{ record.to_info }}</div>
+                        </td>
+                        <td>
+                            <span class="status {{ record.file_type|lower }}" style="padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;">
+                                {{ record.get_file_type_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="font-size: 14px; font-weight: 600;">{{ record.uploaded_at|date:"M d, Y" }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">Verified Signature</div>
+                        </td>
+                        <td>
+                            <div style="display: flex; justify-content: center; gap: 8px;">
+                                <a href="{{ record.report_file.url }}" target="_blank" class="btn-small" title="Secure View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ record.report_file.url }}" download class="btn-small" style="background: var(--hover-bg); color: var(--text-main);" title="Download Archive">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="no-data">The clinical record archive is currently empty.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.report-preview-container {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    padding: 3px;
+    background: var(--main-bg);
+}
+
+.report-img-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.report-icon-preview {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #ef4444;
+}
+
+.report-icon-preview i { font-size: 20px; }
+.report-icon-preview span { font-size: 9px; font-weight: 800; margin-top: 2px; }
+
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background: var(--main-bg);
+    color: var(--text-main);
+    transition: all 0.3s ease;
+}
+</style>
+
+<script>
+    function toggleUploadForm() {
+        const formSection = document.getElementById('uploadFormSection');
+        const toggleBtn = document.getElementById('toggleBtn');
+        if (formSection.style.display === 'none') {
+            formSection.style.display = 'block';
+            formSection.scrollIntoView({ behavior: 'smooth' });
+            toggleBtn.style.display = 'none';
+        } else {
+            formSection.style.display = 'none';
+            toggleBtn.style.display = 'flex';
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,137 @@
+english,telugu,tenglish,category
+head,తల,tala,body_part
+chest,ఛాతీ,chati,body_part
+stomach,కడుపు,kadupu,body_part
+eyes,కళ్ళు,kallu,body_part
+ears,చెవులు,chevulu,body_part
+throat,గొంతు,gontu,body_part
+back,నడుము,nadumu,body_part
+legs,కాళ్లు,kallu,body_part
+arms,చేతులు,chethulu,body_part
+neck,మెడ,meda,body_part
+nose,ముక్కు,mukku,body_part
+skin,చర్మం,charmam,body_part
+heart,గుండె,gunde,body_part
+lungs,ఊపిరితిత్తులు,oopirithithulu,body_part
+kidneys,మూత్రపిండాలు,moothrapindalu,body_part
+blood,రక్తం,raktham,body_part
+joints,కీళ్ళు,keellu,body_part
+teeth,పళ్ళు,pallu,body_part
+mouth,నోరు,noru,body_part
+fever,జ్వరం,jwaram,symptom
+headache,తలనొప్పి,tala noppi,symptom
+migraine,పార్శ్వపు నొప్పి,parswapu noppi,symptom
+cough,దగ్గు,daggu,symptom
+runny nose,ముక్కు కారడం,mukku karadam,symptom
+sore throat,గొంతు నొప్పి,gontu noppi,symptom
+shortness of breath,శ్వాస ఆడకపోవడం,swasa adakapovadam,symptom
+wheezing,పిల్లికూతలు,pillikoothalu,symptom
+chest pain,ఛాతీ నొప్పి,chati noppi,symptom
+palpitations,గుండె కొట్టుకోవడం,gunde kottukovadam,symptom
+dizziness,కళ్ళు తిరగడం,kallu thiragadam,symptom
+nausea,వికారం,vikaram,symptom
+vomiting,వాంతులు,vanthulu,symptom
+stomach pain,కడుపు నొప్పి,kadupu noppi,symptom
+diarrhea,అతిసారం,athisaram,symptom
+constipation,మలబద్ధకం,malabadhakam,symptom
+fatigue,అలసట,alasata,symptom
+body pain,ఒంటి నొప్పులు,onti noppulu,symptom
+joint pain,కీళ్ల నొప్పులు,keella noppulu,symptom
+swelling,వాపు,vapu,symptom
+skin rash,చర్మంపై దద్దుర్లు,charmam pai daddurlu,symptom
+itching,దురద,durada,symptom
+sneezing,తుమ్ములు,thummulu,symptom
+insomnia,నిద్రలేమి,nidralemi,symptom
+anxiety,ఆందోళన,andolana,symptom
+weight loss,బరువు తగ్గడం,baruvu thaggadam,symptom
+hair loss,జుట్టు రాలడం,juttu raladam,symptom
+back pain,నడుము నొప్పి,nadumu noppi,symptom
+neck pain,మెడ నొప్పి,meda noppi,symptom
+numbness,తిమ్మిరి,thimmiri,symptom
+blurred vision,మసక చూపు,masaka choopu,symptom
+ear pain,చెవి నొప్పి,chevi noppi,symptom
+hearing loss,వినే శక్తి తగ్గడం,vine shakthi thaggadam,symptom
+toothache,పంటి నొప్పి,panti noppi,symptom
+dry skin,పొడి చర్మం,podi charmam,symptom
+yellow eyes,కళ్ళు పచ్చబడటం,kallu pachabadatam,symptom
+yellow skin,చర్మం పచ్చబడటం,charmam pachabadatam,symptom
+painful urination,మూత్రవిసర్జనలో నొప్పి,moothra visarjanaloni noppi,symptom
+blood in urine,మూత్రంలో రక్తం,moothramlo raktham,symptom
+seizure,ఫిట్స్,fits,symptom
+fainting,స్పృహ తప్పడం,spruha thappadam,symptom
+confusion,గందరగోళం,gandaragolam,symptom
+memory loss,జ్ఞాపకశక్తి తగ్గడం,gnyapakashakthi thaggadam,symptom
+stiff neck,మెడ బిగుసుకుపోవడం,meda bigusukupovadam,symptom
+nosebleed,ముక్కు నుండి రక్తం,mukku nundi raktham,symptom
+difficulty swallowing,మింగడంలో ఇబ్బంది,mingadamlo ibbandi,symptom
+chest tightness,ఛాతీ బిగుతు,chati biguthu,symptom
+dark urine,చిక్కటి మూత్రం,chikkati moothram,symptom
+severe,తీవ్రమైన,theevramaina,severity
+mild,తేలికపాటి,thelikapati,severity
+moderate,మధ్యస్థ,madhyastha,severity
+chronic,దీర్ఘకాలిక,deerghakalika,severity
+acute,తీవ్రమైన,theevramaina,severity
+days,రోజులు,rojulu,duration
+weeks,వారాలు,varalu,duration
+months,నెలలు,nelalu,duration
+since,నుండి,nundi,duration
+from,నుండి,nundi,duration
+yesterday,నిన్న,ninna,duration
+today,ఈరోజు,eroju,duration
+tomorrow,రేపు,repu,duration
+hospital,ఆసుపత్రి,asupathri,general
+doctor,వైద్యుడు,vaidyudu,general
+medicine,మందులు,mandulu,general
+treatment,చికిత్స,chikithsa,general
+pain,నొప్పి,noppi,general
+emergency,అత్యవసర పరిస్థితి,athyavasara paristhithi,general
+help,సహాయం,sahayam,general
+appointment,అపాయింట్‌మెంట్,appointment,general
+history,చరిత్ర,charithra,general
+allergy,అలర్జీ,allergy,general
+coughing up blood,కఫంలో రక్తం,kaphamlo raktham,symptom
+flu,ఫ్లూ,flu,disease
+cold,జలుబు,jalubu,disease
+diabetes,మధుమేహం,madhumeham,disease
+hypertension,బీపీ,BP,disease
+asthma,దమ్ము,dammu,disease
+gastroenteritis,కడుపు ఇన్ఫెక్షన్,kadupu infection,disease
+arthritis,కీళ్ల వాతం,keella vatham,disease
+dermatitis,చర్మ రోగం,charma rogam,disease
+typhoid,టైఫాయిడ్,typhoid,disease
+malaria,మలేరియా,malaria,disease
+dengue,డెంగ్యూ,dengue,disease
+stroke,పక్షవాతం,pakshawatham,disease
+anemia,రక్తహీనత,raktha heenatha,disease
+psoriasis,సోరియాసిస్,psoriasis,disease
+gout,గౌట్,gout,disease
+cataract,శుక్లాలు,shuklalu,disease
+glaucoma,నీటికాసులు,neeti kasulu,disease
+conjunctivitis,కళ్లకలక,kalla kalaka,disease
+tonsillitis,టాన్సిల్స్,tonsils,disease
+sinusitis,సైనస్,sinus,disease
+scabies,గజ్జి,gajji,disease
+eczema,తామర,thamara,disease
+angina,గుండె నొప్పి,gunde noppi,disease
+appendicitis,అపెండిసైటిస్,appendicitis,disease
+bronchitis,శ్వాసనాళాల వాపు,swasanaalala vapu,disease
+cellulitis,చర్మ వాపు,charma vapu,disease
+cholelithiasis,పిత్తాశయ రాళ్లు,pithashaya rallu,disease
+urinary tract infection,యూరినరీ ఇన్ఫెక్షన్,urinary infection,disease
+kidney stones,కిడ్నీ రాళ్లు,kidney rallu,disease
+cirrhosis,కాలేయ వ్యాధి,kaleya vyadhi,disease
+gastritis,కడుపులో మంట,kadupulo manta,disease
+thyroid,థైరాయిడ్,thyroid,disease
+measles,తట్టు,thattu,disease
+mumps,గవదబిళ్ళలు,gavadabillalu,disease
+cholera,కలరా,cholera,disease
+tuberculosis,క్షయ,kshaya,disease
+ischemic stroke,పక్షవాతం,pakshawatham,disease
+epilepsy,మూర్ఛ వ్యాధి,moorcha vyadhi,disease
+parkinson,వణుకు వాతం,vanuku vatham,disease
+alzheimer,మతిమరుపు వ్యాధి,mathimarupu vyadhi,disease
+otitis media,చెవి ఇన్ఫెక్షన్,chevi infection,disease
+jaundice,కామెర్లు,kamerlu,disease
+yes,అవును,avunu,general
+no,లేదు,ledu,general
+no,కాదు,kaadu,general

@@ -1,0 +1,128 @@
+symptom_id,symptom_name,symptom_name_te,category,severity,body_part,description
+1,headache,తలనొప్పి,neurological,mild,head,Pain in the head or neck region
+2,migraine,పార్శ్వపు నొప్పి,neurological,moderate,head,Severe throbbing headache usually on one side
+3,fever,జ్వరం,general,mild,general,Elevated body temperature above 98.6F
+4,cough,దగ్గు,respiratory,mild,chest,Repetitive reflex to clear breathing passages
+5,runny nose,ముక్కు కారడం,respiratory,mild,nose,Excess mucus discharge from the nose
+6,sore throat,గొంతు నొప్పి,respiratory,mild,throat,Pain or irritation in the throat
+7,shortness of breath,శ్వాస ఆడకపోవడం,respiratory,severe,chest,Difficulty breathing or air hunger
+8,wheezing,పిల్లికూతలు,respiratory,moderate,chest,Whistling sound during breathing
+9,chest pain,ఛాతీ నొప్పి,cardiovascular,severe,chest,Pain or discomfort in the chest region
+10,palpitations,గుండె కొట్టుకోవడం,cardiovascular,moderate,chest,Sensation of rapid or irregular heartbeat
+11,dizziness,కళ్ళు తిరగడం,neurological,moderate,head,Sensation of spinning or instability
+12,nausea,వికారం,gastrointestinal,mild,stomach,Sensation of unease and urge to vomit
+13,vomiting,వాంతులు,gastrointestinal,moderate,stomach,Forced ejection of stomach contents
+14,stomach pain,కడుపు నొప్పి,gastrointestinal,moderate,stomach,Pain in the abdominal area
+15,diarrhea,అతిసారం,gastrointestinal,moderate,stomach,Loose watery bowel movements
+16,constipation,మలబద్ధకం,gastrointestinal,mild,stomach,Infrequent or difficult bowel movements
+17,fatigue,అలసట,general,mild,general,Extreme tiredness or lack of energy
+18,body pain,ఒంటి నొప్పులు,musculoskeletal,mild,general,General muscle soreness or aching
+19,joint pain,కీళ్ల నొప్పులు,musculoskeletal,moderate,joints,Pain or discomfort in one or more joints
+20,swelling,వాపు,general,moderate,general,Enlargement of organs or body parts due to fluid
+21,skin rash,చర్మంపై దద్దుర్లు,dermatological,mild,skin,Changes in skin color or texture
+22,itching,దురద,dermatological,mild,skin,Irritating sensation creating urge to scratch
+23,sneezing,తుమ్ములు,respiratory,mild,nose,Involuntary convulsive expelling of air
+24,insomnia,నిద్రలేమి,psychiatric,mild,general,Inability to sleep or stay asleep
+25,anxiety,ఆందోళన,psychiatric,moderate,general,Excessive worry or fear
+26,weight loss,బరువు తగ్గడం,general,moderate,general,Unexplained reduction in body weight
+27,hair loss,జుట్టు రాలడం,dermatological,mild,head,Loss of hair from the scalp
+28,back pain,నడుము నొప్పి,musculoskeletal,mild,back,Pain felt in the back region
+29,neck pain,మెడ నొప్పి,musculoskeletal,mild,neck,Pain or stiffness in the neck
+30,muscle cramps,కండరాల తిమ్మిరి,musculoskeletal,mild,limbs,Sudden painful contractions of muscles
+31,numbness,తిమ్మిరి,neurological,moderate,limbs,Loss of sensation in body parts
+32,blurred vision,మసక చూపు,ophthalmological,moderate,eyes,Lack of sharpness of vision
+33,ear pain,చెవి నొప్పి,respiratory,mild,ears,Pain or discomfort in the ear
+34,hearing loss,వినే శక్తి తగ్గడం,general,moderate,ears,Partial or total inability to hear
+35,bleeding gums,చిగుళ్ళ నుండి రక్తం,general,mild,mouth,Bleeding from the gum tissue
+36,toothache,పంటి నొప్పి,general,mild,mouth,Pain in or around a tooth
+37,bad breath,నోటి దుర్వాసన,general,mild,mouth,Unpleasant odor exhaled from the mouth
+38,dry mouth,నోరు ఎండిపోవడం,general,mild,mouth,Lack of saliva production
+39,chills,వణుకు,general,mild,general,Feeling of coldness with shivering
+40,sweating,చెమటలు పట్టడం,general,mild,general,Excretion of moisture from sweat glands
+41,loss of appetite,ఆకలి మందగించడం,general,mild,general,Decreased desire to eat
+42,heartburn,గుండెల్లో మంట,gastrointestinal,mild,chest,Burning sensation in the chest due to acid
+43,bloating,కడుపు ఉబ్బరం,gastrointestinal,mild,stomach,Swelling or distension of the abdomen
+44,flatulence,గ్యాస్ సమస్య,gastrointestinal,mild,stomach,Excessive gas in the digestive tract
+45,acid reflux,యాసిడ్ రిఫ్లక్స్,gastrointestinal,mild,stomach,Stomach acid flowing back into esophagus
+46,dry skin,పొడి చర్మం,dermatological,mild,skin,Lack of moisture in the skin
+47,red skin,చర్మం ఎర్రబడటం,dermatological,mild,skin,Redness of skin due to irritation or blood flow
+48,skin peeling,చర్మం పొట్టు రాలడం,dermatological,mild,skin,Loss of outer layer of skin
+49,double vision,రెండుగా కనిపించడం,ophthalmological,moderate,eyes,Seeing two images of a single object
+50,eye redness,కళ్ళు ఎర్రబడటం,ophthalmological,mild,eyes,Redness of the conjunctiva of eyes
+51,eye itching,కళ్ల దురద,ophthalmological,mild,eyes,Itchy sensation in the eyes
+52,sore eyes,కళ్ల నొప్పులు,ophthalmological,mild,eyes,Aching or burning in the eyes
+53,frequent urination,తరచుగా మూత్రవిసర్జన,urological,moderate,pelvis,Urge to urinate more often than usual
+54,painful urination,మూత్రవిసర్జనలో నొప్పి,urological,moderate,pelvis,Burning or pain during urination
+55,blood in urine,మూత్రంలో రక్తం,urological,severe,pelvis,Presence of red blood cells in urine
+56,seizure,ఫిట్స్,neurological,severe,general,Sudden uncontrolled electrical disturbance in brain
+57,fainting,స్పృహ తప్పడం,neurological,severe,general,Temporary loss of consciousness
+58,confusion,గందరగోళం,psychiatric,severe,head,Inability to think clearly or quickly
+59,memory loss,జ్ఞాపకశక్తి తగ్గడం,neurological,moderate,head,Forgetfulness or loss of memories
+60,depression,నిరాశ,psychiatric,moderate,general,Persistent feelings of sadness and loss of interest
+61,tremor,వణుకు,neurological,moderate,limbs,Involuntary rhythmic shaking movements
+62,stiff neck,మెడ బిగుసుకుపోవడం,neurological,severe,neck,Difficulty moving the neck due to stiffness
+63,nosebleed,ముక్కు నుండి రక్తం,respiratory,mild,nose,Bleeding from the nasal passages
+64,hoarseness,గొంతు బొంగురుపోవడం,respiratory,mild,throat,Abnormal change in voice pitch or quality
+65,phlegm,కఫం,respiratory,mild,throat,Thick mucus produced in respiratory tract
+66,blood in sputum,కఫంలో రక్తం,respiratory,severe,throat,Coughing up blood or blood-streaked mucus
+67,cold hands,చల్లని చేతులు,general,mild,limbs,Sensation of coldness in fingers and hands
+68,cold feet,చల్లని పాదాలు,general,mild,limbs,Sensation of coldness in toes and feet
+69,muscle weakness,కండరాల బలహీనత,musculoskeletal,moderate,limbs,Lack of strength in muscles
+70,swollen feet,పాదాల వాపు,general,moderate,limbs,Fluid retention in lower legs and feet
+71,swollen joints,కీళ్ల వాపు,musculoskeletal,moderate,joints,Swelling around joint areas
+72,joint stiffness,కీళ్ల బిగుతు,musculoskeletal,mild,joints,Difficulty moving joints easily
+73,heel pain,మడమ నొప్పి,musculoskeletal,mild,limbs,Pain in the back or bottom of heel
+74,mouth ulcers,నోటి పూత,general,mild,mouth,Painful sores inside the mouth
+75,difficulty swallowing,మింగడంలో ఇబ్బంది,respiratory,moderate,throat,Sensation of food sticking in throat
+76,chest tightness,ఛాతీ బిగుతు,respiratory,severe,chest,Feeling of pressure or restriction in chest
+77,dark urine,చిక్కటి మూత్రం,urological,moderate,pelvis,Abnormally dark-colored urine
+78,pale stools,లేత రంగు మలం,gastrointestinal,moderate,pelvis,Abnormally light-colored feces
+79,yellow eyes,కళ్ళు పచ్చబడటం,general,moderate,eyes,Yellowing of whites of eyes (jaundice)
+80,yellow skin,చర్మం పచ్చబడటం,general,moderate,skin,Yellowing of skin due to bilirubin
+81,severe itching,తీవ్రమైన దురద,dermatological,moderate,skin,Intense itching across large body areas
+82,skin blisters,చర్మంపై పొక్కులు,dermatological,moderate,skin,Small fluid-filled bubbles on skin
+83,easy bruising,సులభంగా కమిలిపోవడం,general,mild,skin,Bruising with minimal impact
+84,slow healing cuts,నెమ్మదిగా తగ్గే గాయాలు,general,moderate,skin,Wounds that take long to close
+85,excessive thirst,ఎక్కువ దాహం,general,moderate,general,Abnormally high consumption of fluids
+86,excessive hunger,ఎక్కువ ఆకలి,general,moderate,general,Abnormally high appetite
+87,hives,దద్దుర్లు,dermatological,mild,skin,Itchy raised red bumps on skin
+88,night sweats,రాత్రిపూట చెమటలు,general,moderate,general,Severe sweating during sleep
+89,sleep apnea,నిద్రలో శ్వాస నిలిచిపోవడం,respiratory,moderate,chest,Breathing stopping and starting during sleep
+90,snoring,గురక,respiratory,mild,throat,Harsh sound during sleep from breathing block
+91,irritability,చిరాకు,psychiatric,mild,general,Easily annoyed or angered state
+92,mood swings,మూడ్ మార్పులు,psychiatric,mild,general,Rapidly changing emotional states
+93,panic attacks,భయాందోళనలు,psychiatric,severe,general,Sudden episodes of intense fear or panic
+94,hallucinations,భ్రమలు,psychiatric,severe,head,Perceiving things not present in reality
+95,abdominal distension,కడుపు ఉబ్బరం,gastrointestinal,moderate,stomach,Visible swelling of abdomen area
+96,urinary incontinence,మూత్ర నియంత్రణ లేకపోవడం,urological,moderate,pelvis,Involuntary loss of urine control
+97,burning eyes,కళ్ల మంటలు,ophthalmological,mild,eyes,Burning sensation in the eyes
+98,dry eyes,కళ్ళు ఎండిపోవడం,ophthalmological,mild,eyes,Inadequate tear production
+99,sneezing attacks,తుమ్ముల దాడులు,respiratory,mild,nose,Prolonged fits of sneezing
+100,loss of smell,వాసన కోల్పోవడం,neurological,moderate,nose,Inability to detect odors
+101,loss of taste,రుచి కోల్పోవడం,neurological,moderate,mouth,Inability to distinguish tastes
+102,body weakness,శరీర బలహీనత,general,moderate,general,General feeling of weakness or lack of physical power
+103,acidity,,gastrointestinal,medium,stomach,Symptom associated with gastrointestinal system
+104,severe chest pain,,general,medium,general,Symptom associated with general system
+105,loss of consciousness,,general,medium,general,Symptom associated with general system
+106,severe bleeding,,general,medium,general,Symptom associated with general system
+107,sudden weakness,,general,medium,general,Symptom associated with general system
+108,sudden paralysis,,general,medium,general,Symptom associated with general system
+109,throat pain,,respiratory,medium,throat,Symptom associated with respiratory system
+110,hoarse voice,,respiratory,medium,throat,Symptom associated with respiratory system
+111,ear discharge,,respiratory,medium,ears,Symptom associated with respiratory system
+112,eye pain,,ophthalmological,medium,eyes,Symptom associated with ophthalmological system
+113,watery eyes,,ophthalmological,medium,eyes,Symptom associated with ophthalmological system
+114,high fever,,general,medium,general,Symptom associated with general system
+115,low fever,,general,medium,general,Symptom associated with general system
+116,weakness,,general,medium,general,Symptom associated with general system
+117,muscle pain,,general,medium,general,Symptom associated with general system
+118,fast heartbeat,,cardiovascular,medium,chest,Symptom associated with cardiovascular system
+119,arm pain,,cardiovascular,medium,limbs,Symptom associated with cardiovascular system
+120,dry cough,,respiratory,medium,chest,Symptom associated with respiratory system
+121,breathing difficulty,,respiratory,medium,chest,Symptom associated with respiratory system
+122,rash,,dermatological,medium,skin,Symptom associated with dermatological system
+123,redness,,dermatological,medium,skin,Symptom associated with dermatological system
+124,blisters,,dermatological,medium,skin,Symptom associated with dermatological system
+125,burning sensation,,dermatological,medium,skin,Symptom associated with dermatological system
+126,burning urination,,urological,medium,pelvis,Symptom associated with urological system
+127,urinary urgency,,urological,medium,pelvis,Symptom associated with urological system

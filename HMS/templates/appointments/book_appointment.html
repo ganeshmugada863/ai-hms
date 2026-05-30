@@ -1,0 +1,218 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Book Appointment - MediCare{% endblock %}
+
+{% block active_patient_appointments %}active{% endblock %}
+
+{% block header_title %}Book Appointment{% endblock %}
+{% block header_subtitle %}Schedule a visit with your preferred doctor{% endblock %}
+
+{% block content %}
+<style>
+    .form-card {
+        max-width: 1000px !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        padding: 40px !important;
+    }
+    .form-group input, 
+    .form-group select, 
+    .form-group textarea {
+        width: 100% !important;
+        padding: 12px 16px !important;
+        border-radius: 12px !important;
+        border: 1px solid var(--border-color) !important;
+        background: var(--main-bg) !important;
+        color: var(--text-main) !important;
+        font-size: 14px !important;
+        transition: all 0.3s ease !important;
+    }
+    .form-group input:focus, 
+    .form-group select:focus, 
+    .form-group textarea:focus {
+        outline: none !important;
+        border-color: var(--primary-blue) !important;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important;
+    }
+</style>
+<div class="form-card">
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="{{ form.doctor.id_for_label }}">{{ form.doctor.label }}</label>
+                {{ form.doctor }}
+                {% if form.doctor.errors %}
+                    <div class="field-error">{{ form.doctor.errors|striptags }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group" id="fee-display-group">
+                <label>Consultation Fee</label>
+                <div class="fee-amount" style="font-size: 16px; font-weight: 700; color: var(--primary-blue); padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--hover-bg); height: 45px; display: flex; align-items: center;">
+                    $<span id="consultation-fee-val">0.00</span>
+                </div>
+            </div>
+
+            <!-- Doctor Details Pane (Dynamically updated via JS) -->
+            <div class="form-group" id="doctor-details-group" style="grid-column: span 2; display: none;">
+                <div style="background: rgba(59, 130, 246, 0.05); border: 1.5px solid rgba(59, 130, 246, 0.15); padding: 18px; border-radius: 16px;">
+                    <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--primary-blue); display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-info-circle"></i> Doctor Availability Details
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; font-size: 13px;">
+                        <div>
+                            <span style="color: var(--text-muted); display: block; font-size: 11px; text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">Specialization</span>
+                            <strong id="doc-specialty-val" style="color: var(--text-main);">General Medicine</strong>
+                        </div>
+                        <div>
+                            <span style="color: var(--text-muted); display: block; font-size: 11px; text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">Available Days</span>
+                            <strong id="doc-days-val" style="color: var(--text-main);">---</strong>
+                        </div>
+                        <div>
+                            <span style="color: var(--text-muted); display: block; font-size: 11px; text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">Current Status</span>
+                            <strong id="doc-status-val" style="color: var(--text-main);">Offline</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.appointment_date.id_for_label }}">{{ form.appointment_date.label }}</label>
+                {{ form.appointment_date }}
+                {% if form.appointment_date.errors %}
+                    <div class="field-error">{{ form.appointment_date.errors|striptags }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.appointment_time.id_for_label }}">{{ form.appointment_time.label }}</label>
+                {{ form.appointment_time }}
+                {% if form.appointment_time.errors %}
+                    <div class="field-error">{{ form.appointment_time.errors|striptags }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="{{ form.consultation_type.id_for_label }}">Consultation Service Mode</label>
+                {{ form.consultation_type }}
+                {% if form.consultation_type.errors %}
+                    <div class="field-error">{{ form.consultation_type.errors|striptags }}</div>
+                {% endif %}
+                <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">
+                    Select Video Call or Audio Call to enable direct digital connections, or choose In-Person/Discussions.
+                </span>
+            </div>
+
+            <div class="form-group" style="grid-column: span 2; display: flex; align-items: center; gap: 10px; background: rgba(239, 68, 68, 0.05); padding: 12px 18px; border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.1);">
+                {{ form.is_emergency }}
+                <label for="{{ form.is_emergency.id_for_label }}" style="font-weight: 700; color: #ef4444; cursor: pointer; margin-bottom: 0; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-triangle-exclamation"></i> Mark this booking as an EMERGENCY?
+                </label>
+                {% if form.is_emergency.errors %}
+                    <div class="field-error">{{ form.is_emergency.errors|striptags }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Emergency Ambulance Warning Alert Card -->
+            <div class="form-group" id="ambulanceAlert" style="grid-column: span 2; display: none; background: #fef2f2; border: 1.5px solid #ef4444; color: #991b1b; border-radius: 16px; padding: 20px; box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.1);">
+                <h4 style="margin: 0; font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-ambulance"></i> Emergency Dispatch Recommendation
+                </h4>
+                <p style="margin: 8px 0 15px 0; font-size: 13px; line-height: 1.5; color: #7f1d1d;">
+                    For critical, life-threatening symptoms, please contact our 24/7 Ambulance Service immediately. Telehealth calls are not suitable for emergency trauma care.
+                </p>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <a href="tel:108" class="btn-primary" style="background: #ef4444; border: none; text-decoration: none; padding: 10px 20px; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; color: white;">
+                        <i class="fas fa-phone-alt"></i> Call Ambulance (108)
+                    </a>
+                    <a href="tel:911" class="btn-primary" style="background: #ef4444; border: none; text-decoration: none; padding: 10px 20px; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; color: white;">
+                        <i class="fas fa-phone-alt"></i> Call Emergency (911)
+                    </a>
+                </div>
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="{{ form.disease.id_for_label }}">{{ form.disease.label }}</label>
+                {{ form.disease }}
+                {% if form.disease.errors %}
+                    <div class="field-error">{{ form.disease.errors|striptags }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="{{ form.reason.id_for_label }}">{{ form.reason.label }}</label>
+                {{ form.reason }}
+                {% if form.reason.errors %}
+                    <div class="field-error">{{ form.reason.errors|striptags }}</div>
+                {% endif %}
+            </div>
+        </div>
+        <button type="submit" class="btn-primary" style="margin-top: 15px; width: 100%; justify-content: center; height: 48px; font-size: 15px;"><i class="fas fa-check-circle"></i> Confirm Appointment</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const docData = {{ doctor_data_json|safe }};
+        const doctorSelect = document.getElementById('id_doctor') || document.querySelector('select[name="doctor"]');
+        
+        const feeVal = document.getElementById('consultation-fee-val');
+        const detailsGroup = document.getElementById('doctor-details-group');
+        const specialtyVal = document.getElementById('doc-specialty-val');
+        const daysVal = document.getElementById('doc-days-val');
+        const statusVal = document.getElementById('doc-status-val');
+
+        function updateDoctorDetails() {
+            if (doctorSelect) {
+                const docId = doctorSelect.value;
+                if (docId && docData[docId] !== undefined) {
+                    const doc = docData[docId];
+                    feeVal.textContent = parseFloat(doc.fee).toFixed(2);
+                    
+                    specialtyVal.textContent = doc.specialization;
+                    daysVal.textContent = doc.available_days || 'Not Specified';
+                    
+                    if (doc.is_online) {
+                        statusVal.textContent = 'Active / Online';
+                        statusVal.style.color = '#10b981';
+                    } else {
+                        statusVal.textContent = 'Offline';
+                        statusVal.style.color = '#94a3b8';
+                    }
+                    
+                    detailsGroup.style.display = 'block';
+                } else {
+                    feeVal.textContent = '0.00';
+                    detailsGroup.style.display = 'none';
+                }
+            }
+        }
+
+        if (doctorSelect) {
+            doctorSelect.addEventListener('change', updateDoctorDetails);
+            updateDoctorDetails(); // initial run
+        }
+
+        // Emergency warning toggle
+        const emergencyCheckbox = document.getElementById('id_is_emergency') || document.querySelector('input[name="is_emergency"]');
+        const ambulanceAlert = document.getElementById('ambulanceAlert');
+
+        if (emergencyCheckbox) {
+            emergencyCheckbox.addEventListener('change', () => {
+                if (emergencyCheckbox.checked) {
+                    ambulanceAlert.style.display = 'block';
+                } else {
+                    ambulanceAlert.style.display = 'none';
+                }
+            });
+            // Initial run
+            if (emergencyCheckbox.checked) {
+                ambulanceAlert.style.display = 'block';
+            }
+        }
+    });
+</script>
+{% endblock %}

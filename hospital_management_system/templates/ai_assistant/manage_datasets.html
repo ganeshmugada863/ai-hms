@@ -1,0 +1,148 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Manage Datasets | MediCare{% endblock %}
+
+{% block active_admin_ai_chat %}active{% endblock %}
+
+{% block header_title %}Manage Medical Datasets{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <!-- Messages Notification -->
+    {% if messages %}
+    <div class="messages-container" style="grid-column: 1 / -1; margin-bottom: 15px;">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}" style="padding: 15px; border-radius: 12px; margin-bottom: 10px; font-weight: 500; display: flex; align-items: center; justify-content: space-between; background: rgba(79, 70, 229, 0.1); border: 1px solid var(--primary-blue); color: var(--text-main);">
+            <span><i class="fas fa-info-circle" style="margin-right: 10px; color: var(--primary-blue);"></i> {{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Top Action Row -->
+    <div class="section" style="grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <div>
+            <h2>CSV Training Corpus Statistics</h2>
+            <p style="color: var(--text-muted); font-size: 14px;">Review structure, verify null records, and download or upload dataset layers.</p>
+        </div>
+        <a href="{% url 'ai_assistant:ai_dashboard' %}" class="btn-outline-white" style="background: rgba(79, 70, 229, 0.1); border-color: var(--primary-blue); color: var(--primary-blue); padding: 10px 20px; display: inline-flex; align-items: center; gap: 8px; border-radius: 12px; font-weight: 600; text-decoration: none; font-size: 14px;">
+            <i class="fas fa-arrow-left"></i> Back to AI Dashboard
+        </a>
+    </div>
+
+    <!-- Datasets Table -->
+    <div class="section" style="grid-column: 1 / -1;">
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Dataset File</th>
+                        <th>Record Count</th>
+                        <th>Column Schema</th>
+                        <th>Last Modified</th>
+                        <th>Data Quality</th>
+                        <th style="text-align: right; width: 180px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in dataset_stats %}
+                    <tr>
+                        <td style="font-weight: 600; color: var(--primary-blue);">
+                            <i class="fas fa-file-csv" style="margin-right: 8px;"></i>{{ stat.name }}.csv
+                        </td>
+                        <td>{{ stat.row_count }} rows</td>
+                        <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-family: monospace;">
+                            {{ stat.columns }}
+                        </td>
+                        <td style="font-size: 13px; color: var(--text-muted);">{{ stat.modified }}</td>
+                        <td>
+                            {% if stat.has_nulls %}
+                            <span class="status" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;"><i class="fas fa-exclamation-circle"></i> Has Nulls</span>
+                            {% else %}
+                            <span class="status completed"><i class="fas fa-check-circle"></i> Clean</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right;">
+                            <a href="{% url 'ai_assistant:download_dataset' stat.name %}" class="btn-small" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(79, 70, 229, 0.1); color: var(--primary-blue); border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 12px;">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                            No dataset layers located. Check directory config.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Upload Section & Unsupervised Clustering Insights -->
+    <div class="section" style="grid-column: 1 / 1;">
+        <h2>Upload/Update CSV Layer</h2>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Upload a corrected or expanded version. System creates a backup of the existing layer automatically.</p>
+        
+        <form action="{% url 'ai_assistant:manage_datasets' %}" method="POST" enctype="multipart/form-data" class="form-card" style="max-width: 100%; padding: 25px; border-radius: 16px;">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="id_dataset_name">Target Dataset Layer</label>
+                <select name="dataset_name" id="id_dataset_name" required style="width: 100%; margin-top: 5px;">
+                    <option value="symptoms">symptoms.csv (Symptom Dictionary)</option>
+                    <option value="diseases">diseases.csv (Condition Core Mapping)</option>
+                    <option value="medicines">medicines.csv (Medicines & Contraindications)</option>
+                    <option value="conversations.csv">conversations.csv (Conversational Patterns)</option>
+                    <option value="telugu">telugu.csv (Telugu Terminology Maps)</option>
+                    <option value="english">english.csv (English Terminology Maps)</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="id_csv_file">Upload CSV File</label>
+                <input type="file" name="csv_file" id="id_csv_file" accept=".csv" required style="width: 100%; margin-top: 5px; padding: 10px;">
+            </div>
+            <button type="submit" class="btn-primary" style="width: 100%;">
+                <i class="fas fa-upload"></i> Upload and Backup Layer
+            </button>
+        </form>
+    </div>
+
+    <div class="section" style="grid-column: 1 / 1;">
+        <h2>Unsupervised Clustering Findings</h2>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">KMeans clustering outcomes on patient questions not recognized by the current TensorFlow models. Use these to discover new symptoms.</p>
+        
+        {% if discovered_patterns %}
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                {% for cluster_id, details in discovered_patterns.items %}
+                <div style="padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--main-bg);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 8px;">
+                        <strong style="color: var(--primary-blue);">Cluster #{{ cluster_id }} ({{ details.size }} messages)</strong>
+                    </div>
+                    <p style="font-size: 13px; font-weight: 600; margin-bottom: 6px;">Key Terms:</p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
+                        {% for term in details.keywords %}
+                        <span style="background: rgba(79, 70, 229, 0.08); color: var(--primary-blue); padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;">{{ term }}</span>
+                        {% endfor %}
+                    </div>
+                    <p style="font-size: 13px; font-weight: 600; margin-bottom: 6px;">Sample User Utterances:</p>
+                    <ul style="list-style-type: none; padding-left: 0;">
+                        {% for sentence in details.samples %}
+                        <li style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 4px; padding-left: 12px; position: relative;">
+                            <span style="position: absolute; left: 0; color: var(--primary-blue); font-weight: 700;">•</span> {{ sentence }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 45px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--main-bg);">
+                <i class="fas fa-project-diagram" style="font-size: 32px; color: var(--text-muted); margin-bottom: 10px; display: block;"></i>
+                <span style="font-size: 13px; color: var(--text-muted);">No unsupervised clustering sessions executed yet. These are populated upon auto-retrain pipeline trigger.</span>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Edit Prescription - MediCare{% endblock %}
+
+{% block active_prescriptions %}active{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid" style="padding: 20px 0;">
+    <div class="form-card">
+        <div style="margin-bottom: 35px; text-align: center;">
+            <div
+                style="width: 70px; height: 70px; background: rgba(16, 185, 129, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: #10b981; font-size: 28px;">
+                <i class="fas fa-prescription-bottle-alt"></i>
+            </div>
+            <h2 style="font-size: 28px; color: var(--text-main);">Edit Prescription</h2>
+            <p style="color: var(--text-muted);">Update medical instructions and medication dosage</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-grid">
+                {% for field in form %}
+                <div class="form-group {% if field.name == 'instructions' or field.name == 'medications' %}full-width{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="field-error"><i class="fas fa-exclamation-circle"></i> {{ field.errors|striptags }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-top: 20px;">
+                <button type="submit" class="btn-primary" style="flex: 1; padding: 15px; background: #10b981;">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <a href="{% url 'list_prescriptions' %}" class="btn-primary"
+                    style="background: var(--hover-bg); color: var(--text-main); flex: 0.4; padding: 15px;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .full-width {
+        grid-column: span 2;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background: var(--main-bg);
+        color: var(--text-main);
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+    }
+</style>
+{% endblock %}

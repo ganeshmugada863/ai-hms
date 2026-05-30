@@ -1,0 +1,311 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/patient_dashboard.css' %}">
+</head>
+<body>
+<div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon"><i class="fa-solid fa-hospital"></i></div>
+            <h2>MediCare</h2>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="active"><a href="/patient-dashboard/"><i class="fa-solid fa-border-all"></i> Dashboard</a></li>
+            <li><a href="/appointments/book/"><i class="fa-solid fa-calendar-plus"></i> Book Appointment</a></li>
+            <li><a href="/prescriptions/view/"><i class="fa-solid fa-file-prescription"></i> Prescriptions</a></li>
+            <li><a href="/medical-records/view/"><i class="fa-solid fa-file-medical"></i> Reports</a></li>
+            <li><a href="/patients/create-profile/"><i class="fa-solid fa-user"></i> Profile</a></li>
+        </ul>
+
+        <a href="/auth/logout/" class="logout-link"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Top Search Bar -->
+        <header class="main-header">
+            <div class="search-box">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" placeholder="Search doctors or specialties...">
+            </div>
+            <a href="/appointments/book/" class="add-btn" style="text-decoration:none;">Book Now <i class="fa-solid fa-chevron-right"></i></a>
+        </header>
+
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <div class="banner-text">
+                <h2>Good Morning, {{ request.user.username }}</h2>
+                <p>Welcome to your personal health dashboard. Manage your appointments and medical records easily.</p>
+                <a href="/appointments/book/" class="btn-primary">Book New Appointment</a>
+            </div>
+            <div class="banner-illustration">
+                <i class="fa-solid fa-notes-medical fa-5x" style="color: #ffffff; opacity: 0.9;"></i>
+            </div>
+        </div>
+
+        <!-- Quick Stats Section -->
+        <div class="section-title">
+            <h3>Your Overview</h3>
+            <a href="#" class="view-all">View All</a>
+        </div>
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="icon-box" style="background: #eef2ff; color: #4f46e5;"><i class="fa-solid fa-calendar-check"></i></div>
+                <h4>Appointments</h4>
+                <p>({{ appointments_count|default:"0" }} Total)</p>
+            </div>
+            <div class="stat-card">
+                <div class="icon-box" style="background: #f0fdf4; color: #16a34a;"><i class="fa-solid fa-file-prescription"></i></div>
+                <h4>Prescriptions</h4>
+                <p>({{ prescriptions_count|default:"0" }} Total)</p>
+            </div>
+            <div class="stat-card">
+                <div class="icon-box" style="background: #fdf4ff; color: #c026d3;"><i class="fa-solid fa-file-medical"></i></div>
+                <h4>Medical Reports</h4>
+                <p>(Available)</p>
+            </div>
+            <div class="stat-card">
+                <div class="icon-box" style="background: #fff1f2; color: #e11d48;"><i class="fa-solid fa-heart-pulse"></i></div>
+                <h4>Health Status</h4>
+                <p>(Good)</p>
+            </div>
+        </div>
+
+        <!-- Appointment Progress Table -->
+        <div class="section-title mt-20">
+            <h3>Recent Appointments</h3>
+            <a href="#" class="view-all">View All</a>
+        </div>
+        <div class="progress-table-container">
+            <table class="progress-table">
+                <thead>
+                    <tr>
+                        <th>Doctor Name</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appt in appointments|slice:":5" %}
+                    <tr class="{% if forloop.counter == 1 %}active-row{% endif %} appointment-row" data-date="{{ appt.appointment_date|date:'Y-m-d' }}">
+                        <td>Dr. {{ appt.doctor.user.username }}</td>
+                        <td>{{ appt.appointment_date }}</td>
+                        <td>
+                            <span class="status-dot {{ appt.status|lower }}"></span>
+                            {{ appt.status }}
+                        </td>
+                        <td><i class="fa-solid fa-ellipsis-vertical action-icon"></i></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center" style="padding: 20px;">No recent appointments found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Right Sidebar -->
+    <aside class="right-sidebar">
+        <!-- Profile Header -->
+        <div class="right-header">
+            <div class="header-icons">
+                <div class="settings-menu">
+                    <i class="fa-solid fa-gear" id="settingsBtn" style="cursor: pointer;"></i>
+                    <div class="settings-dropdown" id="settingsDropdown">
+                        <h5>Minimal Themes</h5>
+                        <div class="theme-option" onclick="changeTheme('#4f46e5', '#f8fafc', '#f8fafc', '#ffffff', '#ffffff', '#fafbfe')">
+                            <div class="theme-color-box" style="background: #ffffff; border: 1px solid #ddd;"></div> Classic Light
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('#4b5563', '#f3f4f6', '#f3f4f6', '#f9fafb', '#f9fafb', '#f3f4f6')">
+                            <div class="theme-color-box" style="background: #f9fafb; border: 1px solid #ddd;"></div> Minimal Gray
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('#0d9488', '#ecfdf5', '#ecfdf5', '#f4fdf8', '#f4fdf8', '#d1fae5')">
+                            <div class="theme-color-box" style="background: #f4fdf8; border: 1px solid #ddd;"></div> Soft Sage
+                        </div>
+                        <div class="theme-option" onclick="changeTheme('#d97706', '#fef3c7', '#fef3c7', '#fffbf2', '#fffbf2', '#fde68a')">
+                            <div class="theme-color-box" style="background: #fffbf2; border: 1px solid #ddd;"></div> Gentle Sand
+                        </div>
+                    </div>
+                </div>
+                <div class="notification">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="dot"></span>
+                </div>
+            </div>
+            <div class="profile-info">
+                <div class="text">
+                    <h4>{{ request.user.username }}</h4>
+                    <a href="/patients/create-profile/">View profile</a>
+                </div>
+                {% if request.user.profile_image %}
+                    <img src="{{ request.user.profile_image.url }}" alt="Profile">
+                {% else %}
+                    <div class="avatar-placeholder"><i class="fa-solid fa-user"></i></div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Schedule Calendar Strip -->
+        <div class="schedule-calendar mt-30">
+            <div class="calendar-top">
+                <h3>Schedule Calendar <i class="fa-solid fa-code"></i></h3>
+                <span class="month-badge"><i class="fa-regular fa-calendar"></i> <span id="currentMonthStr">May</span></span>
+            </div>
+            <div class="date-strip" id="dateStrip">
+                <!-- JS will populate dates here -->
+            </div>
+        </div>
+
+        <!-- New Doctors List -->
+        <div class="new-patients mt-30">
+            <div class="section-title">
+                <h3>Top Specialists</h3>
+                <a href="#" class="view-all-small">View All</a>
+            </div>
+            <div class="patients-list">
+                <div class="patient-item">
+                    <div class="patient-avatar" style="background:#fff1f2; color:#e11d48;"><i class="fa-solid fa-user-doctor"></i></div>
+                    <div class="patient-details">
+                        <h4>Dr. Smith</h4>
+                        <p>Cardiologist</p>
+                    </div>
+                    <div class="patient-actions">
+                        <i class="fa-solid fa-calendar-plus"></i>
+                    </div>
+                </div>
+                <div class="patient-item">
+                    <div class="patient-avatar"><i class="fa-solid fa-user-doctor"></i></div>
+                    <div class="patient-details">
+                        <h4>Dr. Sarah</h4>
+                        <p>Dermatologist</p>
+                    </div>
+                    <div class="patient-actions">
+                        <i class="fa-solid fa-calendar-plus"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<!-- JS for the horizontal calendar strip & Themes -->
+<script>
+    // --- THEME SWITCHER LOGIC ---
+    function changeTheme(primary, hover, bg, panelBg, sidebarBg, mainBg) {
+        document.documentElement.style.setProperty('--primary-blue', primary);
+        document.documentElement.style.setProperty('--hover-bg', hover);
+        document.documentElement.style.setProperty('--bg-color', bg);
+        document.documentElement.style.setProperty('--panel-bg', panelBg);
+        document.documentElement.style.setProperty('--sidebar-bg', sidebarBg);
+        document.documentElement.style.setProperty('--main-bg', mainBg);
+        
+        localStorage.setItem('theme_primary', primary);
+        localStorage.setItem('theme_hover', hover);
+        localStorage.setItem('theme_bg', bg);
+        localStorage.setItem('theme_panel', panelBg);
+        localStorage.setItem('theme_sidebar', sidebarBg);
+        localStorage.setItem('theme_main', mainBg);
+        
+        document.getElementById('settingsDropdown').classList.remove('show');
+    }
+
+    const savedPrimary = localStorage.getItem('theme_primary');
+    if(savedPrimary) {
+        changeTheme(
+            savedPrimary, 
+            localStorage.getItem('theme_hover'), 
+            localStorage.getItem('theme_bg'),
+            localStorage.getItem('theme_panel') || '#ffffff',
+            localStorage.getItem('theme_sidebar') || '#ffffff',
+            localStorage.getItem('theme_main') || '#fafbfe'
+        );
+    }
+
+    document.getElementById('settingsBtn').addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('settingsDropdown').classList.toggle('show');
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.settings-menu')) {
+            document.getElementById('settingsDropdown').classList.remove('show');
+        }
+    });
+
+    // --- CALENDAR LOGIC ---
+    // Parse appointment dates passed from backend
+    const apptDates = JSON.parse('{{ appt_dates_json|escapejs }}' || '[]');
+
+    function filterAppointments(dateStr) {
+        const rows = document.querySelectorAll('.appointment-row');
+        let found = false;
+        
+        rows.forEach(row => {
+            if(row.getAttribute('data-date') === dateStr) {
+                row.style.display = '';
+                found = true;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        if(!found) {
+            alert('No recent appointments scheduled on ' + dateStr);
+            rows.forEach(row => row.style.display = '');
+        }
+    }
+
+    function renderHorizontalCalendar() {
+        const strip = document.getElementById("dateStrip");
+        const monthSpan = document.getElementById("currentMonthStr");
+        const today = new Date();
+        
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        
+        monthSpan.innerText = monthNames[today.getMonth()];
+        
+        let html = '';
+        for(let i = -1; i <= 3; i++) {
+            let d = new Date(today);
+            d.setDate(today.getDate() + i);
+            
+            // Format date as YYYY-MM-DD
+            let month = '' + (d.getMonth() + 1);
+            let day = '' + d.getDate();
+            let year = d.getFullYear();
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+            let dateStr = [year, month, day].join('-');
+
+            let hasAppt = apptDates.includes(dateStr);
+            let isToday = (i === 0);
+            let activeClass = hasAppt || isToday ? "active" : "";
+            
+            let dotHtml = hasAppt ? '<div style="width:4px;height:4px;background:#fff;border-radius:50%;margin-top:2px;"></div>' : '';
+
+            html += `
+            <div class="date-box ${activeClass}" onclick="filterAppointments('${dateStr}')">
+                <span class="day">${dayNames[d.getDay()]}</span>
+                <span class="date">${d.getDate()}</span>
+                ${dotHtml}
+            </div>
+            `;
+        }
+        strip.innerHTML = html;
+    }
+    
+    renderHorizontalCalendar();
+</script>
+</body>
+</html>

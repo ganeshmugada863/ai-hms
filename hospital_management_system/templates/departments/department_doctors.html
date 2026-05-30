@@ -1,0 +1,44 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Doctors in {{ department.name }} - MediCare{% endblock %}
+{% block active_admin_departments %}active{% endblock %}
+{% block active_patient_departments %}active{% endblock %}
+
+{% block header_title %}{{ department.name }} Specialists{% endblock %}
+{% block header_subtitle %}Find the best doctors in the {{ department.name }} department{% endblock %}
+
+{% block content %}
+<div class="section">
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 360px)); gap: 20px; justify-content: start;">
+        {% for doctor in doctors %}
+        <div class="panel doctor-card" style="padding: 20px; max-width: 380px; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 60px; height: 60px; background: #2a2a40; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0;">Dr. {{ doctor.user.username }}</h3>
+                    <p class="subtext">{{ doctor.specialization }}</p>
+                </div>
+            </div>
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <p><strong>Experience:</strong> {{ doctor.experience }} Years</p>
+                <p><strong>Fee:</strong> ${{ doctor.consultation_fee }}</p>
+            </div>
+            {% if request.user.role == 'admin' %}
+            <a href="{% url 'admin_book_appointment' %}?doctor_id={{ doctor.id }}" class="btn-primary" style="width: 100%; margin-top: 15px; display: block; text-align: center;">
+                Book Appointment
+            </a>
+            {% else %}
+            <a href="{% url 'book_appointment' %}?doctor_id={{ doctor.id }}" class="btn-primary" style="width: 100%; margin-top: 15px; display: block; text-align: center;">
+                Book Appointment
+            </a>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="no-data">No doctors found in this department.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

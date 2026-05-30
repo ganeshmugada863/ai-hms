@@ -1,0 +1,583 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MediCare Dashboard{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/patient_dashboard.css' %}?v=13.0">
+    {% if request.user.role == 'patient' %}
+    <link rel="stylesheet" href="{% static 'css/patient_dashboard_unique.css' %}?v=8.0">
+    {% endif %}
+    {% block extra_css %}{% endblock %}
+    <style>
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+            }
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+        .pulse-dot {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+    <script>
+        if (sessionStorage.getItem('sidebar_state') === 'expanded') {
+            document.documentElement.classList.add('sidebar-was-expanded');
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Universal Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header" style="display: flex; align-items: center; gap: 10px; padding: 20px 25px; border-bottom: 1px solid var(--border-color);">
+                <div style="width: 32px; height: 32px; background: var(--primary-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+                    <span style="font-size: 16px; font-weight: 800; font-family: 'Outfit', sans-serif; line-height: 1; display: inline-block; transform: translateY(-0.5px);">M</span>
+                </div>
+                <h2 style="font-size: 22px; font-weight: 700; letter-spacing: -0.5px; background: linear-gradient(to right, var(--primary-blue), #818cf8); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">
+                    Medicare</h2>
+            </div>
+
+
+            <div class="sidebar-section-title">Menu</div>
+            <ul class="sidebar-menu">
+                <!-- Dynamic Menu based on role -->
+                {% if request.user.role == 'admin' %}
+                <li class="{% block active_admin_home %}{% endblock %}">
+                    <a href="{% url 'admin_dashboard' %}">
+                        <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                    </a>
+                </li>
+                
+                <li class="{% block active_admin_doctors_parent %}{% endblock %}">
+                    <a href="#" class="sidebar-menu-dropdown-toggle">
+                        <i class="fas fa-user-md"></i> <span>Doctors</span>
+                        <i class="fas fa-chevron-down" style="font-size: 10px; color: var(--text-muted);"></i>
+                    </a>
+                    <ul class="sidebar-menu-dropdown" style="{% block dropdown_display_admin_doctors %}display: none;{% endblock %}">
+                        <li class="{% block active_admin_doctors %}{% endblock %}"><a href="{% url 'admin_doctor_list' %}">Doctor List</a></li>
+                        <li class="{% block active_admin_doctors_add %}{% endblock %}"><a href="/doctors/create-profile/">Add Doctor</a></li>
+                    </ul>
+                </li>
+                
+                <li class="{% block active_admin_patients %}{% endblock %}">
+                    <a href="{% url 'admin_patient_list' %}">
+                        <i class="fas fa-users"></i> <span>Patient Monitoring</span>
+                    </a>
+                </li>
+                <li class="{% block active_admin_appointments %}{% endblock %}">
+                    <a href="{% url 'admin_appointment_list' %}">
+                        <i class="fas fa-calendar-check"></i> <span>Appointment Tracking</span>
+                    </a>
+                </li>
+                <li class="{% block active_admin_departments %}{% endblock %}">
+                    <a href="{% url 'departments_list' %}">
+                        <i class="fas fa-building"></i> <span>Department Management</span>
+                    </a>
+                </li>
+                <li class="{% block active_admin_ai_chat %}{% endblock %}">
+                    <a href="{% url 'ai_assistant:ai_dashboard' %}">
+                        <i class="fas fa-brain"></i> <span>AI Chat Control</span>
+                    </a>
+                </li>
+
+                {% elif request.user.role == 'doctor' %}
+                <li class="{% block active_home %}{% endblock %}">
+                    <a href="{% url 'doctor_dashboard' %}">
+                        <i class="fas fa-home"></i> <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="{% block active_consultations %}{% endblock %}">
+                    <a href="{% url 'consultations_index' %}" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-comments"></i> <span>Consultations</span>
+                        </div>
+                        {% if has_upcoming_telehealth %}
+                        <span class="pulse-dot" style="width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; display: inline-block; margin-right: 15px;"></span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="{% block active_appointments %}{% endblock %}">
+                    <a href="{% url 'manage_appointments' %}">
+                        <i class="fas fa-calendar-check"></i> <span>Manage Appointments</span>
+                    </a>
+                </li>
+                <li class="{% block active_patients %}{% endblock %}">
+                    <a href="{% url 'doctor_patient_list' %}">
+                        <i class="fas fa-user-injured"></i> <span>Patients</span>
+                    </a>
+                </li>
+                <li class="{% block active_prescriptions %}{% endblock %}">
+                    <a href="{% url 'list_prescriptions' %}">
+                        <i class="fas fa-prescription-bottle"></i> <span>Prescriptions</span>
+                    </a>
+                </li>
+                <li class="{% block active_records %}{% endblock %}">
+                    <a href="{% url 'view_medical_records' %}">
+                        <i class="fas fa-file-medical"></i> <span>Records</span>
+                    </a>
+                </li>
+
+                {% else %}
+                <li class="{% block active_patient_home %}{% endblock %}">
+                    <a href="{% url 'patient_dashboard' %}">
+                        <i class="fas fa-home"></i> <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="{% block active_patient_ai_chat %}{% endblock %}">
+                    <a href="{% url 'ai_assistant:chat' %}">
+                        <i class="fas fa-comment-medical"></i> <span>AI Health Assistant</span>
+                    </a>
+                </li>
+                <li class="{% block active_patient_appointments %}{% endblock %}">
+                    <a href="{% url 'book_appointment' %}">
+                        <i class="fas fa-calendar-plus"></i> <span>Book Appointment</span>
+                    </a>
+                </li>
+                <li class="{% block active_patient_records %}{% endblock %}">
+                    <a href="{% url 'view_medical_records' %}">
+                        <i class="fas fa-file-medical"></i> <span>Medical Reports</span>
+                    </a>
+                </li>
+                <li class="{% block active_patient_prescriptions %}{% endblock %}">
+                    <a href="{% url 'view_prescriptions' %}">
+                        <i class="fas fa-prescription"></i> <span>Prescription History</span>
+                    </a>
+                </li>
+                <li class="{% block active_patient_reminders %}{% endblock %}">
+                    <a href="{% url 'create_reminder' %}">
+                        <i class="fas fa-clock"></i> <span>Reminder System</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+
+            <div class="sidebar-section-title">Other Menu</div>
+            <ul class="sidebar-menu">
+                {% if request.user.role == 'admin' %}
+                <li class="{% block active_admin_prescriptions %}{% endblock %}">
+                    <a href="{% url 'admin_prescription_list' %}">
+                        <i class="fas fa-prescription-bottle"></i> <span>Prescription Analytics</span>
+                    </a>
+                </li>
+                <li class="{% block active_admin_profile %}{% endblock %}">
+                    <a href="{% url 'admin_dashboard' %}">
+                        <i class="fas fa-user-shield"></i> <span>Admin Profile</span>
+                    </a>
+                </li>
+                {% elif request.user.role == 'doctor' %}
+                <li class="{% block active_profile %}{% endblock %}">
+                    <a href="/doctors/create-profile/">
+                        <i class="fas fa-user-md"></i> <span>My Profile</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="{% block active_patient_consultations %}{% endblock %}">
+                    <a href="{% url 'consultations_index' %}" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-comments"></i> <span>Consultations</span>
+                        </div>
+                        {% if has_upcoming_telehealth %}
+                        <span class="pulse-dot" style="width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; display: inline-block; margin-right: 15px;"></span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="{% block active_patient_departments %}{% endblock %}">
+                    <a href="{% url 'departments_list' %}">
+                        <i class="fas fa-hospital"></i> <span>Departments</span>
+                    </a>
+                </li>
+                <li class="{% block active_patient_profile %}{% endblock %}">
+                    <a href="/patients/create-profile/">
+                        <i class="fas fa-user-circle"></i> <span>My Profile</span>
+                    </a>
+                </li>
+                {% endif %}
+                <li>
+                    <a href="/auth/logout/" class="logout-link">
+                        <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer" style="padding: 20px; border-top: 1px solid var(--border-color); font-size: 11px; color: var(--text-muted); text-align: center;">
+                &copy; 2026 MediCare v5.0
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 15px; flex: 1;">
+                    {% block navbar_content %}
+                    {% if request.user.role == 'admin' %}
+                    <form method="GET" action="/admin-dashboard/" class="navbar-search" style="flex: 1; max-width: none;">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="q" placeholder="Search system for doctors, patients, or appointments..."
+                            value="{{ request.GET.q }}" style="width: 100%;">
+                    </form>
+                    {% elif request.user.role == 'doctor' %}
+                    <form method="GET" action="/doctor-dashboard/" class="navbar-search" style="flex: 1; max-width: none;">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="search" placeholder="Search patients by name, medical history, or ID..." value="{{ search_query }}" style="width: 100%;">
+                    </form>
+                    {% else %}
+                    <form method="GET" action="/patient-dashboard/" class="navbar-search" style="flex: 1; max-width: none;">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="q" placeholder="Search for doctors, symptoms, or medical records..." value="{{ search_query }}">
+                        {% if search_query %}
+                            <a href="/patient-dashboard/" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"><i class="fas fa-times-circle"></i></a>
+                        {% endif %}
+                    </form>
+                    {% endif %}
+                    {% endblock %}
+                </div>
+
+                <div class="header-actions">
+                    <!-- Pill Light/Dark mode switcher -->
+                    <div class="mode-pill-toggler">
+                        <button class="mode-pill-btn active" id="lightModeBtn" title="Light Mode">
+                            <i class="fas fa-sun"></i>
+                        </button>
+                        <button class="mode-pill-btn" id="darkModeBtn" title="Dark Mode">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                    </div>
+
+                    <!-- Messages icon -->
+                    <a href="#" class="header-action-btn-circle" title="Messages">
+                        <i class="far fa-envelope"></i>
+                    </a>
+
+                    <!-- Notification icon -->
+                    <div class="header-action-btn-circle notification-bell" id="notificationBellBtn" title="Notifications" style="position: relative; cursor: pointer;">
+                        <i class="far fa-bell"></i>
+                        {% if unread_notifications_count > 0 %}
+                        <span class="badge" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border-radius: 50%; font-size: 10px; font-weight: 700; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--panel-bg); z-index: 10;">
+                            {{ unread_notifications_count }}
+                        </span>
+                        {% endif %}
+                        
+                        <!-- Notifications Dropdown Menu -->
+                        <div id="notificationsDropdown" style="display: none; position: absolute; right: 0; top: 50px; width: 320px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 1000; padding: 15px; max-height: 400px; overflow-y: auto;">
+                            <div style="font-weight: 700; font-size: 14px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 8px; color: var(--text-main); display: flex; justify-content: space-between; align-items: center;">
+                                <span>Notifications</span>
+                                {% if unread_notifications_count > 0 %}
+                                <a href="{% url 'mark_all_notifications_read' %}" style="font-size: 11px; color: var(--primary-blue); text-decoration: none; font-weight: 500;">Mark all as read</a>
+                                {% endif %}
+                            </div>
+                            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+                                {% for notif in recent_notifications %}
+                                <li style="padding: 10px; border-radius: 10px; background: {% if not notif.is_read %}var(--hover-bg){% else %}transparent{% endif %}; border: 1px solid {% if not notif.is_read %}rgba(59, 130, 246, 0.15){% else %}transparent{% endif %}; font-size: 12.5px; transition: all 0.2s;">
+                                    <div style="font-weight: 600; color: var(--text-main); margin-bottom: 2px; white-space: normal; text-align: left;">{{ notif.title }}</div>
+                                    <div style="color: var(--text-muted); font-size: 11.5px; line-height: 1.3; margin-bottom: 4px; white-space: normal; text-align: left;">{{ notif.message }}</div>
+                                    <div style="font-size: 10px; color: var(--text-muted); text-align: right;">{{ notif.created_at|timesince }} ago</div>
+                                </li>
+                                {% empty %}
+                                <li style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12.5px; white-space: normal;">
+                                    <i class="far fa-bell-slash" style="font-size: 18px; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
+                                    No notifications yet.
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- User badge -->
+                    <a href="#" class="header-user-badge">
+                        <div class="header-user-avatar">
+                            {% if request.user.profile_image %}
+                            <img src="{{ request.user.profile_image.url }}" alt="Profile">
+                            {% else %}
+                            <i class="fas fa-user-circle" style="font-size: 22px; color: var(--text-muted);"></i>
+                            {% endif %}
+                        </div>
+                        <div class="header-user-info">
+                            <div class="header-user-name">{{ request.user.username }}</div>
+                            <div class="header-user-role">{{ request.user.role|title }}</div>
+                        </div>
+                    </a>
+
+                    <!-- Settings gear -->
+                    <a href="#" class="header-action-btn-circle" title="Settings">
+                        <i class="fas fa-cog"></i>
+                    </a>
+                </div>
+            </header>
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    <script src="{% static 'js/theme.js' %}?v=4.0"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Dropdown menu toggle
+            const dropdownToggle = document.querySelector('.sidebar-menu-dropdown-toggle');
+            if (dropdownToggle) {
+                dropdownToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const li = dropdownToggle.parentElement;
+                    li.classList.toggle('active');
+                    const menu = li.querySelector('.sidebar-menu-dropdown');
+                    if (menu) {
+                        menu.style.display = li.classList.contains('active') ? 'block' : 'none';
+                    }
+                });
+            }
+
+            // Keyboard shortcut for search
+            const sidebarSearchInput = document.getElementById('sidebarSearch');
+            window.addEventListener('keydown', (e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                    e.preventDefault();
+                    if (sidebarSearchInput) sidebarSearchInput.focus();
+                }
+            });
+
+            // Sidebar Expanded Hover Persistence Logic
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                let isUnloading = false;
+                window.addEventListener('beforeunload', () => {
+                    isUnloading = true;
+                });
+
+                sidebar.addEventListener('mouseenter', () => {
+                    document.documentElement.classList.add('sidebar-was-expanded');
+                    sessionStorage.setItem('sidebar_state', 'expanded');
+                });
+
+                sidebar.addEventListener('mouseleave', () => {
+                    if (isUnloading) return;
+                    document.documentElement.classList.remove('sidebar-was-expanded');
+                    sessionStorage.setItem('sidebar_state', 'collapsed');
+                });
+
+                // Detect hover using mousemove on load (failsafe)
+                const checkHover = (e) => {
+                    const wasExpanded = sessionStorage.getItem('sidebar_state') === 'expanded';
+                    const hoverWidth = wasExpanded ? 280 : 80;
+                    const rect = sidebar.getBoundingClientRect();
+                    const isOver = e.clientX >= rect.left && e.clientX <= (rect.left + hoverWidth) &&
+                                   e.clientY >= rect.top && e.clientY <= rect.bottom;
+                    if (!isOver) {
+                        document.documentElement.classList.remove('sidebar-was-expanded');
+                        sessionStorage.setItem('sidebar_state', 'collapsed');
+                    } else {
+                        document.documentElement.classList.add('sidebar-was-expanded');
+                        sessionStorage.setItem('sidebar_state', 'expanded');
+                    }
+                    window.removeEventListener('mousemove', checkHover);
+                };
+                window.addEventListener('mousemove', checkHover);
+            }
+
+            // Notifications Dropdown Toggle
+            const bellBtn = document.getElementById('notificationBellBtn');
+            const dropdown = document.getElementById('notificationsDropdown');
+            if (bellBtn && dropdown) {
+                bellBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+                });
+                
+                document.addEventListener('click', (e) => {
+                    if (!bellBtn.contains(e.target)) {
+                        dropdown.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+    {% if request.user.is_authenticated and request.user.role == 'patient' %}
+    <!-- Incoming Call Modal Overlay -->
+    <div id="incomingCallModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 99999; align-items: center; justify-content: center;">
+        <div style="background: var(--panel-bg); border: 1px solid var(--border-color); width: 100%; max-width: 420px; border-radius: 28px; padding: 40px 30px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transform: scale(0.9); transition: transform 0.3s ease;">
+            <!-- Pulsing Icon Container -->
+            <div id="callIconContainer" style="width: 90px; height: 90px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px auto; position: relative;">
+                <div class="pulse-ring" style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background: var(--primary-blue); opacity: 0.4; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+                <div style="width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-blue), #818cf8); display: flex; align-items: center; justify-content: center; color: white; font-size: 28px; z-index: 2; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);">
+                    <i id="modalCallIcon" class="fas fa-phone-alt"></i>
+                </div>
+            </div>
+
+            <h3 style="font-size: 22px; font-weight: 800; color: var(--text-main); margin: 0 0 8px 0; font-family: 'Outfit', sans-serif;">Incoming Telehealth Call</h3>
+            <p id="modalCallType" style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--primary-blue); margin: 0 0 15px 0;">Video Consultation</p>
+            
+            <p id="modalDoctorName" style="font-size: 16px; color: var(--text-muted); margin: 0 0 35px 0;">Dr. Alexander is calling you...</p>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button id="declineCallBtn" style="flex: 1; padding: 14px 0; border-radius: 16px; border: none; background: #ef4444; color: white; font-weight: 700; font-size: 14.5px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 16px rgba(239, 68, 68, 0.2);">
+                    <i class="fas fa-phone-slash"></i> Decline
+                </button>
+                <button id="acceptCallBtn" style="flex: 1; padding: 14px 0; border-radius: 16px; border: none; background: #10b981; color: white; font-weight: 700; font-size: 14.5px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.2);">
+                    <i class="fas fa-phone"></i> Accept
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes ping {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            70% {
+                transform: scale(1.6);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1.6);
+                opacity: 0;
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const incomingModal = document.getElementById('incomingCallModal');
+            const modalCallIcon = document.getElementById('modalCallIcon');
+            const modalCallType = document.getElementById('modalCallType');
+            const modalDoctorName = document.getElementById('modalDoctorName');
+            const acceptCallBtn = document.getElementById('acceptCallBtn');
+            const declineCallBtn = document.getElementById('declineCallBtn');
+            const callIconContainer = document.getElementById('callIconContainer');
+
+            let currentAppointmentId = null;
+            let ringtone = new Audio("https://assets.mixkit.co/active_storage/sfx/1359/1359-84.wav");
+            ringtone.loop = true;
+            let isRinging = false;
+            let pollInterval = null;
+
+            function playRingtone() {
+                ringtone.play().catch(err => {
+                    console.log("Audio autoplay was blocked. Will play on first user interaction.", err);
+                    const playOnInteraction = () => {
+                        ringtone.play().catch(e => console.log(e));
+                        document.removeEventListener('click', playOnInteraction);
+                    };
+                    document.addEventListener('click', playOnInteraction);
+                });
+            }
+
+            function stopRingtone() {
+                ringtone.pause();
+                ringtone.currentTime = 0;
+            }
+
+            function checkCall() {
+                fetch('/consultations/api/check-incoming-call/')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.incoming) {
+                            currentAppointmentId = data.appointment_id;
+                            modalDoctorName.textContent = "Dr. " + data.doctor_name + " is calling you...";
+                            
+                            if (data.call_type === 'video') {
+                                modalCallType.textContent = "Video Consultation";
+                                modalCallIcon.className = "fas fa-video";
+                                callIconContainer.querySelector('.pulse-ring').style.background = 'var(--primary-blue)';
+                            } else {
+                                modalCallType.textContent = "Audio Consultation";
+                                modalCallIcon.className = "fas fa-phone-alt";
+                                callIconContainer.querySelector('.pulse-ring').style.background = '#6366f1';
+                            }
+
+                            if (!isRinging) {
+                                incomingModal.style.display = 'flex';
+                                setTimeout(() => {
+                                    incomingModal.querySelector('div').style.transform = 'scale(1)';
+                                }, 50);
+                                playRingtone();
+                                isRinging = true;
+                            }
+                        } else {
+                            if (isRinging) {
+                                incomingModal.style.transform = 'scale(0.9)';
+                                setTimeout(() => {
+                                    incomingModal.style.display = 'none';
+                                }, 300);
+                                stopRingtone();
+                                isRinging = false;
+                                currentAppointmentId = null;
+                            }
+                        }
+                    })
+                    .catch(err => console.error("Error checking incoming calls:", err));
+            }
+
+            pollInterval = setInterval(checkCall, 3000);
+
+            acceptCallBtn.addEventListener('click', () => {
+                if (!currentAppointmentId) return;
+                
+                fetch('/consultations/api/update-call-status/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        appointment_id: currentAppointmentId,
+                        status: 'active'
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        stopRingtone();
+                        incomingModal.style.display = 'none';
+                        isRinging = false;
+                        const callType = modalCallType.textContent.toLowerCase().includes('video') ? 'video' : 'audio';
+                        window.location.href = `/consultations/${callType}/?appointment_id=${currentAppointmentId}`;
+                    } else {
+                        alert("Failed to answer the call. Please try again.");
+                    }
+                })
+                .catch(err => console.error(err));
+            });
+
+            declineCallBtn.addEventListener('click', () => {
+                if (!currentAppointmentId) return;
+
+                fetch('/consultations/api/update-call-status/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        appointment_id: currentAppointmentId,
+                        status: 'ended'
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        stopRingtone();
+                        incomingModal.style.display = 'none';
+                        isRinging = false;
+                        currentAppointmentId = null;
+                    }
+                })
+                .catch(err => console.error(err));
+            });
+        });
+    </script>
+    {% endif %}
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

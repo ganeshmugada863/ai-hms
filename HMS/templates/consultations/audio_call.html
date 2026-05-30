@@ -1,0 +1,372 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Audio Call - MediCare{% endblock %}
+
+{% block header_title %}Audio Consultation{% endblock %}
+{% block header_subtitle %}Voice-only secure medical consultation{% endblock %}
+
+{% block extra_css %}
+<style>
+    .audio-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: calc(100vh - 280px);
+        min-height: 480px;
+        background: #0f172a;
+        color: white;
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3);
+    }
+
+    .doctor-avatar-call {
+        width: 140px;
+        height: 140px;
+        background: #1e293b;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        color: var(--primary-blue);
+        margin-bottom: 25px;
+        border: 4px solid rgba(59, 130, 246, 0.25);
+        position: relative;
+        z-index: 5;
+    }
+
+    .doctor-avatar-call.pulse-active {
+        animation: pulse-audio-waves 2s infinite;
+    }
+
+    @keyframes pulse-audio-waves {
+        0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
+        70% { box-shadow: 0 0 0 35px rgba(59, 130, 246, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+
+    .call-timer {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 40px;
+        font-family: monospace;
+        letter-spacing: 2px;
+        color: #94a3b8;
+    }
+
+    .call-timer.connected {
+        color: #10b981;
+    }
+
+    .call-controls {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        z-index: 10;
+        transition: opacity 0.3s;
+    }
+
+    .control-btn {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 18px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        color: white;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .control-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.05);
+    }
+
+    .control-btn.active-off {
+        background: #ef4444 !important;
+    }
+
+    .control-btn.btn-end {
+        background: #ef4444;
+        width: 60px;
+        height: 60px;
+        font-size: 22px;
+    }
+
+    .control-btn.btn-end:hover {
+        background: #dc2626;
+        transform: scale(1.08) rotate(-135deg);
+    }
+
+    .control-btn.btn-answer {
+        background: #10b981;
+        width: 64px;
+        height: 64px;
+        font-size: 24px;
+        animation: pulse-answer 1.5s infinite;
+    }
+    
+    .control-btn.btn-answer:hover {
+        background: #059669;
+    }
+
+    @keyframes pulse-answer {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+        50% { transform: scale(1.08); box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
+    }
+
+    /* Connection Status */
+    .status-text {
+        font-size: 14px;
+        color: #94a3b8;
+        margin-bottom: 20px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+
+    /* Modal for error */
+    .permission-error-toast {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #fca5a5;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-size: 13.5px;
+        margin-bottom: 20px;
+        max-width: 380px;
+        text-align: center;
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="audio-container">
+    <div class="permission-error-toast" id="permissionError">
+        <i class="fas fa-exclamation-circle"></i> Microphone access is required. Please check browser permissions and try again.
+    </div>
+
+    <!-- Glowing Specialist Avatar -->
+    <div class="doctor-avatar-call pulse-active" id="avatarWave">
+        {% if appointment.doctor.user.profile_image %}
+            <img src="{{ appointment.doctor.user.profile_image.url }}" alt="Doctor" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+        {% else %}
+            <i class="fas fa-user-md" id="avatarIcon"></i>
+        {% endif %}
+    </div>
+
+    {% if is_doctor %}
+        <h3 id="partyName">Patient: {{ appointment.patient.user.username }}</h3>
+    {% else %}
+        <h3 id="partyName">Dr. {{ appointment.doctor.user.username }}</h3>
+    {% endif %}
+
+    <p class="status-text" id="connectionStatus">Incoming Secure Call...</p>
+    
+    <div class="call-timer" id="timer">00:00</div>
+
+    <!-- Call Controls Bar -->
+    <div class="call-controls">
+        <!-- Start/Answer Call Button (Green) -->
+        <button class="control-btn btn-answer" id="btnAnswer" title="Answer Call" onclick="answerCall()">
+            <i class="fas fa-phone"></i>
+        </button>
+
+        <!-- Microphone mute button (hidden until answered) -->
+        <button class="control-btn" id="btnMute" title="Mute Mic" onclick="toggleMute()" style="display: none;">
+            <i class="fas fa-microphone" id="micIcon"></i>
+        </button>
+
+        <!-- Speaker button (hidden until answered) -->
+        <button class="control-btn" id="btnSpeaker" title="Toggle Speaker" onclick="toggleSpeaker()" style="display: none;">
+            <i class="fas fa-volume-up" id="speakerIcon"></i>
+        </button>
+        
+        <!-- Hangup/End Button -->
+        <a href="{% if appointment %}{% url 'appointment_detail' appointment.id %}{% else %}{% url 'consultations_index' %}{% endif %}" class="control-btn btn-end" title="End Call" id="hangupLink">
+            <i class="fas fa-phone-slash"></i>
+        </a>
+    </div>
+</div>
+
+<script>
+    let timerInterval = null;
+    let seconds = 0;
+    let localAudioStream = null;
+    let isMicMuted = false;
+    let isSpeakerEnabled = true;
+
+    // Trigger when user answers the call manually
+    async function answerCall() {
+        document.getElementById('permissionError').style.display = 'none';
+
+        try {
+            // Check if mediaDevices is supported
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error("navigator.mediaDevices.getUserMedia not supported in this browser environment");
+            }
+
+            // Request browser microphone permissions
+            localAudioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            // Audio permission granted! Transition UI
+            document.getElementById('btnAnswer').style.display = 'none';
+            document.getElementById('btnMute').style.display = 'flex';
+            document.getElementById('btnSpeaker').style.display = 'flex';
+            
+            // Update status text
+            document.getElementById('connectionStatus').textContent = 'Call Connected (Secure)';
+            document.getElementById('connectionStatus').style.color = '#10b981';
+            
+            // Start the call timer
+            startTimer();
+
+        } catch (error) {
+            console.warn('Error requesting microphone permissions, starting mock audio fallback.', error);
+            
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const dest = audioCtx.createMediaStreamDestination();
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                gainNode.gain.value = 0.001; // almost silent
+                osc.connect(gainNode);
+                gainNode.connect(dest);
+                osc.start();
+                localAudioStream = dest.stream;
+            } catch (e) {
+                console.warn("Failed to create fallback AudioContext stream:", e);
+                localAudioStream = new MediaStream();
+            }
+
+            document.getElementById('btnAnswer').style.display = 'none';
+            document.getElementById('btnMute').style.display = 'flex';
+            document.getElementById('btnSpeaker').style.display = 'flex';
+            
+            document.getElementById('connectionStatus').textContent = 'Call Connected (Simulated Audio)';
+            document.getElementById('connectionStatus').style.color = '#3b82f6';
+            
+            startTimer();
+        }
+    }
+
+    function startTimer() {
+        const timerElement = document.getElementById('timer');
+        timerElement.classList.add('connected');
+        
+        timerInterval = setInterval(() => {
+            seconds++;
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            timerElement.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }, 1000);
+    }
+
+    // Toggle Microphone mute status
+    function toggleMute() {
+        if (!localAudioStream) return;
+        isMicMuted = !isMicMuted;
+        
+        localAudioStream.getAudioTracks().forEach(track => {
+            track.enabled = !isMicMuted;
+        });
+
+        const btn = document.getElementById('btnMute');
+        const icon = document.getElementById('micIcon');
+        
+        if (isMicMuted) {
+            btn.classList.add('active-off');
+            icon.className = 'fas fa-microphone-slash';
+            document.getElementById('connectionStatus').textContent = 'Voice Muted';
+        } else {
+            btn.classList.remove('active-off');
+            icon.className = 'fas fa-microphone';
+            document.getElementById('connectionStatus').textContent = 'Call Connected (Secure)';
+        }
+    }
+
+    // Toggle Speaker/Volume status
+    function toggleSpeaker() {
+        isSpeakerEnabled = !isSpeakerEnabled;
+        const btn = document.getElementById('btnSpeaker');
+        const icon = document.getElementById('speakerIcon');
+        
+        if (!isSpeakerEnabled) {
+            btn.classList.add('active-off');
+            icon.className = 'fas fa-volume-mute';
+        } else {
+            btn.classList.remove('active-off');
+            icon.className = 'fas fa-volume-up';
+        }
+    }
+
+    let callStatusPollInterval = null;
+
+    function pollCallStatus() {
+        fetch('/consultations/api/get-call-status/?appointment_id={{ appointment.id }}')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ended' || data.status === 'idle') {
+                    clearInterval(callStatusPollInterval);
+                    alert("The call has ended.");
+                    window.location.href = "{% if appointment %}{% url 'appointment_detail' appointment.id %}{% else %}{% url 'consultations_index' %}{% endif %}";
+                } else if (data.status === 'ringing') {
+                    document.getElementById('connectionStatus').textContent = data.is_doctor ? 'Calling Patient (Ringing)...' : 'Ringing...';
+                } else if (data.status === 'active') {
+                    document.getElementById('connectionStatus').textContent = 'Call Connected (Secure)';
+                    document.getElementById('connectionStatus').style.color = '#10b981';
+                }
+            })
+            .catch(err => console.error("Error polling call status:", err));
+    }
+
+    // Automatically answer/start call on load and hook buttons
+    window.addEventListener('DOMContentLoaded', () => {
+        answerCall();
+        callStatusPollInterval = setInterval(pollCallStatus, 2000);
+
+        document.getElementById('hangupLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            if (callStatusPollInterval) clearInterval(callStatusPollInterval);
+            
+            fetch('/consultations/api/update-call-status/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    appointment_id: "{{ appointment.id }}",
+                    status: 'ended'
+                })
+            }).finally(() => {
+                window.location.href = "{% if appointment %}{% url 'appointment_detail' appointment.id %}{% else %}{% url 'consultations_index' %}{% endif %}";
+            });
+        });
+    });
+
+    // Clean up timer if navigated away
+    window.addEventListener('beforeunload', () => {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+        }
+        if (localAudioStream) {
+            localAudioStream.getTracks().forEach(track => track.stop());
+        }
+        if (callStatusPollInterval) {
+            clearInterval(callStatusPollInterval);
+        }
+        // Send beacon to notify the call has ended
+        const data = JSON.stringify({ appointment_id: "{{ appointment.id }}", status: 'ended' });
+        navigator.sendBeacon('/consultations/api/update-call-status/', data);
+    });
+</script>
+{% endblock %}

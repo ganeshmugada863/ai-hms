@@ -1,0 +1,53 @@
+medicine_id,medicine_name,medicine_type,diseases,dosage,side_effects,contraindications
+1,Paracetamol,Antipyretic/Analgesic,Common Cold, Influenza, Dengue Fever, Malaria, Typhoid Fever, Tension Headache,500mg - 650mg up to 4 times daily,Nausea, skin rash, liver damage if overdosed,Severe liver impairment
+2,Ibuprofen,NSAID,Migraine, Arthritis, Tension Headache, Gout, Rheumatoid Arthritis,200mg - 400mg every 4 to 6 hours with food,Stomach upset, heartburn, kidney damage,Active peptic ulcers, kidney disease
+3,Amoxicillin,Antibiotic,Tonsillitis, Otitis Media, Sinusitis, Typhoid Fever,250mg - 500mg three times daily,Diarrhea, nausea, allergic skin rash,Penicillin allergy
+4,Metformin,Antidiabetic,Diabetes Mellitus,500mg - 1000mg twice daily with meals,Diarrhea, abdominal bloating, metallic taste,Severe kidney disease, metabolic acidosis
+5,Atorvastatin,Statins,Hypertension, Coronary Artery Disease,10mg - 80mg once daily in the evening,Muscle pain, headache, liver enzyme elevations,Active liver disease, pregnancy
+6,Amlodipine,Calcium Channel Blocker,Hypertension, Coronary Artery Disease,2.5mg - 10mg once daily,Swollen ankles, dizziness, flushing,Severe hypotension
+7,Salbutamol,Bronchodilator,Asthma, Bronchitis, Chronic Obstructive Pulmonary Disease,1-2 puffs of inhaler every 4-6 hours as needed,Tremor, headache, fast heartbeat,Severe heart problems
+8,Omeprazole,PPI,Gastroenteritis, Gastroesophageal Reflux Disease, Peptic Ulcer Disease, Celiac Disease, Irritable Bowel Syndrome, Cholelithiasis,20mg once daily before breakfast,Headache, abdominal pain, diarrhea,Hypersensitivity
+9,Cetirizine,Antihistamine,Allergic Rhinitis, Dermatitis, Conjunctivitis, Eczema, Hives,10mg once daily at night,Drowsiness, dry mouth, tiredness,Severe kidney impairment
+10,Azithromycin,Macrolide Antibiotic,Tonsillitis, Bronchitis, Pneumonia, Sinusitis,500mg once daily for 3 to 5 days,Diarrhea, nausea, abdominal pain,QT prolongation, liver problems
+11,Losartan,Angiotensin Receptor Blocker,Hypertension, Coronary Artery Disease,25mg - 100mg once daily,Dizziness, hyperkalemia, back pain,Pregnancy
+12,Alprazolam,Benzodiazepine,Anxiety Disorder, Insomnia, Fibromyalgia,0.25mg - 0.5mg up to 3 times daily,Drowsiness, lightheadedness, dependency,Acute narrow-angle glaucoma
+13,Levothyroxine,Thyroid Hormone,Hypothyroidism,25mcg - 150mcg once daily on empty stomach,Palpitations, weight loss, heat intolerance,Adrenal insufficiency
+14,Aspirin,Antiplatelet/Analgesic,Coronary Artery Disease, Tension Headache,75mg - 150mg once daily (antiplatelet),Gastrointestinal bleeding, indigestion,Active bleeding, hemophilia
+15,Sertraline,SSRI Antidepressant,Anxiety Disorder, Depression, Fibromyalgia,50mg - 200mg once daily,Nausea, insomnia, sexual dysfunction,Concomitant MAOI use
+16,Ciprofloxacin,Fluoroquinolone Antibiotic,Urinary Tract Infection, Typhoid Fever, Gastroenteritis,250mg - 500mg twice daily,Nausea, tendon rupture risk, diarrhea,History of tendon disorders
+17,Fluticasone Propionate,Corticosteroid Inhaler,Asthma, Chronic Obstructive Pulmonary Disease,1-2 puffs twice daily,Oral thrush, hoarseness, cough,Untreated respiratory infections
+18,Montelukast,Leukotriene Receptor Antagonist,Asthma, Allergic Rhinitis,10mg once daily in the evening,Headache, mood changes, stomach pain,Hypersensitivity
+19,Prednisolone,Corticosteroid,Asthma, Arthritis, Eczema, Gout, Rheumatoid Arthritis, Psoriasis,5mg - 60mg once daily as prescribed,Increased appetite, insomnia, osteoporosis,Systemic fungal infections
+20,Ranitidine,H2 Blocker,Gastroesophageal Reflux Disease, Peptic Ulcer Disease, Acid Reflux,150mg twice daily,Headache, constipation, diarrhea,Hypersensitivity
+21,Meloxicam,NSAID,Arthritis, Rheumatoid Arthritis, Joint Pain,7.5mg - 15mg once daily with food,Indigestion, swelling, abdominal pain,Coronary artery bypass surgery
+22,Gabapentin,Anticonvulsant/Neuropathic,Migraine, Stroke, Insomnia, Fibromyalgia,300mg - 900mg three times daily,Dizziness, somnolence, peripheral edema,Hypersensitivity
+23,Doxycycline,Tetracycline Antibiotic,Acne Vulgaris, Sinusitis, Malaria,100mg once or twice daily,Photosensitivity, nausea, tooth discoloration,Pregnancy, children under 8
+24,Permethrin,Scabicide,Scabies,Apply 5% cream from head to toe wash off after 8-14 hours,Skin irritation, burning sensation, temporary redness,Hypersensitivity
+25,Pantoprazole,PPI,Gastroesophageal Reflux Disease, Peptic Ulcer Disease, Cholelithiasis,40mg once daily before breakfast,Headache, diarrhea, dry mouth,Hypersensitivity
+26,Allopurinol,Xanthine Oxidase Inhibitor,Gout,100mg - 300mg once daily after meals,Skin rash, stomach upset, gout flare ups initially,HLA-B*5801 positive patients
+27,Iron Polymaltose,Iron Supplement,Anemia,100mg once or twice daily with food,Dark stools, constipation, stomach irritation,Iron overload disorders
+28,Folic Acid,Vitamin,Anemia, Diabetes Mellitus, Chronic Kidney Disease,5mg once daily,Nausea, abdominal distension, flatulence,Hypersensitivity
+29,Mupirocin,Topical Antibiotic,Dermatitis, Eczema, Acne Vulgaris,Apply 2% ointment to affected area 3 times daily,Burning, stinging, itching at site,Hypersensitivity to ointment base
+30,Spironolactone,Aldosterone Antagonist,Hypertension, Chronic Kidney Disease,25mg - 100mg once daily,Hyperkalemia, gynecomastia, dizziness,Anuria, acute renal failure
+31,Furosemide,Loop Diuretic,Chronic Kidney Disease, Swelling, Hypertension,20mg - 80mg once daily,Dehydration, electrolyte depletion, dizziness,Anuria, hepatic coma
+32,Nitrofurantoin,Urinary Antibacterial,Urinary Tract Infection,50mg - 100mg four times daily,Nausea, headache, flatulence,Severe renal impairment, pregnancy at term
+33,Clopidogrel,Antiplatelet,Coronary Artery Disease, Stroke,75mg once daily,Bleeding, bruising, gastrointestinal upset,Active pathological bleeding
+34,Carvedilol,Beta-Blocker,Hypertension, Coronary Artery Disease,6.25mg - 25mg twice daily,Dizziness, fatigue, slow heart rate,Asthma, severe bradycardia
+35,Metoprolol,Beta-Blocker,Hypertension, Coronary Artery Disease, Migraine,50mg - 100mg once or twice daily,Fatigue, cold hands, slow heart rate,Second or third-degree heart block
+36,Atropine/Diphenoxylate,Antidiarrheal,Gastroenteritis, IBS,1-2 tablets up to 4 times daily,Dry mouth, drowsiness, constipation,Obstructive jaundice, severe colitis
+37,Loperamide,Antidiarrheal,Gastroenteritis, IBS, Celiac Disease,2mg - 4mg after each loose stool (max 16mg/day),Constipation, abdominal cramps, dizziness,Bloody diarrhea, ulcerative colitis
+38,Domperidone,Antiemetic,Gastroenteritis, Peptic Ulcer Disease, Cholelithiasis,10mg up to 3 times daily before meals,Dry mouth, headache, palpitations,Prolonged QT interval
+39,Ondansetron,Antiemetic,Gastroenteritis, Migraine, Vertigo,4mg - 8mg up to 3 times daily,Headache, constipation, sensation of warmth,Congenital long QT syndrome
+40,Betahistine,Vestibular Suppressant,Vertigo,8mg - 24mg three times daily,Nausea, indigestion, headache,Pheochromocytoma
+41,Clobetasol Propionate,Topical Steroid,Dermatitis, Psoriasis, Eczema,Apply thin layer twice daily to affected area (max 2 weeks),Skin thinning, burning, stretch marks,Viral skin infections, acne
+42,Coal Tar,Keratolytic,Psoriasis, Apply to affected area once or twice daily,Skin irritation, photosensitivity, folliculitis,Hypersensitivity
+43,Benzoyl Peroxide,Acne Treatment,Acne Vulgaris,Apply 2.5%-5% gel once or twice daily,Dryness, skin peeling, redness,Hypersensitivity
+44,Clindamycin,Antibiotic,Acne Vulgaris, Tonsillitis, Pneumonia,Apply 1% topical gel twice daily or oral 150mg-300mg,Diarrhea, abdominal pain, dry skin (topical),History of colitis
+45,Ciprofloxacin Eye Drops,Ophthalmic Antibiotic,Conjunctivitis,Instill 1-2 drops into affected eye every 4 hours,Eye irritation, red eyes, white crystal deposit,Hypersensitivity
+46,Timolol,Beta-Blocker Eye Drops,Glaucoma,Instill 1 drop of 0.25%-0.5% in affected eye twice daily,Eye irritation, dry eyes, systemic beta-blocker effects,Asthma, bradycardia, heart failure
+47,Latanoprost,Prostaglandin Analog,Glaucoma,Instill 1 drop in affected eye once daily in the evening,Darkening of iris color, eyelash growth, red eyes,Pregnancy
+48,Carboxymethylcellulose,Lubricant Eye Drops,Cataract, Conjunctivitis, dry eyes, burning eyes,Instill 1-2 drops in affected eye as needed,Temporary blurred vision, eye irritation,Hypersensitivity
+49,Guaiifenesin,Expectorant,Common Cold, Influenza, Bronchitis, COPD,200mg - 400mg every 4 hours as needed,Nausea, vomiting, headache,Hypersensitivity
+50,Dextromethorphan,Antitussive,Common Cold, Influenza, Bronchitis,15mg - 30mg every 6 to 8 hours,Drowsiness, dizziness, nausea,Concomitant MAOI use, asthma
+51,Acyclovir,Antiviral,COVID-19 (viral flares), Dermatitis (herpes complications),200mg - 800mg 5 times daily,Malaise, nausea, diarrhea,Renal impairment
+52,Sulfasalazine,DMARD,Arthritis, Rheumatoid Arthritis, Psoriatic Arthritis,500mg - 1000mg twice daily with food,Nausea, headache, skin rash, Sulfa allergy,Sulfa or salicylate allergy

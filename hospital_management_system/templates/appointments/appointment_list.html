@@ -1,0 +1,84 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Appointments - MediCare{% endblock %}
+
+{% block active_appointments %}active{% endblock %}
+{% block active_patient_appointments %}active{% endblock %}
+
+{% block header_title %}Appointments{% endblock %}
+{% block header_subtitle %}Manage and view all medical schedules{% endblock %}
+
+{% block header_actions %}
+    {% if request.user.doctorprofile %}
+        <a href="/appointments/doctor-add/" class="btn-primary"><i class="fas fa-plus"></i> New Appointment</a>
+    {% elif request.user.patientprofile %}
+        <a href="{% url 'book_appointment' %}" class="btn-primary"><i class="fas fa-calendar-plus"></i> Book New</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="section">
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appt in appointments %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 28px; height: 28px; border-radius: 50%; overflow: hidden; background: var(--hover-bg); display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--border-color); flex-shrink: 0;">
+                                {% if appt.patient.user.profile_image %}
+                                    <img src="{{ appt.patient.user.profile_image.url }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <i class="fas fa-user" style="font-size: 13px; color: var(--text-muted);"></i>
+                                {% endif %}
+                            </div>
+                            <span>{{ appt.patient.user.username }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 28px; height: 28px; border-radius: 50%; overflow: hidden; background: var(--hover-bg); display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--border-color); flex-shrink: 0;">
+                                {% if appt.doctor.user.profile_image %}
+                                    <img src="{{ appt.doctor.user.profile_image.url }}" alt="Doctor" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <i class="fas fa-user-md" style="font-size: 13px; color: var(--text-muted);"></i>
+                                {% endif %}
+                            </div>
+                            <span>Dr. {{ appt.doctor.user.username }}</span>
+                        </div>
+                    </td>
+                    <td>{{ appt.appointment_date|date:"M d, Y" }}</td>
+                    <td>{{ appt.appointment_time|default:"TBD" }}</td>
+                    <td><span class="status {{ appt.status|lower }}">{{ appt.status }}</span></td>
+                    <td>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <a href="{% url 'appointment_detail' appt.id %}" class="btn-small" style="background: rgba(59, 130, 246, 0.1); color: var(--primary-blue);" title="View Timeline">View</a>
+                            {% if request.user.doctorprofile %}
+                                <a href="{% url 'edit_appointment' appt.id %}" class="btn-small">Edit</a>
+                                {% if appt.status != 'Completed' %}
+                                    <a href="{% url 'complete_appointment' appt.id %}" class="btn-small btn-secondary">Complete</a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="no-data">No appointments found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

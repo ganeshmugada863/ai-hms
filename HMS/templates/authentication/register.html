@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register — Smart Hospital</title>
+    <meta name="description" content="Create your Smart Hospital Management account — secure, efficient, intelligent healthcare platform.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/authentication.css' %}?v=3.0">
+</head>
+<body>
+
+<!-- Floating background shapes -->
+<div class="bg-shapes">
+    <div class="bg-shape"></div>
+    <div class="bg-shape"></div>
+    <div class="bg-shape"></div>
+    <div class="bg-shape"></div>
+    <div class="bg-shape"></div>
+    <div class="bg-shape"></div>
+</div>
+
+<div class="auth-container">
+    <div class="left-panel">
+        <h1>Smart Hospital<br>Management System</h1>
+        <p class="tagline">Revolutionizing healthcare with intelligent, data-driven hospital management.</p>
+
+        <div class="quote-container">
+            <p class="quote-text" id="quoteText">The good physician treats the disease; the great physician treats the patient.</p>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="auth-card">
+            <h2>Sign Up</h2>
+            <p class="subtitle">Create your hospital account</p>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="register-form-grid">
+                    {% for field in form %}
+                        <div class="form-group {% if field.name == 'password1' or field.name == 'password2' %}field-full{% endif %}">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <ul class="errorlist">
+                                    {% for error in field.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+            </form>
+            <p class="mt-3 text-center">
+                Already have an account?
+                <a href="{% url 'login' %}">Sign In</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="bottom-bar">
+    <span>Smart Hospital &copy; 2026</span>
+</div>
+
+<script>
+    const quotes = [
+        "The good physician treats the disease; the great physician treats the patient.",
+        "Technology is best when it brings people together — especially in healthcare.",
+        "Efficient hospital management saves lives before treatment even begins.",
+        "Every patient deserves a system that remembers, cares, and responds instantly.",
+        "Smart hospitals don't replace doctors — they empower them with better data.",
+        "From paper records to digital intelligence — the future of healthcare is now.",
+        "A well-managed hospital is a well-healed community.",
+        "Healthcare innovation begins with seamless operations and ends with saved lives."
+    ];
+
+    let currentIndex = 0;
+    const quoteEl = document.getElementById('quoteText');
+
+    function rotateQuote() {
+        quoteEl.classList.add('fade-out');
+        setTimeout(() => {
+            currentIndex = (currentIndex + 1) % quotes.length;
+            quoteEl.textContent = quotes[currentIndex];
+            quoteEl.classList.remove('fade-out');
+        }, 600);
+    }
+
+    setInterval(rotateQuote, 5000);
+
+    // Fix autocomplete console warnings
+    document.addEventListener('DOMContentLoaded', function() {
+        const usernameInput = document.querySelector('input[name="username"]');
+        const pass1 = document.querySelector('input[name="password1"]');
+        const pass2 = document.querySelector('input[name="password2"]');
+        if (usernameInput) usernameInput.setAttribute('autocomplete', 'username');
+        if (pass1) pass1.setAttribute('autocomplete', 'new-password');
+        if (pass2) pass2.setAttribute('autocomplete', 'new-password');
+    });
+</script>
+</body>
+</html>

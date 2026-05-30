@@ -1,0 +1,9 @@
+/* homepage.css */
+body {
+    font-family: Arial, sans-serif;
+}
+
+.home-banner {
+    padding: 2rem;
+    text-align: center;
+}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Reminder</title>
+    <link rel="stylesheet" href="{% static 'css/reminders.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Create Reminder</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Create Reminder</button>
+        </form>
+
+        <h2>Your Reminders</h2>
+        <ul>
+            {% for reminder in reminders %}
+                <li>{{ reminder.reminder_title }} - {{ reminder.reminder_date }} {{ reminder.reminder_time }} {% if reminder.is_completed %} (Completed) {% endif %}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>
