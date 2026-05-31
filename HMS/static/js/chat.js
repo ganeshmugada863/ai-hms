@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const sendBtn = document.getElementById('sendBtn');
     const messagesContainer = document.getElementById('messagesContainer');
     const chatViewport = document.getElementById('chatViewport');
-    const langToggle = document.getElementById('langToggle');
+    const langSelect = document.getElementById('langSelect');
     const newChatBtn = document.getElementById('newChatBtn');
     const sessionsList = document.getElementById('sessionsList');
     
@@ -47,10 +47,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    langToggle.addEventListener('change', function () {
-        languageCode = this.checked ? 'te' : 'en';
-        updateUIPlaceholders();
-    });
+    if (langSelect) {
+        langSelect.addEventListener('change', function () {
+            languageCode = this.value;
+            updateUIPlaceholders();
+        });
+    }
 
     newChatBtn.addEventListener('click', function () {
         createNewChat();
@@ -79,11 +81,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Update form placeholders depending on language
     function updateUIPlaceholders() {
-        if (languageCode === 'te') {
-            userInputField.placeholder = "మీ సమస్యలను వివరించండి (ఉదా: 'నాకు రెండు రోజులుగా జ్వరం మరియు తలనొప్పి ఉంది')...";
-        } else {
-            userInputField.placeholder = "Describe your symptoms or health concern...";
-        }
+        const placeholders = {
+            'en': "Describe your symptoms or health concern...",
+            'te': "మీ లక్షణాలు లేదా ఆరోగ్య సమస్యను వివరించండి...",
+            'hi': "अपने लक्षणों या स्वास्थ्य संबंधी चिंता का वर्णन करें...",
+            'ta': "உங்கள் அறிகுறிகள் அல்லது சுகாதார கவலையை ವಿವரிக்கவும்...",
+            'kn': "ನಿಮ್ಮ ರೋಗಲಕ್ಷಣಗಳನ್ನು ಅಥವಾ ಆರೋಗ್ಯ ಕಾಳಜಿಯನ್ನು ವಿವರಿಸಿ...",
+            'ml': "നിങ്ങളുടെ ലക്ഷണങ്ങളോ ആരോഗ്യ പ്രശ്നമോ വിവരിക്കുക..."
+        };
+        userInputField.placeholder = placeholders[languageCode] || placeholders['en'];
     }
 
     // Reset side analysis panel fields
@@ -170,9 +176,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 activeSessionTitle.textContent = `Session: ${sessionId.substring(0, 8)}...`;
                 activeSessionMeta.textContent = `Smart AI Consultation`;
 
-                // Set language toggle based on session language
+                // Set language selector based on session language
                 languageCode = data.language || 'en';
-                langToggle.checked = (languageCode === 'te');
+                if (langSelect) langSelect.value = languageCode;
                 updateUIPlaceholders();
 
                 // Update analysis sidebar with historical data if available
@@ -322,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function () {
         row.className = 'message-row bot';
         
         let text = msgObj.content;
-        if (languageCode === 'te' && msgObj.translated_content) {
+        if (msgObj.translated_content && languageCode !== 'en') {
             text = msgObj.translated_content;
         }
 
@@ -348,6 +354,9 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         `;
         messagesContainer.appendChild(row);
+
+        // Voice speech out loud
+        speakBotResponse(text);
     }
 
     // Update the Sidebar Panels based on AJAX analysis payload
@@ -593,4 +602,161 @@ document.addEventListener('DOMContentLoaded', function () {
             sendMessageText(`Call completed`, `📞 Session Ended`);
         });
     };
+
+    // Character Counter Logic
+    const charCounter = document.getElementById('charCounter');
+    if (userInputField && charCounter) {
+        userInputField.addEventListener('input', function () {
+            const len = this.value.length;
+            charCounter.textContent = `${len} / 250`;
+            if (len > 250) {
+                charCounter.style.color = '#ef4444';
+            } else {
+                charCounter.style.color = '';
+            }
+        });
+    }
+
+    // Voice Speech to Text (Speech Recognition)
+    const voiceInputBtn = document.getElementById('voiceInputBtn');
+    const voiceStatusMsg = document.getElementById('voiceStatusMsg');
+    let recognition = null;
+    let isListening = false;
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = function () {
+            isListening = true;
+            if (voiceInputBtn) voiceInputBtn.style.color = '#ef4444';
+            if (voiceStatusMsg) voiceStatusMsg.textContent = "Listening... Speak now";
+        };
+
+        recognition.onresult = function (event) {
+            const resultText = event.results[0][0].transcript;
+            userInputField.value = resultText;
+            if (userInputField) {
+                userInputField.dispatchEvent(new Event('input'));
+            }
+            if (voiceStatusMsg) voiceStatusMsg.textContent = "Voice captured!";
+        };
+
+        recognition.onerror = function (event) {
+            console.error("Speech recognition error:", event.error);
+            if (voiceStatusMsg) voiceStatusMsg.textContent = "Error: " + event.error;
+            stopListening();
+        };
+
+        recognition.onend = function () {
+            stopListening();
+        };
+    } else {
+        if (voiceInputBtn) {
+            voiceInputBtn.title = "Voice recognition not supported in this browser";
+            voiceInputBtn.style.opacity = '0.5';
+        }
+    }
+
+    function startListening() {
+        if (!recognition) return;
+        const langMap = {
+            'en': 'en-US',
+            'te': 'te-IN',
+            'hi': 'hi-IN',
+            'ta': 'ta-IN',
+            'kn': 'kn-IN',
+            'ml': 'ml-IN'
+        };
+        recognition.lang = langMap[languageCode] || 'en-US';
+        try {
+            recognition.start();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function stopListening() {
+        isListening = false;
+        if (voiceInputBtn) voiceInputBtn.style.color = '';
+        if (voiceStatusMsg) voiceStatusMsg.textContent = "Press mic to dictate symptoms";
+        if (recognition) {
+            try {
+                recognition.stop();
+            } catch (e) {}
+        }
+    }
+
+    if (voiceInputBtn) {
+        voiceInputBtn.addEventListener('click', function () {
+            if (isListening) {
+                stopListening();
+            } else {
+                startListening();
+            }
+        });
+    }
+
+    // Voice Output (Text to Speech)
+    const voiceSpeakToggle = document.getElementById('voiceSpeakToggle');
+    let speakEnabled = false;
+
+    if (voiceSpeakToggle) {
+        voiceSpeakToggle.addEventListener('click', function () {
+            speakEnabled = !speakEnabled;
+            if (speakEnabled) {
+                this.innerHTML = '<i class="fas fa-volume-up" style="color: #2563EB;"></i>';
+                this.title = "Mute Voice Output";
+                if (voiceStatusMsg) voiceStatusMsg.textContent = "Voice output enabled";
+            } else {
+                this.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                this.title = "Enable Voice Output";
+                window.speechSynthesis.cancel();
+                if (voiceStatusMsg) voiceStatusMsg.textContent = "Voice output muted";
+            }
+        });
+    }
+
+    function speakBotResponse(text) {
+        if (!speakEnabled || !('speechSynthesis' in window)) return;
+        
+        window.speechSynthesis.cancel();
+        
+        // Remove HTML tags for clean speech
+        const cleanText = text.replace(/<[^>]*>/g, '').trim();
+        if (!cleanText) return;
+
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        const speechLangMap = {
+            'en': 'en-US',
+            'te': 'te-IN',
+            'hi': 'hi-IN',
+            'ta': 'ta-IN',
+            'kn': 'kn-IN',
+            'ml': 'ml-IN'
+        };
+        utterance.lang = speechLangMap[languageCode] || 'en-US';
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // Minimize / Close Button Event Listeners
+    const minimizeChatBtn = document.getElementById('minimizeChatBtn');
+    const closeChatBtn = document.getElementById('closeChatBtn');
+    const chatWorkspace = document.querySelector('.chat-workspace');
+
+    if (minimizeChatBtn) {
+        minimizeChatBtn.addEventListener('click', function () {
+            if (chatWorkspace) {
+                chatWorkspace.classList.toggle('minimized');
+            }
+        });
+    }
+
+    if (closeChatBtn) {
+        closeChatBtn.addEventListener('click', function () {
+            window.location.href = '/patients/dashboard/';
+        });
+    }
 });

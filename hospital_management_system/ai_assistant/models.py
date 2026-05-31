@@ -5,7 +5,18 @@ from django.conf import settings
 class ChatSession(models.Model):
     patient = models.ForeignKey('patients.PatientProfile', on_delete=models.CASCADE, related_name='chat_sessions')
     session_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    language = models.CharField(max_length=5, choices=[('en', 'English'), ('te', 'Telugu')], default='en')
+    language = models.CharField(
+        max_length=5, 
+        choices=[
+            ('en', 'English'), 
+            ('te', 'Telugu'),
+            ('hi', 'Hindi'),
+            ('ta', 'Tamil'),
+            ('kn', 'Kannada'),
+            ('ml', 'Malayalam')
+        ], 
+        default='en'
+    )
     started_at = models.DateTimeField(auto_now_add=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)

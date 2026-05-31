@@ -577,6 +577,152 @@
         });
     </script>
     {% endif %}
+
+    {% if request.user.is_authenticated and not request.user.role == 'admin' and not request.user.role == 'doctor' and not '/ai_assistant/chat' in request.path %}
+    <!-- Floating Chat Widget Styles -->
+    <style>
+        .mediassist-floating-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563EB, #3B82F6);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
+            z-index: 9999;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid rgba(255, 255, 255, 0.25);
+        }
+        .mediassist-floating-btn:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 12px 30px rgba(37, 99, 235, 0.45);
+        }
+        .mediassist-floating-btn .notification-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: #EF4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+        .mediassist-floating-btn::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: inherit;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            animation: floatingPulse 2s infinite ease-out;
+        }
+        @keyframes floatingPulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+            100% {
+                transform: scale(1.4);
+                opacity: 0;
+            }
+        }
+        .mediassist-floating-window {
+            position: fixed;
+            bottom: 96px;
+            right: 24px;
+            width: 420px;
+            height: 700px;
+            border-radius: 24px;
+            box-shadow: 0 15px 40px rgba(15, 23, 42, 0.15);
+            z-index: 9998;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            overflow: hidden;
+        }
+        .mediassist-floating-window.hide {
+            opacity: 0;
+            transform: translateY(40px) scale(0.9);
+            pointer-events: none;
+        }
+        @media (max-width: 500px) {
+            .mediassist-floating-btn {
+                bottom: 16px;
+                right: 16px;
+            }
+            .mediassist-floating-window {
+                bottom: 0;
+                right: 0;
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+            }
+        }
+    </style>
+
+    <!-- Floating Chat Button and Window Markup -->
+    <div id="mediassist-floating-btn" class="mediassist-floating-btn" title="Ask MediAssist AI">
+        <i class="fas fa-robot"></i>
+        <span class="notification-badge">1</span>
+    </div>
+
+    <div id="mediassist-floating-window" class="mediassist-floating-window hide">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#2563EB; color:white; padding:12px 18px;">
+            <span style="font-weight:700; font-size:14px; display:flex; align-items:center; gap:6px;"><i class="fas fa-robot"></i> MediAssist AI</span>
+            <div style="display:flex; gap:8px;">
+                <button id="floatMinimizeBtn" style="background:none; border:none; color:white; cursor:pointer; font-size:14px;"><i class="fas fa-minus"></i></button>
+                <button id="floatCloseBtn" style="background:none; border:none; color:white; cursor:pointer; font-size:14px;"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <iframe src="/ai_assistant/chat/?embedded=true" style="width: 100%; height: calc(100% - 44px); border: none;"></iframe>
+    </div>
+
+    <!-- Floating Widget Toggling Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const floatBtn = document.getElementById('mediassist-floating-btn');
+            const floatWindow = document.getElementById('mediassist-floating-window');
+            const floatClose = document.getElementById('floatCloseBtn');
+            const floatMin = document.getElementById('floatMinimizeBtn');
+            const badge = floatBtn.querySelector('.notification-badge');
+
+            floatBtn.addEventListener('click', () => {
+                floatWindow.classList.toggle('hide');
+                badge.style.display = 'none';
+            });
+
+            floatClose.addEventListener('click', (e) => {
+                e.stopPropagation();
+                floatWindow.classList.add('hide');
+            });
+
+            floatMin.addEventListener('click', (e) => {
+                e.stopPropagation();
+                floatWindow.classList.add('hide');
+            });
+        });
+    </script>
+    {% endif %}
+
     {% block extra_js %}{% endblock %}
 </body>
 

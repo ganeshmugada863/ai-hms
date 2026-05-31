@@ -2,81 +2,28 @@ import os
 import csv
 import json
 import re
-import numpy as np
 from django.utils import timezone
 from django.conf import settings
-
-from ai_assistant.language_detector import LanguageDetector
-from ai_assistant.symptom_engine import SymptomEngine
-from ai_assistant.risk_engine import RiskEngine
-from ai_assistant.memory_engine import MemoryEngine
+from doctors.models import DoctorProfile
+from appointments.models import Appointment
+from medical_records.models import MedicalRecord
+from ai_assistant.models import ChatMessage, SymptomEntry, DiseasePrediction
 
 class ChatBot:
     def __init__(self):
-        self.ld = LanguageDetector()
-        self.se = SymptomEngine()
-        self.re = RiskEngine()
-        self.me = MemoryEngine()
-        
-        self.diseases = []
-        self.medicines = []
-        self.disease_model = None
-        self.disease_model_loaded = False
-        
-        self._load_datasets()
-        self._load_disease_model()
-
-    def _load_datasets(self):
-        # Load diseases detail
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        diseases_path = os.path.join(current_dir, 'datasets', 'diseases.csv')
-        if os.path.exists(diseases_path):
-            with open(diseases_path, mode='r', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    self.diseases.append({
-                        'name': row.get('disease_name', '').strip().lower(),
-                        'name_te': row.get('disease_name_te', '').strip(),
-                        'symptoms': [s.strip().lower() for s in row.get('common_symptoms', '').split(',') if s.strip()],
-                        'department': row.get('department', '').strip(),
-                        'severity': row.get('severity', 'medium').strip().lower(),
-                        'description': row.get('description', '').strip(),
-                        'tests': row.get('recommended_tests', '').strip(),
-                        'treatment': row.get('treatment_overview', '').strip()
-                    })
-                    
-        # Load medicines detail
-        medicines_path = os.path.join(current_dir, 'datasets', 'medicines.csv')
-        if os.path.exists(medicines_path):
-            with open(medicines_path, mode='r', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    # Target diseases list
-                    t_diseases = [d.strip().lower() for d in row.get('disease', '').split(',') if d.strip()]
-                    self.medicines.append({
-                        'name': row.get('medicine_name', '').strip(),
-                        'diseases': t_diseases,
-                        'dosage': row.get('dosage', '').strip(),
-                        'side_effects': row.get('side_effects', '').strip(),
-                        'contraindications': row.get('contraindications', '').strip()
-                    })
-
-    def _load_disease_model(self):
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        model_path = os.path.join(current_dir, 'models', 'disease_model.h5')
-        if os.path.exists(model_path):
-            try:
-                import tensorflow as tf
-                self.disease_model = tf.keras.models.load_model(model_path)
-                self.disease_model_loaded = True
-            except Exception as e:
-                print(f"Warning: Failed to load disease_model.h5: {e}. Using Jaccard similarity fallback.")
-                self.disease_model = None
+        # We load departments and basic data in a rules-based layout
+        self.departments = [
+            'General Physician', 'Cardiology', 'Dermatology', 'Ophthalmology', 
+            'Gynecology', 'Orthopedics', 'Psychiatry', 'Dentistry', 'ENT', 
+            'Pediatrics', 'Neurology', 'Gastroenterology', 'Nephrology', 
+            'Oncology', 'Pulmonology'
+        ]
 
     def _check_security_violation(self, message: str, patient) -> bool:
+        """
+        Check for security violations (preventing accessing records of other patients).
+        """
         msg_clean = message.lower().strip()
-        
-        # Look for digit sequences representing IDs or phone numbers
         digit_sequences = re.findall(r'\b\d+\b', msg_clean)
         patient_id = str(patient.id)
         patient_user_id = str(patient.user.id)
@@ -85,12 +32,10 @@ class ChatBot:
         for digits in digit_sequences:
             if len(digits) >= 1:
                 if digits != patient_id and digits != patient_user_id and digits not in patient_phone:
-                    # Access attempt keyword checks
                     keywords = ['patient', 'history', 'profile', 'record', 'details', 'visit', 'show', 'view', 'check', 'get']
                     if any(kw in msg_clean for kw in keywords) or 'id' in msg_clean or 'phone' in msg_clean:
                         return True
                         
-        # Explicit requests referencing other patients/people
         other_patient_indicators = [
             'other patient', 'another patient', 'someone else', "doctor's patient",
             'history of patient', 'details of patient', 'profile of patient'
@@ -102,855 +47,705 @@ class ChatBot:
 
     def process_message(self, patient, message: str, session) -> dict:
         """
-        Main pipeline orchestrator implementing the MediBot state-based consultation workflow.
+        Main entry point for chatbot query processing.
+        Handles state-based conversations, multilingual replies, and custom rich cards.
         """
-        from ai_assistant.models import ChatMessage, SymptomEntry, DiseasePrediction
-        from doctors.models import DoctorProfile
-        from appointments.models import Appointment
-        from consultations.models import Consultation
-        import logging
+        from ai_assistant.language_detector import LanguageDetector
+        ld = LanguageDetector()
         
-        # Central logging of all patient interactions
-        logger = logging.getLogger(__name__)
-        logger.info(f"Interaction Log: Patient ID: {patient.id}, Session ID: {session.session_id}, Message: '{message}'")
-        
-        # 1. Language Detection
-        lang = self.ld.detect(message)
+        # 1. Language Detection & Configuration
+        lang = ld.detect(message)
         session.language = lang
         session.save()
         
-        # Translate message to English for NLP processing if Telugu
-        english_message = message if lang == 'en' else self.ld.translate_to_english(message)
+        # Translate to English for unified logic processing
+        english_message = message if lang == 'en' else ld.translate_to_english(message)
+        clean_msg = english_message.lower().strip()
         
-        # Save user message to database
-        user_msg = ChatMessage.objects.create(
+        # Central Logging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"MediAssist AI Interaction: Patient ID: {patient.id}, Session ID: {session.session_id}, Query: '{message}' (EN: '{english_message}')")
+        
+        # Create user chat message in DB
+        ChatMessage.objects.create(
             session=session,
             role='user',
             content=message,
             translated_content=english_message
         )
         
-        # Load or initialize session state
+        # 2. Security Check
+        if self._check_security_violation(message, patient):
+            resp = self.get_multilingual_response('security_error', lang)
+            ChatMessage.objects.create(session=session, role='bot', content=resp)
+            return {'response': resp, 'analysis': None}
+            
+        # 3. Emergency Detection Check
+        emergency_keywords = [
+            'heart attack', 'stroke', 'chest pain', 'unconscious', 'severe bleeding',
+            'breathing difficulty', 'difficulty breathing', 'seizure', 'accident', 'poisoning', 'burn injury'
+        ]
+        if any(kw in clean_msg for kw in emergency_keywords):
+            resp = self.get_emergency_banner_html(lang)
+            ChatMessage.objects.create(session=session, role='bot', content=resp)
+            return {'response': resp, 'analysis': {'symptoms': ['Emergency Symptoms'], 'allergy_alerts': ['CRITICAL EMERGENCY ALERT']}}
+
+        # Load current state machine state
         state_dict = session.predicted_diseases if isinstance(session.predicted_diseases, dict) else {}
         current_state = state_dict.get('state', None)
         
-        # Helper lists for positive/negative replies
-        positive_replies = ['yes', 'yeah', 'y', 'yup', 'avunu', 'avnu', 'ha', 'sare', 'ok', 'okay', 'అవును', 'సరే', 'హా']
-        negative_replies = ['no', 'n', 'nope', 'nah', 'ledu', 'kaadu', 'kadu', 'లేదు', 'కాదు', 'వద్దు']
-        
-        clean_msg = english_message.lower().strip()
-        is_yes = clean_msg in positive_replies or any(w in positive_replies for w in clean_msg.split())
-        is_no = clean_msg in negative_replies or any(w in negative_replies for w in clean_msg.split())
-        
-        disclaimer = "I am not a doctor. I cannot diagnose diseases or prescribe medicines. This is general guidance only. Please consult a qualified doctor for proper medical evaluation."
-        
-        # ==========================================
-        # STATE MACHINE TRANSITIONS
-        # ==========================================
-        
-        # STATE: awaiting_verification
-        if current_state == 'awaiting_verification':
-            patient_id = str(patient.id)
-            phone = str(patient.emergency_contact or '').replace('-', '').replace(' ', '')
-            clean_input = clean_msg.replace('-', '').replace(' ', '')
-            
-            if clean_input == patient_id or clean_input in phone or clean_input == str(patient.user.id):
-                state_dict['verified'] = True
-                state_dict['state'] = None
-                session.predicted_diseases = state_dict
-                session.save()
-                
-                resp = (
-                    f"Verification success! Mee profile details 📋:\n"
-                    f"- **Name:** {patient.user.first_name} {patient.user.last_name}\n"
-                    f"- **Age:** {patient.age} years\n"
-                    f"- **Gender:** {patient.gender}\n"
-                    f"- **Blood Group:** {patient.blood_group}\n"
-                    f"- **Medical History:** {patient.medical_history or 'None registered'}\n"
-                    f"- **Emergency Contact:** {patient.emergency_contact}\n\n"
-                    f"Mee details safety and security control lo vunnayi. Only registered doctors and you can access them."
-                )
-                ChatMessage.objects.create(session=session, role='bot', content=resp)
-                return {'response': resp, 'analysis': None}
-            else:
-                logger.warning(f"Security Alert / Verification Failure: User {patient.user.username} (ID {patient.id}) entered non-matching verification code: '{message}'")
-                resp = "Security reasons valla nenu ee information ivvalenu. Hospital staff tho contact cheyandi."
-                
-                state_dict['state'] = None
-                session.predicted_diseases = state_dict
-                session.save()
-                
-                ChatMessage.objects.create(session=session, role='bot', content=resp)
-                return {'response': resp, 'analysis': None}
+        # Helper indicators for positive/negative replies
+        is_yes = clean_msg in ['yes', 'yeah', 'y', 'yup', 'ok', 'okay', 'sure', 'confirm', 'correct']
+        is_no = clean_msg in ['no', 'nope', 'nah', 'not', 'cancel']
 
-        # STATE: awaiting_permission
-        elif current_state == 'awaiting_permission':
-            if is_yes:
-                dept_name = state_dict.get('department', 'General Medicine')
-                # Suggest highly rated doctors
-                docs = DoctorProfile.objects.filter(specialization__icontains=dept_name.split()[0], is_approved=True).order_by('-rating', '-reviews', '-experience')
-                if not docs.exists():
-                    docs = DoctorProfile.objects.filter(is_approved=True).order_by('-rating', '-reviews', '-experience')
-                
-                # Render Doctor Cards in HTML
-                doc_html = '<div class="doctor-cards-container">'
-                for d in docs[:5]:
-                    doc_html += f"""
-                    <div class="doctor-card">
-                        <div class="doc-card-body">
-                            <h5>Dr. {d.user.first_name} {d.user.last_name}</h5>
-                            <p class="specialization"><strong>Specialization:</strong> {d.specialization}</p>
-                            <p class="rating">⭐ {d.rating:.1f}/5 ({d.reviews} reviews)</p>
-                            <p class="experience"><strong>Experience:</strong> {d.experience} years</p>
-                            <button class="chat-btn select-doctor-btn" data-value="select_doctor_{d.id}" data-display="Select Dr. {d.user.last_name}">[Select]</button>
-                        </div>
-                    </div>
-                    """
-                doc_html += '</div>'
-                
-                resp = (
-                    "Here are the highly-rated doctors in our hospital matching your symptoms:" if lang == 'en'
-                    else "మీ లక్షణాలకు సరిపోయే మా ఆసుపత్రిలోని అత్యుత్తమ వైద్యులు ఇక్కడ ఉన్నారు:"
-                )
-                resp += f"\n\n{doc_html}"
-                
-                state_dict['state'] = 'awaiting_doctor_selection'
-                session.predicted_diseases = state_dict
-                session.save()
-                
-                ChatMessage.objects.create(session=session, role='bot', content=resp)
-                return {'response': resp, 'analysis': None}
-                
-            elif is_no:
-                resp = (
-                    f"Understood. If you feel worse or experience severe symptoms, please seek direct medical attention. Let me know if you need anything else!\n\n*{disclaimer}*"
-                )
-                session.predicted_diseases = {}
-                session.save()
-                
-                ChatMessage.objects.create(session=session, role='bot', content=resp)
-                return {'response': resp, 'analysis': None}
-        
-        # STATE: awaiting_doctor_selection
-        elif current_state == 'awaiting_doctor_selection':
-            doctor = None
-            if clean_msg.startswith('select_doctor_'):
-                try:
-                    doc_id = int(clean_msg.replace('select_doctor_', '').strip())
-                    doctor = DoctorProfile.objects.filter(id=doc_id).first()
-                except Exception:
-                    pass
-            else:
-                # Search by typed doctor name or username
-                docs = DoctorProfile.objects.filter(is_approved=True)
-                words = clean_msg.split()
-                for d in docs:
-                    un = d.user.username.lower()
-                    fn = d.user.first_name.lower()
-                    ln = d.user.last_name.lower()
-                    full_name = f"{fn} {ln}"
-                    
-                    if full_name in clean_msg or fn in clean_msg or ln in clean_msg or un in clean_msg:
-                        doctor = d
-                        break
-                    
-                    if any(w in fn or w in ln or fn in w or ln in w or w in un or un in w for w in words if len(w) >= 3):
-                        doctor = d
-                        break
-            
-            if doctor:
-                resp = (
-                    f"You selected **Dr. {doctor.user.first_name} {doctor.user.last_name}**.\n\n"
-                    "MediBot support formats options to connect with the doctor. How would you like to continue?\n\n"
-                    '<div class="preference-actions">'
-                    '<button class="chat-btn pref-btn btn-danger" data-value="pref_emergency" data-display="[Emergency]">🚨 Emergency</button>'
-                    '<button class="chat-btn pref-btn btn-primary" data-value="pref_meet_doctor" data-display="[Meet Doctor]">📅 Meet Doctor</button>'
-                    '<button class="chat-btn pref-btn btn-success" data-value="pref_video_call" data-display="[Video Call]">🎥 Video Call</button>'
-                    '<button class="chat-btn pref-btn btn-info" data-value="pref_voice_call" data-display="[Voice Call]">📞 Voice Call</button>'
-                    '<button class="chat-btn pref-btn btn-secondary" data-value="pref_chat" data-display="[Chat]">💬 Chat</button>'
-                    '</div>'
-                )
-                
-                state_dict['state'] = 'awaiting_preference_selection'
-                state_dict['doctor_id'] = doctor.id
-                session.predicted_diseases = state_dict
-                session.save()
-                
-                ChatMessage.objects.create(session=session, role='bot', content=resp)
-                return {'response': resp, 'analysis': None}
-            else:
-                resp = (
-                    "Please select one of the doctors from the cards above by clicking [Select], or type the doctor's name correctly (e.g., 'Srinivas Rao')."
-                    if lang == 'en' else
-                    "దయచేసి పైన ఉన్న కార్డ్‌ల నుండి ఒక వైద్యుడిని ఎంచుకోండి లేదా వైద్యుడి పేరును సరిగ్గా టైప్ చేయండి (ఉదాహరణకు, 'Srinivas Rao')."
-                )
-                ChatMessage.objects.create(session=session, role='bot', content=resp)
-                return {'response': resp, 'analysis': None}
-        
-        # STATE: awaiting_preference_selection
-        elif current_state == 'awaiting_preference_selection':
-            doc_id = state_dict.get('doctor_id')
-            doctor = DoctorProfile.objects.get(id=doc_id)
-            
-            if clean_msg == 'pref_emergency':
-                # Prioritize nearest available doctors
-                resp = (
-                    f"🚨 **Emergency mode activated.**\n\n"
-                    f"We have notified **Dr. {doctor.user.first_name} {doctor.user.last_name}** and the nearest medical on-duty staff. "
-                    f"A doctor is coming online immediately. Please stay calm and keep your browser window open.\n\n"
-                    f"*{disclaimer}*"
-                )
-                
-                # Save consultation
-                Consultation.objects.create(
-                    patient=patient,
-                    doctor=doctor,
-                    consultation_type='video',
-                    status='ongoing',
-                    scheduled_date=timezone.now(),
-                    notes="Emergency consultation initialized via AI chatbot."
-                )
-                
-                session.predicted_diseases = {}
-                session.save()
-                
-                ChatMessage.objects.create(session=session, role='bot', content=resp)
-                return {'response': resp, 'analysis': None}
-                
-            elif clean_msg == 'pref_meet_doctor':
-                # Render appointment booking form
-                extracted_symptoms_list = ", ".join(session.extracted_symptoms) if session.extracted_symptoms else "Symptom checkup"
-                form_html = f"""
-                <div class="appointment-form-card">
-                    <h5>Book Physical Appointment</h5>
-                    <form class="interactive-booking-form" onsubmit="event.preventDefault(); submitBookingForm(this);">
-                        <div class="form-group">
-                            <label>Patient Name:</label>
-                            <input type="text" name="name" value="{patient.user.first_name} {patient.user.last_name}" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Age:</label>
-                            <input type="number" name="age" value="{patient.age}" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Appointment Date:</label>
-                            <input type="date" name="date" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Preferred Time:</label>
-                            <input type="time" name="time" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Problem Summary:</label>
-                            <textarea name="summary" required>{extracted_symptoms_list}</textarea>
-                        </div>
-                        <input type="hidden" name="doctor_id" value="{doc_id}">
-                        <button type="submit" class="submit-booking-btn">Submit Booking</button>
-                    </form>
-                </div>
-                """
-                resp = (
-                    "Please fill out this appointment form to meet the doctor in person:"
-                    if lang == 'en' else
-                    "వైద్యుడిని వ్యక్తిగతంగా కలవడానికి దయచేసి ఈ అపాయింట్‌మెంట్ ఫారమ్‌ను పూరించండి:"
-                )
-                resp += f"\n\n{form_html}"
-                
-                state_dict['state'] = 'awaiting_booking_form'
-                session.predicted_diseases = state_dict
-                session.save()
-                
-                ChatMessage.objects.create(session=session, role='bot', content=resp)
-                return {'response': resp, 'analysis': None}
-                
-            elif clean_msg == 'pref_video_call':
-                # Open Video Call room console
-                video_html = f"""
-                <div class="video-room-console">
-                    <div class="video-screen">
-                        <div class="remote-video">
-                            <i class="fas fa-user-md placeholder-avatar"></i>
-                            <span>Dr. {doctor.user.last_name} Video Feed (Awaiting connection...)</span>
-                        </div>
-                        <div class="local-video">
-                            <video id="localVideoFeed" autoplay muted style="width:100%; height:100%; object-fit:cover; display:none;"></video>
-                            <div class="local-video-placeholder"><span>Patient (You)</span></div>
-                        </div>
-                    </div>
-                    <div class="video-controls-row">
-                        <button class="control-btn active" onclick="toggleCameraControl(this)"><i class="fas fa-video"></i> Camera On</button>
-                        <button class="control-btn active" onclick="toggleMicControl(this)"><i class="fas fa-microphone"></i> Mic On</button>
-                        <button class="control-btn" onclick="toggleScreenShareControl(this)"><i class="fas fa-desktop"></i> Share Screen</button>
-                        <button class="control-btn btn-danger" onclick="endConsultationCall(this, 'video')"><i class="fas fa-phone-slash"></i> End</button>
-                    </div>
-                    <div class="media-upload-section">
-                        <h6>Secure Media Upload Panel (Only Dr. {doctor.user.last_name} can view)</h6>
-                        <div class="upload-buttons">
-                            <button onclick="triggerDirectUpload()"><i class="fas fa-file-upload"></i> Upload Image / Report PDF</button>
-                        </div>
-                    </div>
-                    <div class="console-chat-section">
-                        <h6>Console Message Log</h6>
-                        <div class="console-chat-box">
-                            <p class="system-msg">Video session initialized. Central Django channels open.</p>
-                        </div>
-                    </div>
-                </div>
-                """
-                resp = (
-                    f"Starting **Video Consultation** with **Dr. {doctor.user.first_name} {doctor.user.last_name}**:\n\n"
-                    f"**Camera and Screen Sharing Guide:**\n"
-                    f"- Camera allow cheyyataniki controls visual toggle check cheyyandi.\n"
-                    f"- Screen sharing enable cheyyali ante desktop display icon button ni press cheyyandi.\n"
-                    f"- Mee video connection is established via a secure end-to-end encrypted tunnel.\n"
-                    f"- Mee media files uploads attachments system dwara auto secure path lo store cheyabadutundi.\n\n"
-                    f"*{disclaimer}*"
-                )
-                resp += f"\n\n{video_html}"
-                
-                Consultation.objects.create(
-                    patient=patient,
-                    doctor=doctor,
-                    consultation_type='video',
-                    status='ongoing',
-                    scheduled_date=timezone.now(),
-                    notes="Video consultation session started."
-                )
-                
-                # Clear active flow state but keep doctor linked
-                session.predicted_diseases = {'doctor_id': doc_id}
-                session.save()
-                
-                ChatMessage.objects.create(session=session, role='bot', content=resp)
-                return {'response': resp, 'analysis': None}
-                
-            elif clean_msg == 'pref_voice_call':
-                voice_html = f"""
-                <div class="video-room-console voice-only">
-                    <div class="voice-screen">
-                        <i class="fas fa-phone-volume pulsing-icon"></i>
-                        <span>Active Voice Session with Dr. {doctor.user.last_name}</span>
-                    </div>
-                    <div class="video-controls-row">
-                        <button class="control-btn active" onclick="toggleMicControl(this)"><i class="fas fa-microphone"></i> Mic On</button>
-                        <button class="control-btn btn-danger" onclick="endConsultationCall(this, 'audio')"><i class="fas fa-phone-slash"></i> Hang Up</button>
-                    </div>
-                </div>
-                """
-                resp = (
-                    f"Connecting **Voice Call** with **Dr. {doctor.user.first_name} {doctor.user.last_name}**...\n\n"
-                    f"Mee voice connection is established via a secure end-to-end encrypted tunnel.\n"
-                    f"Mee session logs database log storage dashboard check block automatic saving processes start chesayi.\n\n"
-                    f"*{disclaimer}*"
-                )
-                resp += f"\n\n{voice_html}"
-                
-                Consultation.objects.create(
-                    patient=patient,
-                    doctor=doctor,
-                    consultation_type='audio',
-                    status='ongoing',
-                    scheduled_date=timezone.now(),
-                    notes="Voice consultation session started."
-                )
-                
-                session.predicted_diseases = {'doctor_id': doc_id}
-                session.save()
-                
-                ChatMessage.objects.create(session=session, role='bot', content=resp)
-                return {'response': resp, 'analysis': None}
-                
-            elif clean_msg == 'pref_chat':
-                chat_html = f"""
-                <div class="doctor-chat-console">
-                    <div class="chat-header">💬 Chat Room: Dr. {doctor.user.first_name} {doctor.user.last_name}</div>
-                    <div class="chat-messages-log">
-                        <p class="system-msg">Secure chat session opened. Message logs save centrally in Django Consultation history.</p>
-                    </div>
-                </div>
-                """
-                resp = (
-                    f"Chat session opened with **Dr. {doctor.user.first_name} {doctor.user.last_name}**:\n\n"
-                    f"Mee chat connection is established via a secure end-to-end encrypted tunnel.\n"
-                    f"Mee messages metadata only assigned doctor and administrative audit panel visual status block matches.\n\n"
-                    f"*{disclaimer}*"
-                )
-                resp += f"\n\n{chat_html}"
-                
-                Consultation.objects.create(
-                    patient=patient,
-                    doctor=doctor,
-                    consultation_type='chat',
-                    status='ongoing',
-                    scheduled_date=timezone.now(),
-                    notes="Chat consultation session started."
-                )
-                
-                session.predicted_diseases = {'doctor_id': doc_id}
-                session.save()
-                
-                ChatMessage.objects.create(session=session, role='bot', content=resp)
-                return {'response': resp, 'analysis': None}
-        
-        # STATE: awaiting_booking_form (JSON form submission)
-        elif current_state == 'awaiting_booking_form' and clean_msg.startswith('{') and 'date' in clean_msg:
+        # 4. STATE MACHINE: APPOINTMENT BOOKING DETAILS CAPTURE
+        if current_state == 'booking_form_entry':
             try:
+                # Try parsing JSON form submission from chat window
                 form_data = json.loads(message)
+                # Create Appointment record
                 doc_id = state_dict.get('doctor_id')
                 doctor = DoctorProfile.objects.get(id=doc_id)
                 
-                # Create Appointment
                 appt = Appointment.objects.create(
                     patient=patient,
                     doctor=doctor,
                     appointment_date=form_data.get('date'),
                     appointment_time=form_data.get('time'),
-                    reason=form_data.get('summary', 'Symptom consult booked via MediBot'),
-                    status='Approved'
+                    reason=form_data.get('reason', 'Consultation booked via MediAssist AI'),
+                    consultation_type=form_data.get('consultation_type', 'in_person'),
+                    status='Pending'
                 )
                 
-                resp = (
-                    f"✓ **Appointment successfully booked with Dr. {doctor.user.first_name} {doctor.user.last_name}!**\n\n"
-                    f"**Date:** {appt.appointment_date}\n"
-                    f"**Time:** {appt.appointment_time}\n"
-                    f"Please arrive 15 minutes before your scheduled slot. Thank you!\n\n"
-                    f"*{disclaimer}*"
-                )
-                
+                # Clear session state
                 session.predicted_diseases = {}
                 session.save()
                 
+                success_html = self.get_appointment_success_html(appt, lang)
+                ChatMessage.objects.create(session=session, role='bot', content=success_html)
+                return {'response': success_html, 'analysis': None}
+            except Exception as e:
+                # Fallback if they replied text instead of JSON
+                state_dict['state'] = None
+                session.predicted_diseases = state_dict
+                session.save()
+
+        # 5. CORE TRIGGERS & COMMAND ROUTINGS
+        # 5a. Greetings & Welcome Card
+        if any(w in clean_msg.split() for w in ['hello', 'hi', 'hey', 'namaste', 'greetings', 'start', 'help']) or clean_msg == 'new chat':
+            # Clear state
+            session.predicted_diseases = {}
+            session.save()
+            resp_html = self.get_welcome_card_html(lang)
+            ChatMessage.objects.create(session=session, role='bot', content=resp_html)
+            return {'response': resp_html, 'analysis': None}
+            
+        # 5b. Emergency Manual Command
+        elif 'emergency' in clean_msg or clean_msg == 'emergency help' or clean_msg == 'ambulance request':
+            resp_html = self.get_emergency_banner_html(lang)
+            ChatMessage.objects.create(session=session, role='bot', content=resp_html)
+            return {'response': resp_html, 'analysis': {'symptoms': ['Emergency Prompt'], 'allergy_alerts': []}}
+            
+        # 5c. Hospital Services Module
+        elif clean_msg == 'hospital services' or 'services' in clean_msg:
+            resp_html = self.get_hospital_services_html(lang)
+            ChatMessage.objects.create(session=session, role='bot', content=resp_html)
+            return {'response': resp_html, 'analysis': None}
+            
+        # 5d. Explore Departments
+        elif clean_msg == 'explore departments' or clean_msg == 'departments' or 'department' in clean_msg:
+            resp_html = self.get_departments_html(lang)
+            ChatMessage.objects.create(session=session, role='bot', content=resp_html)
+            return {'response': resp_html, 'analysis': None}
+            
+        # 5e. Track Appointment
+        elif clean_msg == 'track appointment' or 'track' in clean_msg:
+            resp_html = self.get_track_appointments_html(patient, lang)
+            ChatMessage.objects.create(session=session, role='bot', content=resp_html)
+            return {'response': resp_html, 'analysis': None}
+            
+        # 5f. Lab Reports Checking
+        elif clean_msg == 'lab reports' or clean_msg == 'reports' or 'lab report' in clean_msg:
+            resp_html = self.get_lab_reports_html(patient, lang)
+            ChatMessage.objects.create(session=session, role='bot', content=resp_html)
+            return {'response': resp_html, 'analysis': None}
+            
+        # 5g. Find Doctor Option Start
+        elif clean_msg == 'find doctor' or clean_msg == 'book appointment':
+            # Ask symptom
+            resp = self.get_multilingual_response('ask_symptom', lang)
+            state_dict['state'] = 'awaiting_symptom'
+            session.predicted_diseases = state_dict
+            session.save()
+            ChatMessage.objects.create(session=session, role='bot', content=resp)
+            return {'response': resp, 'analysis': None}
+
+        # 5h. Direct Mapped Recommendations from Buttons (e.g. "Recommend Cardiology")
+        elif clean_msg.startswith('recommend '):
+            dept_name = clean_msg.replace('recommend ', '').strip().title()
+            # Match closely to our departments list
+            matched_dept = next((d for d in self.departments if dept_name.lower() in d.lower()), 'General Physician')
+            resp = self.get_doctor_recommendations_html(matched_dept, lang, session, state_dict)
+            ChatMessage.objects.create(session=session, role='bot', content=resp)
+            return {'response': resp, 'analysis': {'symptoms': [matched_dept + ' issue'], 'allergy_alerts': []}}
+            
+        # 5i. Direct Doctor Book Click (e.g. "book_doc_15")
+        elif clean_msg.startswith('book_doc_'):
+            doc_id = clean_msg.replace('book_doc_', '').strip()
+            try:
+                doctor = DoctorProfile.objects.get(id=doc_id)
+                state_dict['state'] = 'booking_form_entry'
+                state_dict['doctor_id'] = doc_id
+                session.predicted_diseases = state_dict
+                session.save()
+                
+                booking_form_html = self.get_booking_form_html(doctor, patient, lang)
+                ChatMessage.objects.create(session=session, role='bot', content=booking_form_html)
+                return {'response': booking_form_html, 'analysis': None}
+            except Exception as e:
+                resp = "Error accessing doctor records. Please select another doctor."
                 ChatMessage.objects.create(session=session, role='bot', content=resp)
                 return {'response': resp, 'analysis': None}
-            except Exception as e:
-                print(f"Error booking appointment: {e}")
 
-        # ==========================================
-        # GENERAL MEDIBOT TRIGGERS (Natural Queries)
-        # ==========================================
+        # 6. SYMPTOM ANALYSIS & EVALUATION PIPELINE
+        # If currently collecting details or just starting a symptom discussion
+        extracted_symptoms = self.extract_symptoms_local(english_message)
         
-        # Check security violation first
-        if self._check_security_violation(message, patient):
-            logger.warning(f"Security Alert: User {patient.user.username} (ID {patient.id}) attempted unauthorized access with query: '{message}'")
-            resp = "Security reasons valla nenu ee information ivvalenu. Hospital staff tho contact cheyandi."
+        if extracted_symptoms:
+            # Map symptom to Department
+            mapped_dept = self.map_symptom_to_department(extracted_symptoms[0])
+            
+            # Save symptoms to session database list
+            session.extracted_symptoms = list(set(session.extracted_symptoms + extracted_symptoms))
+            session.risk_level = 'medium'
+            session.save()
+            
+            # Response using AI Safety rule: "Based on the symptoms you described, consulting a [Department] is appropriate"
+            resp = self.get_doctor_recommendations_html(mapped_dept, lang, session, state_dict)
             ChatMessage.objects.create(session=session, role='bot', content=resp)
-            return {'response': resp, 'analysis': None}
+            return {'response': resp, 'analysis': {'symptoms': session.extracted_symptoms, 'allergy_alerts': []}}
+
+        # 7. Fallback Default Response
+        resp = self.get_multilingual_response('fallback', lang)
+        ChatMessage.objects.create(session=session, role='bot', content=resp)
+        return {'response': resp, 'analysis': None}
+
+    # ==========================================
+    # HTML UI COMPONENT GENERATORS
+    # ==========================================
+    
+    def get_welcome_card_html(self, lang: str) -> str:
+        # Title depending on lang
+        t_hello = {'en': 'Hello 👋', 'te': 'హలో 👋', 'hi': 'नमस्ते 👋', 'ta': 'ஹலோ 👋', 'kn': 'ಹಲೋ 👋', 'ml': 'ഹലോ 👋'}[lang]
+        t_desc = {'en': "I'm <strong>MediAssist AI</strong>.", 'te': "నేను <strong>మీడిఅసిస్ట్ AI</strong>.", 'hi': "मैं <strong>मीडियासिस्ट एआई</strong> हूँ।", 'ta': "நான் <strong>மீடியாசிஸ்ட் ஏஐ</strong>.", 'kn': "ನಾನು <strong>ಮೀಡಿಯಾಸಿಸ್ಟ್ ಎಐ</strong>.", 'ml': "ഞാൻ <strong>മീഡിയാസിസ്റ്റ് എഐ</strong>."}[lang]
+        t_help = {'en': "I can help you:", 'te': "నేను మీకు సహాయం చేయగలను:", 'hi': "मैं आपकी मदद कर सकता हूँ:", 'ta': "நான் உங்களுக்கு உதவ முடியும்:", 'kn': "ನಾನು ನಿಮಗೆ ಸಹಾಯ ಮಾಡಬಲ್ಲೆ:", 'ml': "എനിക്ക് നിങ്ങളെ സഹായിക്കാനാകും:"}[lang]
+        t_actions = {'en': "Please describe your symptoms or select a quick action below to begin:", 'te': "మీ లక్షణాలను వివరించండి లేదా ప్రారంభించడానికి క్రింది శీఘ్ర చర్యను ఎంచుకోండి:", 'hi': "शुरू करने के लिए कृपया अपने लक्षणों का वर्णन करें या नीचे एक त्वरित विकल्प चुनें:", 'ta': "உங்கள் அறிகுறிகளை விவரிக்கவும் அல்லது கீழே உள்ள விரைவான செயலைத் தேர்ந்தெடுக்கவும்:", 'kn': "ಪ್ರಾರಂಭಿಸಲು ದಯವಿಟ್ಟು ನಿಮ್ಮ ರೋಗಲಕ್ಷಣಗಳನ್ನು ವಿವರಿಸಿ ಅಥವಾ ಕೆಳಗಿನ ತ್ವರಿತ ಆಯ್ಕೆಯನ್ನು ಆರಿಸಿ:", 'ml': "തുടങ്ങാൻ ദയവായി നിങ്ങളുടെ ലക്ഷണങ്ങൾ വിവരിക്കുക അല്ലെങ്കിൽ താഴെയുള്ള ഒരു ദ്രുത പ്രവർത്തനം തിരഞ്ഞെടുക്കുക:"}[lang]
         
-        # GREETINGS
-        if any(w in clean_msg.split() for w in ['hello', 'hi', 'hey', 'namaste']) or any(w in clean_msg for w in ['నమస్కారం', 'నమస్తే']):
-            resp = (
-                "Hello! 👋 I am your **HMS AI Medical Appointment Assistant** 🏥.\n\n"
-                "I can help you:\n"
-                "• Describe your symptoms\n"
-                "• Find the right specialist doctor\n"
-                "• Book appointments\n\n"
-                "Please describe your symptoms or health concern, and I will recommend the appropriate specialist for you."
-            )
-            ChatMessage.objects.create(session=session, role='bot', content=resp)
-            return {'response': resp, 'analysis': None}
+        list_items = {
+            'en': ['Find the right doctor', 'Understand symptoms', 'Book appointments', 'Explore hospital services', 'Get emergency assistance'],
+            'te': ['సరైన వైద్యుడిని కనుగొనండి', 'లక్షణాలను అర్థం చేసుకోండి', 'అపాయింట్‌మెంట్‌లు బుక్ చేయండి', 'ఆసుపత్రి సేవలను అన్వేషించండి', 'అత్యవసర సహాయం పొందండి'],
+            'hi': ['सही डॉक्टर खोजें', 'लक्षणों को समझें', 'अ अपॉइंटमेंट बुक करें', 'अस्पताल सेवाओं को जानें', 'आपातकालीन सहायता प्राप्त करें'],
+            'ta': ['சரியான மருத்துவரை கண்டறியவும்', 'அறிகுறிகளை புரிந்து கொள்ளவும்', 'அப்பாயிண்ட்மெண்ட் முன்பதிவு செய்யவும்', 'மருத்துவமனை சேவைகளை அறியவும்', 'அவசர உதவி பெறவும்'],
+            'kn': ['ಸರಿಯಾದ ವೈದ್ಯರನ್ನು ಹುಡುಕಿ', 'ರೋಗಲಕ್ಷಣಗಳನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳಿ', 'ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ಬುಕ್ ಮಾಡಿ', 'ಆಸ್ಪತ್ರೆ ಸೇವೆಗಳನ್ನು ಅನ್ವೇಷಿಸಿ', 'ತುರ್ತು ಸಹಾಯ ಪಡೆಯಿರಿ'],
+            'ml': ['ശരിയായ ഡോക്ടറെ കണ്ടെത്തുക', 'ലക്ഷണങ്ങൾ മനസ്സിലാക്കുക', 'അപ്പോയിന്റ്മെന്റ് ബുക്ക് ചെയ്യുക', 'ആശുപത്രി സേവനങ്ങൾ പര്യവേക്ഷണം ചെയ്യുക', 'അടിയന്തിര സഹായം നേടുക']
+        }[lang]
 
-        # PATIENT PERSONAL PROFILE AND HISTORY REQUESTS
-        if any(w in clean_msg for w in ['my history', 'my record', 'my details', 'visit history', 'show profile', 'my profile']):
-            if state_dict.get('verified') == True:
-                resp = (
-                    f"Here is your patient details profile:\n"
-                    f"- **Name:** {patient.user.first_name} {patient.user.last_name}\n"
-                    f"- **Age:** {patient.age} years\n"
-                    f"- **Gender:** {patient.gender}\n"
-                    f"- **Blood Group:** {patient.blood_group}\n"
-                    f"- **Medical History:** {patient.medical_history or 'None registered'}\n"
-                    f"- **Emergency Contact:** {patient.emergency_contact}"
-                )
-            else:
-                # Require verification
-                state_dict['state'] = 'awaiting_verification'
-                session.predicted_diseases = state_dict
-                session.save()
-                resp = "Mee confidential patient records check details view privacy reasons valla please confirm your patient ID code or emergency phone number code to verify."
-            ChatMessage.objects.create(session=session, role='bot', content=resp)
-            return {'response': resp, 'analysis': None}
+        welcome_html = f"""
+        <div class="welcome-card-premium" style="background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border: 1px solid rgba(37,99,235,0.15); border-radius: 18px; padding: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.02); margin-bottom: 15px;">
+            <h4 style="font-size: 18px; font-weight: 700; color: #2563EB; margin: 0 0 8px 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-robot animate-pulse"></i> {t_hello}
+            </h4>
+            <p style="font-size: 14.5px; color: #0F172A; margin: 0 0 10px 0;">{t_desc} {t_help}</p>
+            <ul style="list-style: none; padding: 0; margin: 0 0 15px 0; font-size: 13.5px; color: #475569; display: flex; flex-direction: column; gap: 6px;">
+                <li><i class="fas fa-check-circle" style="color: #10B981; margin-right: 6px;"></i> {list_items[0]}</li>
+                <li><i class="fas fa-check-circle" style="color: #10B981; margin-right: 6px;"></i> {list_items[1]}</li>
+                <li><i class="fas fa-check-circle" style="color: #10B981; margin-right: 6px;"></i> {list_items[2]}</li>
+                <li><i class="fas fa-check-circle" style="color: #10B981; margin-right: 6px;"></i> {list_items[3]}</li>
+                <li><i class="fas fa-check-circle" style="color: #10B981; margin-right: 6px;"></i> {list_items[4]}</li>
+            </ul>
+            <p style="font-size: 13px; color: #64748B; line-height: 1.4; margin: 0;">{t_actions}</p>
+        </div>
+        
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px;">
+            <button class="chat-btn" data-value="Find Doctor" style="border: 1px solid rgba(37,99,235,0.2); background: rgba(37,99,235,0.05); color: #2563EB; font-weight: 600; display: flex; align-items: center; gap: 6px; border-radius: 12px; padding: 8px 12px; font-size: 12.5px;"><i class="fas fa-user-md"></i> Find Doctor</button>
+            <button class="chat-btn" data-value="Book Appointment" style="border: 1px solid rgba(37,99,235,0.2); background: rgba(37,99,235,0.05); color: #2563EB; font-weight: 600; display: flex; align-items: center; gap: 6px; border-radius: 12px; padding: 8px 12px; font-size: 12.5px;"><i class="fas fa-calendar-alt"></i> Book Appointment</button>
+            <button class="chat-btn btn-no" data-value="Emergency Help" style="font-weight: 600; display: flex; align-items: center; gap: 6px; border-radius: 12px; padding: 8px 12px; font-size: 12.5px;"><i class="fas fa-ambulance"></i> Emergency Help</button>
+            <button class="chat-btn" data-value="Hospital Services" style="border: 1px solid rgba(37,99,235,0.2); background: rgba(37,99,235,0.05); color: #2563EB; font-weight: 600; display: flex; align-items: center; gap: 6px; border-radius: 12px; padding: 8px 12px; font-size: 12.5px;"><i class="fas fa-hospital"></i> Services</button>
+            <button class="chat-btn" data-value="Explore Departments" style="border: 1px solid rgba(37,99,235,0.2); background: rgba(37,99,235,0.05); color: #2563EB; font-weight: 600; display: flex; align-items: center; gap: 6px; border-radius: 12px; padding: 8px 12px; font-size: 12.5px;"><i class="fas fa-notes-medical"></i> Departments</button>
+            <button class="chat-btn" data-value="Lab Reports" style="border: 1px solid rgba(37,99,235,0.2); background: rgba(37,99,235,0.05); color: #2563EB; font-weight: 600; display: flex; align-items: center; gap: 6px; border-radius: 12px; padding: 8px 12px; font-size: 12.5px;"><i class="fas fa-file-invoice-dollar"></i> Lab Reports</button>
+            <button class="chat-btn" data-value="Track Appointment" style="border: 1px solid rgba(37,99,235,0.2); background: rgba(37,99,235,0.05); color: #2563EB; font-weight: 600; display: flex; align-items: center; gap: 6px; border-radius: 12px; padding: 8px 12px; font-size: 12.5px;"><i class="fas fa-clock"></i> Track Appointment</button>
+        </div>
+        """
+        return welcome_html
 
-        # Check RAG before general fallbacks
-        from ai_assistant.rag_engine import RAGEngine
-        rag = RAGEngine()
-        rag_match = rag.search_kb(english_message)
-        if rag_match:
-            ChatMessage.objects.create(session=session, role='bot', content=rag_match)
-            return {'response': rag_match, 'analysis': None}
+    def get_emergency_banner_html(self, lang: str) -> str:
+        t_alert = {
+            'en': '⚠ This may be a medical emergency. Please contact emergency services immediately or visit the nearest emergency department.',
+            'te': '⚠ ఇది వైద్య అత్యవసర పరిస్థితి కావచ్చు. దయచేసి వెంటనే అత్యవసర సేవలను సంప్రదించండి లేదా సమీప అత్యవసర విభాగానికి వెళ్ళండి.',
+            'hi': '⚠ यह एक चिकित्सा आपातकाल हो सकता है। कृपया तुरंत आपातकालीन सेवाओं से संपर्क करें या निकटतम आपातकालीन विभाग में जाएँ।',
+            'ta': '⚠ இது ஒரு மருத்துவ அவசர நிலையாக இருக்கலாம். தயவுசெய்து உடனடியாக அவசர சேவைகளை தொடர்பு கொள்ளவும் அல்லது அருகிலுள்ள அவசர பிரிவுக்கு செல்லவும்.',
+            'kn': '⚠ ಇದು ವೈದ್ಯಕೀಯ ತುರ್ತು ಪರಿಸ್ಥಿತಿಯಾಗಿರಬಹುದು. ದಯವಿಟ್ಟು ತಕ್ಷಣ ತುರ್ತು ಸೇವೆಗಳನ್ನು ಸಂಪರ್ಕಿಸಿ ಅಥವಾ ಹತ್ತಿರದ ತುರ್ತು ವಿಭಾಗಕ್ಕೆ ಭೇಟಿ ನೀಡಿ.',
+            'ml': '⚠ ഇത് ഒരു മെഡിക്കൽ അടിയന്തരാവസ്ഥയായിരിക്കാം. ദയവായി ഉടൻ തന്നെ അടിയന്തര സേവനങ്ങളുമായി ബന്ധപ്പെടുക അല്ലെങ്കിൽ അടുത്തുള്ള അത്യാഹിത വിഭാഗം സന്ദർശിക്കുക.'
+        }[lang]
 
-        # SYSTEM CHARTS SUMMARY
-        if any(w in clean_msg for w in ['chart', 'charts', 'report statistics', 'revenue statistics', 'analytics']):
-            resp = (
-                "MediBot matches 3 charts currently setup in your Django home admin panel 📊:\n"
-                "1. **Monthly Revenue Trend Chart**: Tracks hospital billings and incoming consult fees.\n"
-                "2. **Department Patient Distribution**: Displays incoming patient volume mapped to each medical unit.\n"
-                "3. **Doctor Ratings Summary**: Visualizes doctor reviews and performance scores.\n\n"
-                "Mee dashboard check dashboard panels link direct details direct check cheyyandi!"
-            )
-            ChatMessage.objects.create(session=session, role='bot', content=resp)
-            return {'response': resp, 'analysis': None}
+        banner_html = f"""
+        <div style="background: rgba(239, 68, 68, 0.08); border: 2px solid #EF4444; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(239, 68, 68, 0.1); margin-bottom: 12px;">
+            <h5 style="color: #EF4444; font-size: 15px; font-weight: 700; margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-exclamation-triangle animate-bounce"></i> EMERGENCY ALERT
+            </h5>
+            <p style="font-size: 13.5px; color: #0F172A; line-height: 1.5; font-weight: 600; margin: 0 0 15px 0;">{t_alert}</p>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <a href="tel:108" class="chat-btn" style="text-align: center; background: #EF4444; color: white !important; border: none; font-weight: bold; border-radius: 10px; padding: 10px; text-decoration: none; display: block;">
+                    <i class="fas fa-phone-alt"></i> Call Ambulance (108)
+                </a>
+                <a href="tel:911" class="chat-btn" style="text-align: center; background: #475569; color: white !important; border: none; font-weight: 600; border-radius: 10px; padding: 10px; text-decoration: none; display: block;">
+                    <i class="fas fa-phone-alt"></i> Call Emergency (911)
+                </a>
+                <a href="https://maps.google.com/?q=emergency+room" target="_blank" class="chat-btn" style="text-align: center; border: 1px solid rgba(239,68,68,0.3); background: white; color: #EF4444 !important; font-weight: 600; border-radius: 10px; padding: 10px; text-decoration: none; display: block;">
+                    <i class="fas fa-map-marker-alt"></i> Find Nearest ER Room
+                </a>
+            </div>
+        </div>
+        """
+        return banner_html
 
-        # DJANGO FORMS ROUTING
-        if any(w in clean_msg for w in ['form', 'forms', 'registration', 'register profile', 'profile form']):
-            resp = (
-                "Maa hospital registration options matching list 📋:\n"
-                "- **Patient Profile Creation**: [/patients/create-profile/](/patients/create-profile/)\n"
-                "- **Interactive Booking Portal**: [/appointments/book/](/appointments/book/)\n"
-                "Links click chesi direct forms details fill cheyandi."
-            )
-            ChatMessage.objects.create(session=session, role='bot', content=resp)
-            return {'response': resp, 'analysis': None}
+    def get_hospital_services_html(self, lang: str) -> str:
+        # 12 Hospital Services
+        services = [
+            {'name': 'OPD', 'desc': 'Outpatient consults & general care', 'icon': 'fa-user-md'},
+            {'name': 'IPD', 'desc': 'Inpatient admission & rooms details', 'icon': 'fa-bed'},
+            {'name': 'ICU & NICU', 'desc': 'Intensive critical life support care', 'icon': 'fa-heartbeat'},
+            {'name': 'Radiology', 'desc': 'High-definition X-Ray, CT & MRI Scans', 'icon': 'fa-x-ray'},
+            {'name': 'Laboratory', 'desc': 'Secure, computerized blood analysis tests', 'icon': 'fa-vial'},
+            {'name': 'Blood Bank', 'desc': '24/7 emergency blood replacement stocks', 'icon': 'fa-tint'},
+            {'name': 'Pharmacy', 'desc': 'In-house certified medicine supply desk', 'icon': 'fa-pills'},
+            {'name': 'Emergency Care', 'desc': '24/7 trauma response & triage units', 'icon': 'fa-ambulance'},
+            {'name': 'Ambulance', 'desc': 'Fully equipped cardiac support fleet', 'icon': 'fa-truck-medical'},
+            {'name': 'Insurance Desk', 'desc': 'Hassle-free TPA cashless claim processing', 'icon': 'fa-shield-halved'},
+            {'name': 'Billing Office', 'desc': 'Transparent billing & discharge checkout', 'icon': 'fa-receipt'},
+            {'name': 'Medical Records', 'desc': 'Digitized secure personal patient charts', 'icon': 'fa-file-medical'}
+        ]
+        
+        cards_html = ""
+        for s in services:
+            cards_html += f"""
+            <div style="background: white; border: 1px solid rgba(226,232,240,0.8); border-radius: 14px; padding: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.01);">
+                <span style="font-size: 18px; color: #2563EB;"><i class="fas {s['icon']}"></i></span>
+                <h6 style="font-size: 13.5px; font-weight: bold; margin: 6px 0 2px 0; color: #0F172A;">{s['name']}</h6>
+                <p style="font-size: 11px; color: #64748B; margin: 0; line-height: 1.3;">{s['desc']}</p>
+            </div>
+            """
 
-        # APPOINTMENTS HANDLING
-        if any(w in clean_msg for w in ['book appointment', 'appointment dates', 'doctor consult', 'appointment book']):
-            resp = (
-                "Appointment book details process modal. You can book using the [Appointment Booking Form](/appointments/book/) "
-                "or let me search doctors here. Department or specialization name cheppandi!"
-            )
-            ChatMessage.objects.create(session=session, role='bot', content=resp)
-            return {'response': resp, 'analysis': None}
+        services_html = f"""
+        <div style="margin-bottom: 12px;">
+            <h5 style="font-size: 15px; font-weight: 700; color: #2563EB; margin: 0 0 10px 0;"><i class="fas fa-hospital"></i> Hospital Services & Facilities</h5>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-height: 300px; overflow-y: auto; padding: 5px;">
+                {cards_html}
+            </div>
+        </div>
+        """
+        return services_html
 
-        # DOCTOR AVAILABILITY
-        if any(w in clean_msg for w in ['doctor', 'doctors', 'specialist', 'specialists', 'available doctors', 'availability']):
-            docs = DoctorProfile.objects.filter(is_approved=True).order_by('-rating')
-            if docs.exists():
-                doc_html = '<div class="doctor-cards-container">'
-                for d in docs[:5]:
-                    doc_html += f"""
-                    <div class="doctor-card">
-                        <div class="doc-card-body">
-                            <h5>Dr. {d.user.first_name} {d.user.last_name}</h5>
-                            <p class="specialization"><strong>Specialization:</strong> {d.specialization}</p>
-                            <p class="rating">⭐ {d.rating:.1f}/5 ({d.reviews} reviews)</p>
-                            <p class="experience"><strong>Experience:</strong> {d.experience} years</p>
-                            <button class="chat-btn select-doctor-btn" data-value="select_doctor_{d.id}" data-display="Select Dr. {d.user.last_name}">[Select]</button>
-                        </div>
+    def get_departments_html(self, lang: str) -> str:
+        depts_details = [
+            {'name': 'Cardiology', 'desc': 'Heart care & coronary diseases', 'icon': 'fa-heart'},
+            {'name': 'Neurology', 'desc': 'Brain & nervous system disorders', 'icon': 'fa-brain'},
+            {'name': 'Dermatology', 'desc': 'Skin health, rashes & allergy solutions', 'icon': 'fa-hand-dots'},
+            {'name': 'Orthopedics', 'desc': 'Bone fractures, joints & back pain care', 'icon': 'fa-bone'},
+            {'name': 'Gynecology', 'desc': 'Pregnancy & female health monitoring', 'icon': 'fa-person-pregnant'},
+            {'name': 'Pediatrics', 'desc': 'Children health care & infections', 'icon': 'fa-baby'},
+            {'name': 'ENT', 'desc': 'Ear, nose, throat & tonsil pain care', 'icon': 'fa-ear-listen'},
+            {'name': 'Psychiatry', 'desc': 'Anxiety, depression & mental health', 'icon': 'fa-head-side-virus'},
+            {'name': 'Pulmonology', 'desc': 'Asthma, lung issues & breathing care', 'icon': 'fa-lungs'},
+            {'name': 'Gastroenterology', 'desc': 'Stomach pain, acidity & digestive care', 'icon': 'fa-stomach'},
+            {'name': 'Nephrology', 'desc': 'Kidney problems & urinary issues', 'icon': 'fa-kidneys'},
+            {'name': 'Dentistry', 'desc': 'Toothaches, gum health & oral checkups', 'icon': 'fa-tooth'}
+        ]
+        
+        cards_html = ""
+        for d in depts_details:
+            cards_html += f"""
+            <div style="background: white; border: 1px solid rgba(226,232,240,0.8); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 6px rgba(0,0,0,0.01);">
+                <div>
+                    <span style="font-size: 18px; color: #2563EB;"><i class="fas {d['icon']}"></i></span>
+                    <h6 style="font-size: 13px; font-weight: bold; margin: 6px 0 2px 0; color: #0F172A;">{d['name']}</h6>
+                    <p style="font-size: 11px; color: #64748B; margin: 0 0 10px 0; line-height: 1.3;">{d['desc']}</p>
+                </div>
+                <button class="chat-btn" data-value="Recommend {d['name']}" style="padding: 4px 8px; font-size: 11px; border-radius: 8px; width: 100%; border: 1px solid rgba(37,99,235,0.2); background: rgba(37,99,235,0.05); color: #2563EB;">Consult</button>
+            </div>
+            """
+
+        dept_html = f"""
+        <div style="margin-bottom: 12px;">
+            <h5 style="font-size: 15px; font-weight: 700; color: #2563EB; margin: 0 0 10px 0;"><i class="fas fa-notes-medical"></i> Specialized Medical Departments</h5>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-height: 300px; overflow-y: auto; padding: 5px;">
+                {cards_html}
+            </div>
+        </div>
+        """
+        return dept_html
+
+    def get_track_appointments_html(self, patient, lang: str) -> str:
+        appts = Appointment.objects.filter(patient=patient).order_by('-appointment_date', '-appointment_time')[:5]
+        
+        t_title = {
+            'en': 'Your Active Appointments',
+            'te': 'మీ క్రియాశీల అపాయింట్‌మెంట్‌లు',
+            'hi': 'आपके सक्रिय अपॉइंटमेंट',
+            'ta': 'உங்கள் செயலில் உள்ள அப்பாயிண்ட்மெண்ட்கள்',
+            'kn': 'ನಿಮ್ಮ ಸಕ್ರಿಯ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್‌ಗಳು',
+            'ml': 'നിങ്ങളുടെ സജീവമായ അപ്പോയിന്റ്മെന്റുകൾ'
+        }.get(lang, 'Your Active Appointments')
+        t_no_appt = {
+            'en': 'No appointments found.',
+            'te': 'అపాయింట్‌మెంట్‌లు ఏవీ కనుగొనబడలేదు.',
+            'hi': 'कोई अपॉइंटमेंट नहीं मिला।',
+            'ta': 'அப்பாயிண்ட்மெண்ட்கள் எதுவும் இல்லை.',
+            'kn': 'ಯಾವುದೇ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್‌ಗಳು ಕಂಡುಬಂದಿಲ್ಲ.',
+            'ml': 'അപ്പോയിന്റ്മെന്റുകൾ ഒന്നും കണ്ടെത്തിയില്ല.'
+        }.get(lang, 'No appointments found.')
+        
+        if not appts.exists():
+            return f"<p style='font-size:13.5px; color:#475569;'><i class='fas fa-clock'></i> <strong>{t_title}</strong>:<br>{t_no_appt}</p>"
+
+        list_html = ""
+        for a in appts:
+            color = "#EAB308" if a.status == 'Pending' else "#10B981" if a.status == 'Approved' else "#EF4444"
+            list_html += f"""
+            <div style="background: white; border: 1px solid rgba(226,232,240,0.8); border-radius: 12px; padding: 12px; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.01);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="font-size:11px; font-weight:bold; color:#64748B;">ID: #{a.id}</span>
+                    <span style="font-size:10px; font-weight:bold; padding:2px 6px; border-radius:10px; background: {color}22; color: {color};">{a.status.upper()}</span>
+                </div>
+                <h6 style="font-size:13px; font-weight:bold; margin:0 0 4px 0; color:#0F172A;">Dr. {a.doctor.user.first_name} {a.doctor.user.last_name}</h6>
+                <p style="font-size:11px; color:#475569; margin:0;">
+                    <i class="fas fa-calendar-alt"></i> {a.appointment_date} &nbsp; 
+                    <i class="fas fa-clock"></i> {a.appointment_time} &nbsp; 
+                    <i class="fas fa-video"></i> {a.get_consultation_type_display()}
+                </p>
+            </div>
+            """
+
+        final_html = f"""
+        <div style="margin-bottom: 12px;">
+            <h5 style="font-size: 15px; font-weight: 700; color: #2563EB; margin: 0 0 10px 0;"><i class="fas fa-clock"></i> {t_title}</h5>
+            <div style="max-height: 250px; overflow-y: auto; padding: 2px;">
+                {list_html}
+            </div>
+        </div>
+        """
+        return final_html
+
+    def get_lab_reports_html(self, patient, lang: str) -> str:
+        # Query patient uploads (we treat all report uploads as lab reports)
+        reports = MedicalRecord.objects.filter(patient=patient).order_by('-uploaded_at')[:5]
+        
+        t_title = {
+            'en': 'Your Digital Lab Reports',
+            'te': 'మీ డిజిటల్ ల్యాబ్ నివేదికలు',
+            'hi': 'आपकी डिजिटल लैब रिपोर्ट',
+            'ta': 'உங்கள் டிஜிட்டல் ஆய்வக அறிக்கைகள்',
+            'kn': 'ನಿಮ್ಮ ಡಿಜಿಟಲ್ ಲ್ಯಾಬ್ ವರದಿಗಳು',
+            'ml': 'നിങ്ങളുടെ ഡിജിറ്റൽ ലാബ് റിപ്പോർട്ടുകൾ'
+        }.get(lang, 'Your Digital Lab Reports')
+        t_no_report = {
+            'en': 'No lab reports uploaded yet.',
+            'te': 'ఇంకా ల్యాబ్ నివేదికలు ఏవీ అప్‌లోడ్ చేయబడలేదు.',
+            'hi': 'अभी तक कोई लैब रिपोर्ट अपलोड नहीं की गई है।',
+            'ta': 'ஆய்வக அறிக்கைகள் எதுவும் இன்னும் பதிவேற்றப்படவில்லை.',
+            'kn': 'ಇನ್ನೂ ಯಾವುದೇ ಲ್ಯಾಬ್ ವರದಿಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಲಾಗಿಲ್ಲ.',
+            'ml': 'ലാബ് റിപ്പോർട്ടുകൾ ഒന്നും ഇതുവരെ അപ്‌ലോഡ് ചെയ്തിട്ടില്ല.'
+        }.get(lang, 'No lab reports uploaded yet.')
+
+        if not reports.exists():
+            return f"<p style='font-size:13.5px; color:#475569;'><i class='fas fa-file-invoice-dollar'></i> <strong>{t_title}</strong>:<br>{t_no_report}</p>"
+
+        list_html = ""
+        for r in reports:
+            file_url = r.file.url if r.file else "#"
+            list_html += f"""
+            <div style="background: white; border: 1px solid rgba(226,232,240,0.8); border-radius: 12px; padding: 12px; margin-bottom: 8px; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.01);">
+                <div style="flex:1; margin-right: 10px; overflow:hidden;">
+                    <h6 style="font-size:12.5px; font-weight:bold; margin:0; color:#0F172A; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">{r.description or 'Laboratory Record'}</h6>
+                    <p style="font-size:10px; color:#64748B; margin:2px 0 0 0;">Uploaded: {r.uploaded_at.strftime('%Y-%m-%d')}</p>
+                </div>
+                <a href="{file_url}" download class="chat-btn" style="padding:4px 10px; font-size:11px; border-radius:8px; border: 1px solid rgba(16,185,129,0.3); background: rgba(16,185,129,0.05); color:#10B981; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+                    <i class="fas fa-download"></i> Get
+                </a>
+            </div>
+            """
+
+        final_html = f"""
+        <div style="margin-bottom: 12px;">
+            <h5 style="font-size: 15px; font-weight: 700; color: #2563EB; margin: 0 0 10px 0;"><i class="fas fa-file-invoice-dollar"></i> {t_title}</h5>
+            <div style="max-height: 250px; overflow-y: auto; padding: 2px;">
+                {list_html}
+            </div>
+        </div>
+        """
+        return final_html
+
+    def get_doctor_recommendations_html(self, department: str, lang: str, session, state_dict) -> str:
+        # AI safety message
+        t_safety = {
+            'en': f"Based on the symptoms you described, consulting a specialist in **{department}** may be appropriate.",
+            'te': f"మీరు వివరించిన లక్షణాల ఆధారంగా, **{department}** నిపుణుడిని సంప్రదించడం సముచితం కావచ్చు.",
+            'hi': f"आपके द्वारा बताए गए लक्षणों के आधार पर, **{department}** के विशेषज्ञ से परामर्श करना उचित हो सकता है।",
+            'ta': f"நீங்கள் விவரித்த அறிகுறிகளின் அடிப்படையில், **{department}** நிபுணரை அணுகுவது பொருத்தமானதாக இருக்கலாம்.",
+            'kn': f"ನೀವು ವಿವರಿಸಿದ ರೋಗಲಕ್ಷಣಗಳ ಆಧಾರದ ಮೇಲೆ, **{department}** ತಜ್ಞರನ್ನು ಸಂಪರ್ಕಿಸುವುದು ಸೂಕ್ತವಾಗಬಹುದು.",
+            'ml': f"നിങ്ങൾ വിവരിച്ച ലക്ഷണങ്ങളുടെ അടിസ്ഥാനത്തിൽ, **{department}** ലെ ഒരു വിദഗ്ദ്ധനെ കാണുന്നത് ഉചിതമായിരിക്കും."
+        }[lang]
+        
+        # Check doctors in that department
+        docs = DoctorProfile.objects.filter(specialization__icontains=department.split()[0], is_approved=True).order_by('-rating', '-experience')
+        if not docs.exists():
+            # Fallback check
+            docs = DoctorProfile.objects.filter(is_approved=True).order_by('-rating', '-experience')[:3]
+            
+        t_doctors_header = {
+            'en': 'Here are suitable doctors for you:',
+            'te': 'మీ కోసం తగిన వైద్యులు ఇక్కడ ఉన్నారు:',
+            'hi': 'यहाँ आपके लिए उपयुक्त डॉक्टर हैं:',
+            'ta': 'உங்களுக்கு ஏற்ற மருத்துவர்கள் இங்கே உள்ளனர்:',
+            'kn': 'ನಿಮಗಾಗಿ ಸೂಕ್ತವಾದ ವೈದ್ಯರು ಇಲ್ಲಿದ್ದಾರೆ:',
+            'ml': 'നിങ്ങൾക്ക് അനുയോജ്യരായ ഡോക്ടർമാർ ഇതാ:'
+        }[lang]
+
+        cards_html = ""
+        for d in docs[:4]:
+            rating_stars = "★" * int(round(d.rating)) + "☆" * (5 - int(round(d.rating)))
+            
+            # Select doc state value triggers state transition
+            cards_html += f"""
+            <div style="background: white; border: 1px solid rgba(226,232,240,0.8); border-radius: 14px; padding: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.01);">
+                <div style="display:flex; gap:12px; align-items:center; margin-bottom:8px;">
+                    <div style="width:40px; height:40px; border-radius:50%; background:#2563EB; color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:16px;">
+                        {d.user.first_name[0] if d.user.first_name else 'D'}
                     </div>
-                    """
-                doc_html += '</div>'
-                
-                resp = (
-                    "Approved available doctors list matching database 🩺:\n\n"
-                    f"{doc_html}\n\n"
-                    f"Evaritho connect cheyali? Cheppandi. \n\n*{disclaimer}*"
-                )
-                state_dict['state'] = 'awaiting_doctor_selection'
-                session.predicted_diseases = state_dict
-                session.save()
-            else:
-                resp = f"No doctors currently active in the database. General hospital visits suggest desk. \n\n*{disclaimer}*"
-            ChatMessage.objects.create(session=session, role='bot', content=resp)
-            return {'response': resp, 'analysis': None}
+                    <div>
+                        <h6 style="font-size:13.5px; font-weight:bold; margin:0; color:#0F172A;">Dr. {d.user.first_name} {d.user.last_name}</h6>
+                        <p style="font-size:11px; color:#64748B; margin:2px 0 0 0;">{d.specialization} | {d.qualification}</p>
+                    </div>
+                </div>
+                <p style="font-size:11.5px; color:#475569; margin:0 0 8px 0; line-height:1.4;">
+                    <i class="fas fa-briefcase" style="color:#2563EB;"></i> {d.experience} Years Experience &nbsp; 
+                    <i class="fas fa-star" style="color:#F59E0B;"></i> <span style="color:#F59E0B; font-weight:bold;">{d.rating}</span> ({d.reviews} reviews)
+                </p>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #F1F5F9; padding-top:8px; margin-top:8px;">
+                    <span style="font-size:12px; font-weight:bold; color:#10B981;">Fee: ${d.consultation_fee}</span>
+                    <button class="chat-btn" data-value="book_doc_{d.id}" style="padding:4px 12px; font-size:11.5px; border-radius:8px; background:#2563EB; color:white; border:none; font-weight:bold;">Book Session</button>
+                </div>
+            </div>
+            """
 
-        # OUT OF HMS SCOPE
-        if any(w in clean_msg for w in ['weather', 'news', 'sports', 'movies', 'politics', 'joke', 'song']):
-            resp = "Idi Hospital Management System (HMS) related query kadu. Please visit front desk or main desk for other inquiries."
-            ChatMessage.objects.create(session=session, role='bot', content=resp)
-            return {'response': resp, 'analysis': None}
+        final_html = f"""
+        <div style="margin-bottom:12px;">
+            <p style="font-size:13.5px; color:#0F172A; line-height:1.5; font-weight:500; margin-bottom:10px;">{t_safety}</p>
+            <p style="font-size:12.5px; color:#475569; margin-bottom:8px; font-weight:600;"><i class="fas fa-star-of-life" style="color:#2563EB;"></i> {t_doctors_header}</p>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                {cards_html}
+            </div>
+            <p style="font-size:11px; color:#64748B; font-style:italic; line-height:1.4; border-top: 1px solid #E2E8F0; padding-top: 10px; margin-top: 12px;">
+                ⚠ Disclaimer: I am not a doctor. I cannot diagnose diseases, recommend dosages, or prescribe medications. Please consult the recommended specialist for proper medical checkup.
+            </p>
+        </div>
+        """
+        return final_html
 
-        # ==========================================
-        # DEFAULT CLINICAL SYMPTOM FLOW
-        # ==========================================
+    def get_booking_form_html(self, doctor, patient, lang: str) -> str:
+        # Interactive HTML form in chat
+        t_header = {
+            'en': f'Book Appointment with Dr. {doctor.user.first_name} {doctor.user.last_name}',
+            'te': f'Dr. {doctor.user.first_name} {doctor.user.last_name} తో అపాయింట్‌మెంట్ బుక్ చేయండి',
+            'hi': f'डॉ. {doctor.user.first_name} {doctor.user.last_name} के साथ अपॉइंटमेंट बुक करें',
+            'ta': f'டாக்டர் {doctor.user.first_name} {doctor.user.last_name} உடன் அப்பாயிண்ட்மெண்ட் முன்பதிவு செய்யவும்',
+            'kn': f'ಡಾ. {doctor.user.first_name} {doctor.user.last_name} ಅವರೊಂದಿಗೆ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ಬುಕ್ ಮಾಡಿ',
+            'ml': f'ഡോ. {doctor.user.first_name} {doctor.user.last_name}-തുമായി അപ്പോയിന്റ്മെന്റ് ബുക്ക് ചെയ്യുക'
+        }.get(lang, f'Book Appointment with Dr. {doctor.user.first_name} {doctor.user.last_name}')
         
-        # Check conversational queries fallback
-        is_greeting_or_farewell = self._check_conversational_dataset(clean_msg, lang)
-        if is_greeting_or_farewell:
-            ChatMessage.objects.create(session=session, role='bot', content=is_greeting_or_farewell)
-            return {'response': is_greeting_or_farewell, 'analysis': None}
-            
-        # Extract symptoms
-        extracted = self.se.extract_symptoms(english_message)
+        today = timezone.localdate().strftime('%Y-%m-%d')
         
-        if not extracted:
-            resp = (
-                "Hello! I can help you find the right doctor and book an appointment. 🏥\n\n"
-                "Please describe your symptoms or health concern. For example:\n"
-                "• 'I have chest pain and difficulty breathing'\n"
-                "• 'I have a skin rash for 3 days'\n"
-                "• 'My child has fever and cough'\n\n"
-                f"*{disclaimer}*"
-            )
-            ChatMessage.objects.create(session=session, role='bot', content=resp)
-            return {'response': resp, 'analysis': None}
-            
-        # Save symptoms to DB & Cache
-        current_symptoms = [s['name'] for s in extracted]
-        session.extracted_symptoms = current_symptoms
-        session.save()
+        form_html = f"""
+        <div class="appointment-form-card" style="background: white; border: 1px solid rgba(37,99,235,0.15); border-radius: 16px; padding: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.03); max-width:100%;">
+            <h5 style="font-size:14.5px; font-weight:700; color:#2563EB; margin:0 0 15px 0; border-bottom:1px solid #F1F5F9; padding-bottom:8px;">
+                <i class="fas fa-calendar-plus"></i> {t_header}
+            </h5>
+            <form class="interactive-booking-form" onsubmit="event.preventDefault(); submitBookingForm(this);" style="display:flex; flex-direction:column; gap:10px;">
+                <div class="form-group" style="display:flex; flex-direction:column; gap:4px;">
+                    <label style="font-size:11px; font-weight:bold; color:#475569;">Patient Name</label>
+                    <input type="text" name="name" value="{patient.user.first_name} {patient.user.last_name}" required style="padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; background:#F8FAFC;">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <div class="form-group" style="display:flex; flex-direction:column; gap:4px;">
+                        <label style="font-size:11px; font-weight:bold; color:#475569;">Age</label>
+                        <input type="number" name="age" value="{patient.age}" required style="padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1;">
+                    </div>
+                    <div class="form-group" style="display:flex; flex-direction:column; gap:4px;">
+                        <label style="font-size:11px; font-weight:bold; color:#475569;">Gender</label>
+                        <select name="gender" required style="padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; background:white;">
+                            <option value="Male" {"selected" if patient.gender == 'Male' else ""}>Male</option>
+                            <option value="Female" {"selected" if patient.gender == 'Female' else ""}>Female</option>
+                            <option value="Other" {"selected" if patient.gender == 'Other' else ""}>Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <div class="form-group" style="display:flex; flex-direction:column; gap:4px;">
+                        <label style="font-size:11px; font-weight:bold; color:#475569;">Preferred Date</label>
+                        <input type="date" name="date" value="{today}" min="{today}" required style="padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1;">
+                    </div>
+                    <div class="form-group" style="display:flex; flex-direction:column; gap:4px;">
+                        <label style="font-size:11px; font-weight:bold; color:#475569;">Preferred Time</label>
+                        <input type="time" name="time" value="10:00" required style="padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1;">
+                    </div>
+                </div>
+                <div class="form-group" style="display:flex; flex-direction:column; gap:4px;">
+                    <label style="font-size:11px; font-weight:bold; color:#475569;">Consultation Mode</label>
+                    <select name="consultation_type" required style="padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1; background:white;">
+                        <option value="in_person">In-Person Consultation</option>
+                        <option value="video">Premium Video Call</option>
+                        <option value="audio">Voice Call Only</option>
+                    </select>
+                </div>
+                <div class="form-group" style="display:flex; flex-direction:column; gap:4px;">
+                    <label style="font-size:11px; font-weight:bold; color:#475569;">Brief Reason</label>
+                    <input type="text" name="reason" placeholder="e.g. Cough and cold consultation" required style="padding:6px 10px; font-size:12.5px; border-radius:6px; border:1px solid #CBD5E1;">
+                </div>
+                <button type="submit" class="submit-booking-btn" style="margin-top:8px; padding:10px; border-radius:8px; border:none; background:#2563EB; color:white; font-weight:bold; font-size:13px; cursor:pointer;">Confirm Booking Details</button>
+            </form>
+        </div>
+        """
+        return form_html
+
+    def get_appointment_success_html(self, appt, lang: str) -> str:
+        t_header = {
+            'en': 'Appointment Successfully Confirmed! 🎉',
+            'te': 'అపాయింట్‌మెంట్ విజయవంతంగా ధృవీకరించబడింది! 🎉',
+            'hi': 'अपॉइंटमेंट सफलतापूर्वक पक्का हो गया! 🎉',
+            'ta': 'அப்பாயிண்ட்மெண்ட் வெற்றிகரமாக உறுதிசெய்யப்பட்டது! 🎉',
+            'kn': 'ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ಯಶಸ್ವಿಯಾಗಿ ದೃಢೀಕರಿಸಲ್ಪಟ್ಟಿದೆ! 🎉',
+            'ml': 'അപ്പോയിന്റ്മെന്റ് വിജയകരമായി സ്ഥിരീകരിച്ചു! 🎉'
+        }.get(lang, 'Appointment Successfully Confirmed! 🎉')
         
-        for item in extracted:
-            SymptomEntry.objects.create(
-                message=user_msg,
-                symptom_name=item['name'],
-                symptom_name_te=self.ld.translate_to_telugu(item['name']),
-                confidence=item['confidence'],
-                category=item['category']
-            )
-            
-        # Check HMS History
-        history_banner = ""
-        if patient:
-            history_elements = []
-            if patient.medical_history:
-                history_elements.append(f"history of {patient.medical_history}")
-            
-            # Check past completed appointments
-            past_visits = Appointment.objects.filter(patient=patient, status='Completed').order_by('-appointment_date')[:2]
-            if past_visits.exists():
-                visits_str = ", ".join([f"Dr. {v.doctor.user.last_name} ({v.appointment_date})" for v in past_visits])
-                history_elements.append(f"visits with {visits_str}")
-                
-            if history_elements:
-                history_banner = f"*(Patient background: {', '.join(history_elements)})*\n\n"
-                
-        # Format Symptom Definitions & Health Area
-        symptom_list_str = "Symptom check evaluation results:\n"
-        for s in current_symptoms:
-            symptom_list_str += f"✓ {s.capitalize()}\n"
-            
-        symptom_definitions = "\nAbout symptoms:\n"
-        for item in extracted:
-            desc = item.get('description', '')
-            if not desc:
-                for sym_ref in self.se.symptoms:
-                    if sym_ref['name'] == item['name']:
-                        desc = sym_ref['description']
-                        break
-            if not desc:
-                desc = f"Refers to feelings of {item['name']}."
-            symptom_definitions += f"- **{item['name'].capitalize()}**: {desc}\n"
-            
-        categories_extracted = list(set([item['category'] for item in extracted]))
-        health_area = "General Physician"
-        if 'neurological' in categories_extracted:
-            health_area = "Neurology"
-        elif 'cardiovascular' in categories_extracted:
-            health_area = "Cardiology"
-        elif 'respiratory' in categories_extracted:
-            health_area = "Pulmonology"
-        elif 'gastrointestinal' in categories_extracted:
-            health_area = "Gastroenterology"
-        elif 'dermatological' in categories_extracted or 'skin' in categories_extracted:
-            health_area = "Dermatology"
-        elif 'musculoskeletal' in categories_extracted or 'orthopedic' in categories_extracted:
-            health_area = "Orthopedics"
-        elif 'ophthalmological' in categories_extracted or 'eye' in categories_extracted:
-            health_area = "Ophthalmology"
-        elif 'ent' in categories_extracted or 'ear' in categories_extracted:
-            health_area = "ENT"
-        elif 'psychiatric' in categories_extracted or 'mental' in categories_extracted:
-            health_area = "Psychiatry"
-        elif 'pediatric' in categories_extracted:
-            health_area = "Pediatrics"
-        elif 'gynecological' in categories_extracted:
-            health_area = "Gynecology"
-        elif 'renal' in categories_extracted or 'kidney' in categories_extracted:
-            health_area = "Nephrology"
-        elif 'endocrine' in categories_extracted or 'hormonal' in categories_extracted:
-            health_area = "Endocrinology"
-        elif 'rheumatological' in categories_extracted or 'joint' in categories_extracted:
-            health_area = "Rheumatology"
-        elif 'dental' in categories_extracted or 'tooth' in categories_extracted:
-            health_area = "Dental"
-            
-        area_explanation = (
-            f"\nThese symptoms map to **{health_area}** department conditions.\n"
-            f"Would you like me to suggest doctors related to your symptoms?\n\n"
-            '<div class="chat-actions">'
-            '<button class="chat-btn btn-yes" data-value="Yes" data-display="Yes">Yes</button>'
-            '<button class="chat-btn btn-no" data-value="No" data-display="No">No</button>'
-            '</div>'
-        )
+        t_id = {
+            'en': 'Appointment ID',
+            'te': 'అపాయింట్‌మెంట్ ఐడి',
+            'hi': 'अपॉइंटमेंट आईडी',
+            'ta': 'அப்பாயிண்ட்மெண்ட் ஐடி',
+            'kn': 'ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ಐಡಿ',
+            'ml': 'അപ്പോയിന്റ്മെന്റ് ഐഡി'
+        }.get(lang, 'Appointment ID')
+        t_doctor = {
+            'en': 'Consulting Doctor',
+            'te': 'సంప్రదింపు వైద్యుడు',
+            'hi': 'परामर्शदाता डॉक्टर',
+            'ta': 'ஆலோசனை மருத்துவர்',
+            'kn': 'ಸಮಾಲೋಚನಾ ವೈದ್ಯರು',
+            'ml': 'കൺസൾട്ടിംഗ് ഡോക്ടർ'
+        }.get(lang, 'Consulting Doctor')
         
-        full_response = f"{history_banner}{symptom_list_str}{symptom_definitions}\n*{disclaimer}*{area_explanation}"
-        
-        # Save state: awaiting_permission
-        session.predicted_diseases = {
-            'state': 'awaiting_permission',
-            'symptoms': current_symptoms,
-            'department': health_area
+        success_html = f"""
+        <div style="background: rgba(16, 185, 129, 0.08); border: 2px solid #10B981; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.05); margin-bottom: 10px;">
+            <h5 style="color: #10B981; font-size: 15px; font-weight: 700; margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-check-circle animate-pulse"></i> {t_header}
+            </h5>
+            <div style="background:white; border:1px solid rgba(16,185,129,0.15); border-radius:12px; padding:14px; margin-bottom:12px; font-size:13px; color:#334155;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-weight:bold;">
+                    <span>{t_id}:</span>
+                    <span style="color:#10B981;">#{appt.id}</span>
+                </div>
+                <div style="margin-bottom:6px;">
+                    <strong>{t_doctor}:</strong> Dr. {appt.doctor.user.first_name} {appt.doctor.user.last_name}
+                </div>
+                <div style="margin-bottom:6px;">
+                    <strong>Date & Time:</strong> {appt.appointment_date} at {appt.appointment_time}
+                </div>
+                <div style="margin-bottom:6px;">
+                    <strong>Specialization:</strong> {appt.doctor.specialization}
+                </div>
+                <div>
+                    <strong>Hospital Location:</strong> MediCare Main Block, 2nd Floor, Room 204
+                </div>
+            </div>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <a href="/appointments/slip/{appt.id}/" target="_blank" class="chat-btn" style="text-align:center; padding:8px 10px; font-size:11.5px; font-weight:bold; background:#10B981; color:white !important; border:none; border-radius:8px; text-decoration:none; display:block;">
+                    <i class="fas fa-file-download"></i> Get Slip
+                </a>
+                <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Appointment+with+Dr.+{appt.doctor.user.last_name}&dates={appt.appointment_date.strftime('%Y%m%d')}/{appt.appointment_date.strftime('%Y%m%d')}" target="_blank" class="chat-btn" style="text-align:center; padding:8px 10px; font-size:11.5px; font-weight:600; border:1px solid rgba(16,185,129,0.3); background:white; color:#10B981 !important; border-radius:8px; text-decoration:none; display:block;">
+                    <i class="fas fa-calendar-plus"></i> Add Calendar
+                </a>
+            </div>
+        </div>
+        """
+        return success_html
+
+    # ==========================================
+    # TRANSLATION & DICTIONARY UTILITIES
+    # ==========================================
+
+    def get_multilingual_response(self, key: str, lang: str) -> str:
+        # Multi-language text templates
+        vocab = {
+            'ask_symptom': {
+                'en': 'Please describe your symptoms or health concern (e.g. "I have fever and cough for two days").',
+                'te': 'దయచేసి మీ లక్షణాలను లేదా ఆరోగ్య సమస్యను వివరించండి (ఉదా: "నాకు రెండు రోజులుగా జ్వరం మరియు దగ్గు ఉంది").',
+                'hi': 'कृपया अपने लक्षणों या स्वास्थ्य संबंधी चिंता का वर्णन करें (जैसे "मुझे दो दिनों से बुखार और खांसी है")।',
+                'ta': 'உங்கள் அறிகுறிகளை அல்லது சுகாதார கவலையை விவரிக்கவும் (எ.கா. "எனக்கு இரண்டு நாட்களாக காய்ச்சல் மற்றும் இருமல் உள்ளது").',
+                'kn': 'ದಯವಿಟ್ಟು ನಿಮ್ಮ ರೋಗಲಕ್ಷಣಗಳನ್ನು ಅಥವಾ ಆರೋಗ್ಯ ಕಾಳಜಿಯನ್ನು ವಿವರಿಸಿ (ಉದಾ. "ನನಗೆ ಎರಡು ದಿನಗಳಿಂದ ಜ್ವರ ಮತ್ತು ಕೆಮ್ಮು ಇದೆ").',
+                'ml': 'ദയവായി നിങ്ങളുടെ ലക്ഷണങ്ങളോ ആരോഗ്യ പ്രശ്നമോ വിവരിക്കുക (ഉദാ. "എനിക്ക് രണ്ട് ദിവസമായി പനിയും ചുമയും ഉണ്ട്").'
+            },
+            'security_error': {
+                'en': 'Security Access Denied: You are not authorized to view this patient\'s records for privacy reasons.',
+                'te': 'భద్రతా నిరాకరణ: గోప్యతా కారణాల వల్ల ఈ రోగి యొక్క వివరాలను వీక్షించడానికి మీకు అనుమతి లేదు.',
+                'hi': 'सुरक्षा अस्वीकृति: गोपनीयता कारणों से आपको इस मरीज के रिकॉर्ड देखने की अनुमति नहीं है।',
+                'ta': 'பாதுகாப்பு மறுக்கப்பட்டது: தனியுரிமை காரணங்களுக்காக இந்த நோயாளியின் பதிவுகளைப் பார்க்க உங்களுக்கு அனுமதி இல்லை.',
+                'kn': 'ಭದ್ರತಾ ನಿರಾಕರಣೆ: ಗೌಪ್ಯತೆ ಕಾರಣಗಳಿಂದಾಗಿ ಈ ರೋಗಿಯ ದಾಖಲೆಗಳನ್ನು ವೀಕ್ಷಿಸಲು ನಿಮಗೆ ಅನುಮತಿ ಇಲ್ಲ.',
+                'ml': 'സുരക്ഷാ നിഷേധം: സ്വകാര്യതാ കാരണങ്ങളാൽ ഈ രോഗിയുടെ വിവരങ്ങൾ കാണാൻ നിങ്ങൾക്ക് അനുവാദമില്ല.'
+            },
+            'fallback': {
+                'en': "I'm not sure how to help with that query. Please describe your symptoms (e.g., 'I have joint pain') or select one of the Quick Actions (like Hospital Services, Book Appointment) to get started.",
+                'te': "ఆ ప్రశ్నకు ఎలా సహాయం చేయాలో నాకు ఖచ్చితంగా తెలియదు. దయచేసి మీ లక్షణాలను వివరించండి (ఉదా: 'నాకు కీళ్ల నొప్పులు ఉన్నాయి') లేదా ప్రారంభించడానికి శీఘ్ర చర్యలలో ఒకదాన్ని ఎంచుకోండి.",
+                'hi': "मुझे नहीं पता कि इस प्रश्न में कैसे मदद करूँ। कृपया अपने लक्षणों का वर्णन करें (जैसे, 'मुझे जोड़ों का दर्द है') या शुरू करने के लिए त्वरित विकल्पों में से किसी एक को चुनें।",
+                'ta': "அந்த கேள்விக்கு எவ்வாறு உதவுவது என்று எனக்குத் தெரியவில்லை. உங்கள் அறிகுறிகளை விவரிக்கவும் (எ.கா., 'எனக்கு மூட்டு வலி உள்ளது') அல்லது தொடங்க விரைவான செயல்களில் ஒன்றைத் தேர்ந்தெடுக்கவும்.",
+                'kn': "ಆ ಪ್ರಶ್ನೆಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಬೇಕೆಂದು ನನಗೆ ಖಚಿತವಿಲ್ಲ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ರೋಗಲಕ್ಷಣಗಳನ್ನು ವಿವರಿಸಿ (ಉದಾ, 'ನನಗೆ ಕೀಲು ನೋವು ಇದೆ') ಅಥವಾ ಪ್ರಾರಂಭಿಸಲು ತ್ವರಿತ ಆಯ್ಕೆಗಳಲ್ಲಿ ಒಂದನ್ನು ಆರಿಸಿ.",
+                'ml': "ആ ചോദ്യത്തിന് എങ്ങനെ സഹായിക്കണമെന്ന് എനിക്ക് ഉറപ്പില്ല. ദയവായി നിങ്ങളുടെ ലക്ഷണങ്ങൾ വിവരിക്കുക (ഉദാ, 'എനിക്ക് മൂട്ട് വേദനയുണ്ട്') അല്ലെങ്കിൽ ആരംഭിക്കാൻ ദ്രുത പ്രവർത്തനങ്ങളിൽ ഒന്ന് തിരഞ്ഞെടുക്കുക."
+            }
         }
-        session.save()
+        return vocab.get(key, {}).get(lang, vocab[key]['en'])
+
+    def extract_symptoms_local(self, text: str) -> list:
+        # Simple local symptom extractor based on clean English keywords
+        symptoms_keys = [
+            'fever', 'cough', 'cold', 'headache', 'chest pain', 'breathing difficulty', 
+            'skin rash', 'eye pain', 'pregnancy', 'joint pain', 'mental stress', 
+            'dental pain', 'ear problems'
+        ]
         
-        ChatMessage.objects.create(session=session, role='bot', content=full_response)
-        
-        analysis_data = {
-            'symptoms': current_symptoms,
-            'risk_level': 'none',
-            'allergy_alerts': []
+        extracted = []
+        text_lower = text.lower()
+        for s in symptoms_keys:
+            if s in text_lower:
+                extracted.append(s)
+                
+        return extracted
+
+    def map_symptom_to_department(self, symptom: str) -> str:
+        # Strictly matches welcome/symptom/specialty mappings inside prompt
+        mapping = {
+            'fever': 'General Physician',
+            'cough': 'General Physician',
+            'cold': 'General Physician',
+            'headache': 'Neurology',
+            'chest pain': 'Cardiology',
+            'breathing difficulty': 'Pulmonology',
+            'skin rash': 'Dermatology',
+            'eye pain': 'Ophthalmology',
+            'pregnancy': 'Gynecology',
+            'joint pain': 'Orthopedics',
+            'mental stress': 'Psychiatry',
+            'dental pain': 'Dentistry',
+            'ear problems': 'ENT'
         }
-        
-        return {'response': full_response, 'analysis': analysis_data}
-        
-
-
-    def _predict_disease(self, active_symptoms: list) -> dict:
-        """
-        Predict disease using TensorFlow model if loaded, fallback to Jaccard heuristic.
-        """
-        if not active_symptoms:
-            return None
-            
-        symptom_to_idx = {s['name']: idx for idx, s in enumerate(self.se.symptoms)}
-        
-        if self.disease_model_loaded and self.disease_model is not None:
-            try:
-                # Prepare binary symptom vector
-                vec = np.zeros(len(self.se.symptoms))
-                for s in active_symptoms:
-                    if s in symptom_to_idx:
-                        vec[symptom_to_idx[s]] = 1.0
-                        
-                predictions = self.disease_model.predict(np.array([vec]), verbose=0)[0]
-                pred_idx = int(np.argmax(predictions))
-                confidence = float(predictions[pred_idx])
-                
-                predicted_name = self.diseases[pred_idx]['name']
-                
-                # Fetch details
-                for d in self.diseases:
-                    if d['name'] == predicted_name:
-                        res = d.copy()
-                        res['confidence'] = confidence
-                        return res
-            except Exception as e:
-                print(f"Error during disease model prediction: {e}. Falling back to Jaccard.")
-                
-        # Fallback to Jaccard similarity
-        return self._predict_disease_heuristic(active_symptoms)
-
-    def _predict_disease_heuristic(self, active_symptoms: list) -> dict:
-        if not active_symptoms:
-            return None
-            
-        active_set = set(active_symptoms)
-        best_match = None
-        highest_score = 0.0
-        
-        for d in self.diseases:
-            disease_symptoms = set(d['symptoms'])
-            intersection = active_set.intersection(disease_symptoms)
-            if not intersection:
-                continue
-                
-            # Jaccard similarity: intersection over union
-            union = active_set.union(disease_symptoms)
-            score = len(intersection) / len(union)
-            
-            # Boost score slightly if most of the disease's symptoms are covered
-            coverage = len(intersection) / len(disease_symptoms)
-            final_score = (score * 0.6) + (coverage * 0.4)
-            
-            if final_score > highest_score:
-                highest_score = final_score
-                best_match = d
-                
-        if best_match:
-            res = best_match.copy()
-            res['confidence'] = round(highest_score, 2)
-            return res
-            
-        return None
-
-    def _check_conversational_dataset(self, text: str, lang: str) -> str:
-        # Load conversations.csv patterns
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        conv_path = os.path.join(current_dir, 'datasets', 'conversations.csv')
-        if not os.path.exists(conv_path):
-            return None
-            
-        with open(conv_path, mode='r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                pattern = row.get('pattern', '').strip().lower()
-                resp = row.get('response', '').strip()
-                resp_te = row.get('response_te', '').strip()
-                r_lang = row.get('language', 'en')
-                
-                # Check regex match
-                if pattern and re.search(rf'\b{re.escape(pattern)}\b', text):
-                    # Return language appropriate response
-                    if lang == 'te' and resp_te:
-                        return resp_te
-                    return resp
-        return None
-
-    def generate_response(self, analysis: dict, language: str) -> str:
-        """
-        Build a beautifully formatted markdown clinical analysis report for the user.
-        """
-        disclaimer = self._get_disclaimer(language)
-        
-        if language == 'te':
-            # Telugu Report
-            meds_str = ""
-            if analysis['suggested_medicines']:
-                meds_str = "\n\n**సూచించదగిన గృహవైద్యం/మందులు:**"
-                for m in analysis['suggested_medicines']:
-                    meds_str += f"\n- **{m['name']}**: డోసేజ్: {m['dosage']} | సైడ్ ఎఫెక్ట్స్: {m['side_effects']}"
-            
-            allergy_str = ""
-            if analysis['allergy_warnings']:
-                allergy_str = "\n\n⚠️ **అలెర్జీ హెచ్చరికలు:**"
-                for w in analysis['allergy_warnings']:
-                    allergy_str += f"\n- రోగికి **{w}** పట్ల అలెర్జీ ఉన్నట్లు రికార్డు అయింది! దయచేసి దీనికి దూరంగా ఉండండి."
-
-            report = (
-                f"### ప్రాథమిక ఆరోగ్య నివేదిక\n"
-                f"- **గుర్తించిన లక్షణాలు:** {', '.join(analysis['symptoms'])}\n"
-                f"- **అంచనా వేయబడిన వ్యాధి:** {analysis['disease']} (సహాయక విశ్వసనీయత: {analysis['confidence']:.0%})\n"
-                f"- **వైద్య విభాగం:** {analysis['department']}\n"
-                f"- **వివరణ:** {analysis['description']}\n\n"
-                f"**సిఫార్సు చేయబడిన పరీక్షలు:**\n{analysis['tests']}\n\n"
-                f"**చికిత్స సూచనలు:**\n{analysis['treatment']}\n"
-                f"{meds_str}"
-                f"{allergy_str}\n\n"
-                f"🚨 **రిస్క్ అసెస్‌మెంట్ (ప్రమాద అంచనా):** **{analysis['risk_level'].upper()}**\n"
-                f"- **రిస్క్ కారకాలు:** {', '.join(analysis['risk_factors'])}\n"
-                f"- **వైద్యుడి సిఫార్సు:** {analysis['risk_recommendations']}\n\n"
-                f"---  \n"
-                f"{disclaimer}"
-            )
-        else:
-            # English Report
-            meds_str = ""
-            if analysis['suggested_medicines']:
-                meds_str = "\n\n**Suggested Medications:**"
-                for m in analysis['suggested_medicines']:
-                    meds_str += f"\n- **{m['name']}**: Dosage: {m['dosage']} | Side Effects: {m['side_effects']}"
-            
-            allergy_str = ""
-            if analysis['allergy_warnings']:
-                allergy_str = "\n\n⚠️ **Allergy Warnings:**"
-                for w in analysis['allergy_warnings']:
-                    allergy_str += f"\n- Patient has a registered allergy related to **{w}**! Avoid administration."
-
-            report = (
-                f"### Preliminary Medical Report\n"
-                f"- **Extracted Symptoms:** {', '.join(analysis['symptoms'])}\n"
-                f"- **Predicted Condition:** {analysis['disease']} (Confidence: {analysis['confidence']:.0%})\n"
-                f"- **Medical Department:** {analysis['department']}\n"
-                f"- **Description:** {analysis['description']}\n\n"
-                f"**Recommended Tests:**\n{analysis['tests']}\n\n"
-                f"**Treatment Advice:**\n{analysis['treatment']}\n"
-                f"{meds_str}"
-                f"{allergy_str}\n\n"
-                f"🚨 **Risk Level:** **{analysis['risk_level'].upper()}**\n"
-                f"- **Risk Factors:** {', '.join(analysis['risk_factors'])}\n"
-                f"- **Doctor's Recommendation:** {analysis['risk_recommendations']}\n\n"
-                f"---  \n"
-                f"{disclaimer}"
-            )
-            
-        return report
-
-    def _get_disclaimer(self, language: str) -> str:
-        if language == 'te':
-            return (
-                f"*గమనిక: ఇది ఏఐ (కృత్రిమ మేధస్సు) ఆధారిత విశ్లేషణ మాత్రమే. ఇది అధికారిక వైద్య నిర్ధారణ లేదా చికిత్సకు ప్రత్యామ్నాయం కాదు. "
-                f"దయచేసి ఖచ్చితమైన చికిత్స మరియు సలహా కోసం మా ఆసుపత్రిలోని అర్హత కలిగిన వైద్యుడిని సంప్రదించండి. అత్యవసర పరిస్థితిలో వెంటనే ఆసుపత్రికి వెళ్ళండి.*"
-            )
-        return (
-            f"*Disclaimer: This is an AI-assisted evaluation and does not constitute official medical advice, diagnosis, or treatment. "
-            f"Please consult a qualified doctor at our hospital for official medical guidance. In case of an emergency, go to the nearest ER immediately.*"
-        )
+        return mapping.get(symptom, 'General Physician')
