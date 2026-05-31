@@ -54,9 +54,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    newChatBtn.addEventListener('click', function () {
-        createNewChat();
-    });
+    if (newChatBtn) {
+        newChatBtn.addEventListener('click', function () {
+            createNewChat();
+        });
+    }
 
     // Start a new chat session
     function createNewChat() {
@@ -69,14 +71,16 @@ document.addEventListener('DOMContentLoaded', function () {
             content: "Hello! 👋 I am your **HMS AI Medical Appointment Assistant** 🏥\n\nI can help you:\n• Describe your symptoms\n• Find the right specialist doctor\n• Book appointments\n\nPlease describe your symptoms or health concern, and I will recommend the appropriate specialist for you."
         });
 
-        activeSessionTitle.textContent = "New Conversation";
-        activeSessionMeta.textContent = "Awaiting symptom entry...";
+        if (activeSessionTitle) activeSessionTitle.textContent = "New Conversation";
+        if (activeSessionMeta) activeSessionMeta.textContent = "Awaiting symptom entry...";
         
         // Reset panels
         resetAnalysisPanels();
         
         // Update active class in sidebar
-        document.querySelectorAll('.session-item').forEach(el => el.classList.remove('active'));
+        if (sessionsList) {
+            document.querySelectorAll('.session-item').forEach(el => el.classList.remove('active'));
+        }
     }
 
     // Update form placeholders depending on language
@@ -109,6 +113,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Load list of past sessions
     function loadSessionsList() {
+        if (!sessionsList) return;
         fetch(sessionsApiUrl)
             .then(res => res.json())
             .then(data => {
@@ -146,9 +151,11 @@ document.addEventListener('DOMContentLoaded', function () {
         localStorage.setItem('ai_chat_session_id', sessionId);
         
         // Highlight active session
-        document.querySelectorAll('.session-item').forEach(el => {
-            el.classList.toggle('active', el.dataset.id === sessionId);
-        });
+        if (sessionsList) {
+            document.querySelectorAll('.session-item').forEach(el => {
+                el.classList.toggle('active', el.dataset.id === sessionId);
+            });
+        }
 
         // Set loading states
         messagesContainer.innerHTML = '<div class="empty-placeholder">Loading history...</div>';
@@ -173,8 +180,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 
                 // Update header info
-                activeSessionTitle.textContent = `Session: ${sessionId.substring(0, 8)}...`;
-                activeSessionMeta.textContent = `Smart AI Consultation`;
+                if (activeSessionTitle) activeSessionTitle.textContent = `Session: ${sessionId.substring(0, 8)}...`;
+                if (activeSessionMeta) activeSessionMeta.textContent = `Smart AI Consultation`;
 
                 // Set language selector based on session language
                 languageCode = data.language || 'en';
@@ -249,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 loadSessionsList();
             }
 
-            activeSessionTitle.textContent = `Session: ${activeSessionId.substring(0, 8)}...`;
+            if (activeSessionTitle) activeSessionTitle.textContent = `Session: ${activeSessionId.substring(0, 8)}...`;
 
             if (data.analysis) {
                 updateAnalysisSidebar(data.analysis);

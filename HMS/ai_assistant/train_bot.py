@@ -514,7 +514,11 @@ class ChatBot:
 
         cards_html = ""
         for d in docs[:4]:
-            rating_stars = "★" * int(round(d.rating)) + "☆" * (5 - int(round(d.rating)))
+            rating_val = d.rating if d.rating is not None else 5.0
+            rating_stars = "★" * int(round(rating_val)) + "☆" * (5 - int(round(rating_val)))
+            exp_val = d.experience if d.experience is not None else 0
+            fee_val = d.consultation_fee if d.consultation_fee is not None else 0
+            reviews_val = d.reviews if d.reviews is not None else 0
             
             # Select doc state value triggers state transition
             cards_html += f"""
@@ -529,11 +533,11 @@ class ChatBot:
                     </div>
                 </div>
                 <p style="font-size:11.5px; color:#475569; margin:0 0 8px 0; line-height:1.4;">
-                    <i class="fas fa-briefcase" style="color:#2563EB;"></i> {d.experience} Years Experience &nbsp; 
-                    <i class="fas fa-star" style="color:#F59E0B;"></i> <span style="color:#F59E0B; font-weight:bold;">{d.rating}</span> ({d.reviews} reviews)
+                    <i class="fas fa-briefcase" style="color:#2563EB;"></i> {exp_val} Years Experience &nbsp; 
+                    <i class="fas fa-star" style="color:#F59E0B;"></i> <span style="color:#F59E0B; font-weight:bold;">{rating_val}</span> ({reviews_val} reviews)
                 </p>
                 <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #F1F5F9; padding-top:8px; margin-top:8px;">
-                    <span style="font-size:12px; font-weight:bold; color:#10B981;">Fee: ${d.consultation_fee}</span>
+                    <span style="font-size:12px; font-weight:bold; color:#10B981;">Fee: ${fee_val}</span>
                     <button class="chat-btn" data-value="book_doc_{d.id}" style="padding:4px 12px; font-size:11.5px; border-radius:8px; background:#2563EB; color:white; border:none; font-weight:bold;">Book Session</button>
                 </div>
             </div>

@@ -299,7 +299,8 @@
                     <a href="#" class="header-user-badge">
                         <div class="header-user-avatar">
                             {% if request.user.profile_image %}
-                            <img src="{{ request.user.profile_image.url }}" alt="Profile">
+                            <img src="{{ request.user.profile_image.url }}" alt="Profile" onerror="this.style.display='none'; document.getElementById('header-avatar-fallback').style.display='inline-block';">
+                            <i id="header-avatar-fallback" class="fas fa-user-circle" style="display: none; font-size: 22px; color: var(--text-muted);"></i>
                             {% else %}
                             <i class="fas fa-user-circle" style="font-size: 22px; color: var(--text-muted);"></i>
                             {% endif %}

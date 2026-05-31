@@ -148,7 +148,8 @@
                     <a href="/patients/create-profile/">View profile</a>
                 </div>
                 {% if request.user.profile_image %}
-                    <img src="{{ request.user.profile_image.url }}" alt="Profile">
+                    <img src="{{ request.user.profile_image.url }}" alt="Profile" onerror="this.style.display='none'; document.getElementById('home-avatar-fallback').style.display='flex';">
+                    <div id="home-avatar-fallback" class="avatar-placeholder" style="display: none;"><i class="fa-solid fa-user"></i></div>
                 {% else %}
                     <div class="avatar-placeholder"><i class="fa-solid fa-user"></i></div>
                 {% endif %}

@@ -14,9 +14,10 @@
 
 {% block content %}
 <div class="profile-header-card" style="background: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-main);">
-    <div class="profile-avatar-large" style="background: var(--hover-bg); color: var(--primary-blue);">
+    <div class="profile-avatar-large" style="background: var(--hover-bg); color: var(--primary-blue); display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative;">
         {% if request.user.profile_image %}
-            <img src="{{ request.user.profile_image.url }}" alt="Profile" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover; object-position: center;">
+            <img src="{{ request.user.profile_image.url }}" alt="Profile" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover; object-position: center;" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='flex';">
+            <div id="avatar-fallback" style="display: none; width: 100%; height: 100%; justify-content: center; align-items: center; font-size: 48px;"><i class="fas fa-user"></i></div>
         {% else %}
             <i class="fas fa-user"></i>
         {% endif %}

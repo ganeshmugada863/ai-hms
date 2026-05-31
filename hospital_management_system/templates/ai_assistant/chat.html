@@ -1,4 +1,4 @@
-{% extends 'base_dashboard.html' %}
+{% extends base_template|default:'base_dashboard.html' %}
 {% load static %}
 
 {% block title %}HMS AI Medical Appointment Assistant | MediCare{% endblock %}
@@ -86,6 +86,7 @@
 {% block content %}
 <div class="chat-dashboard-container">
     <!-- Chat Sidebar: Past Conversations -->
+    {% if not is_embedded %}
     <aside class="chat-sessions-sidebar">
         <div class="sidebar-action-header">
             <h3>Conversations</h3>
@@ -101,6 +102,7 @@
             <!-- Dynamic Sessions injected via JS -->
         </div>
     </aside>
+    {% endif %}
 
     <!-- Main Chat Workspace -->
     <section class="chat-workspace">
@@ -140,12 +142,14 @@
                     <button type="button" id="darkModeToggle" class="header-action-btn" title="Toggle Dark Mode" style="background: none; border: none; font-size: 14px; color: var(--text-muted); cursor: pointer; padding: 4px;">
                         <i class="fas fa-moon"></i>
                     </button>
+                    {% if not is_embedded %}
                     <button type="button" id="minimizeChatBtn" class="header-action-btn" title="Minimize Chat" style="background: none; border: none; font-size: 14px; color: var(--text-muted); cursor: pointer; padding: 4px;">
                         <i class="fas fa-minus"></i>
                     </button>
                     <button type="button" id="closeChatBtn" class="header-action-btn" title="Close Chat" style="background: none; border: none; font-size: 14px; color: var(--text-muted); cursor: pointer; padding: 4px;">
                         <i class="fas fa-times"></i>
                     </button>
+                    {% endif %}
                 </div>
             </div>
         </div>

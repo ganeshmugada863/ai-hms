@@ -43,9 +43,14 @@ def chat_view(request):
         messages.error(request, "Access Denied: AI Assistant is only available for patients.")
         return redirect('homepage')  # Fallback to main home or login page
         
+    embedded = request.GET.get('embedded') == 'true'
+    base_template = 'base_embedded.html' if embedded else 'base_dashboard.html'
+        
     return render(request, 'ai_assistant/chat.html', {
         'patient': patient,
-        'title': 'HMS AI Medical Appointment Assistant'
+        'title': 'HMS AI Medical Appointment Assistant',
+        'base_template': base_template,
+        'is_embedded': embedded
     })
 
 
