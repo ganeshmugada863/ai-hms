@@ -578,7 +578,7 @@
     </script>
     {% endif %}
 
-    {% if request.user.is_authenticated and not request.user.role == 'admin' and not request.user.role == 'doctor' and not '/ai_assistant/chat' in request.path %}
+    {% if request.user.is_authenticated and not request.user.role == 'admin' and not request.user.role == 'doctor' and not request.resolver_match.view_name == 'ai_assistant:chat' %}
     <!-- Floating Chat Widget Styles -->
     <style>
         .mediassist-floating-btn {
@@ -693,7 +693,7 @@
                 <button id="floatCloseBtn" style="background:none; border:none; color:white; cursor:pointer; font-size:14px;"><i class="fas fa-times"></i></button>
             </div>
         </div>
-        <iframe src="/ai_assistant/chat/?embedded=true" style="width: 100%; height: calc(100% - 44px); border: none;"></iframe>
+        <iframe src="{% url 'ai_assistant:chat' %}?embedded=true" style="width: 100%; height: calc(100% - 44px); border: none;"></iframe>
     </div>
 
     <!-- Floating Widget Toggling Logic -->
