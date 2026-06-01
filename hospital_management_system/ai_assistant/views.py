@@ -26,7 +26,10 @@ def is_admin(user):
 
 # Helper to check if patient
 def get_patient_profile(user):
-    return PatientProfile.objects.filter(user=user).first()
+    if user.is_authenticated and user.role == 'patient':
+        patient, created = PatientProfile.objects.get_or_create(user=user)
+        return patient
+    return None
 
 
 # ==========================================

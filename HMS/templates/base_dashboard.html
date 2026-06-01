@@ -686,19 +686,128 @@
         <span class="notification-badge">1</span>
     </div>
 
+    <link rel="stylesheet" href="{% static 'css/chat.css' %}?v=4.0">
     <div id="mediassist-floating-window" class="mediassist-floating-window hide">
-        <div style="display:flex; justify-content:space-between; align-items:center; background:#2563EB; color:white; padding:12px 18px;">
-            <span style="font-weight:700; font-size:14px; display:flex; align-items:center; gap:6px;"><i class="fas fa-robot"></i> MediAssist AI</span>
-            <div style="display:flex; gap:8px;">
-                <button id="floatMinimizeBtn" style="background:none; border:none; color:white; cursor:pointer; font-size:14px;"><i class="fas fa-minus"></i></button>
-                <button id="floatCloseBtn" style="background:none; border:none; color:white; cursor:pointer; font-size:14px;"><i class="fas fa-times"></i></button>
+        <section class="chat-workspace" style="height: 100%; display: flex; flex-direction: column; background: var(--panel-bg); border-radius: 24px; border: none; box-shadow: none;">
+            <!-- Chat Header details -->
+            <div class="chat-workspace-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); flex-shrink: 0;">
+                <div class="header-left" style="display: flex; align-items: center; gap: 10px;">
+                    <div class="hospital-brand" style="display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-hospital-symbol" style="color: #2563EB; font-size: 20px;"></i>
+                        <div style="display: flex; flex-direction: column;">
+                            <span class="hospital-name" style="font-weight: 700; font-size: 14px; color: var(--text-main); line-height: 1.2;">Medicare</span>
+                            <span class="bot-name-tag" style="font-weight: 800; font-size: 11px; color: #2563EB; display: flex; align-items: center; gap: 4px;">
+                                MediAssist AI 
+                                <span class="online-indicator animate-pulse" style="width: 7px; height: 7px; background-color: #10B981; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #10B981;" title="Online"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right" style="display: flex; align-items: center; gap: 12px;">
+                    <!-- Language Selector -->
+                    <div class="language-switcher" style="display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-globe" style="color: #2563EB; font-size: 14px;"></i>
+                        <select id="langSelect" class="lang-dropdown" style="padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 12px; outline: none; background: var(--panel-bg); color: var(--text-main); font-weight: 600; cursor: pointer;">
+                            <option value="en">English</option>
+                            <option value="te">తెలుగు</option>
+                            <option value="hi">हिन्दी</option>
+                            <option value="ta">தமிழ்</option>
+                            <option value="kn">ಕನ್ನಡ</option>
+                            <option value="ml">മലയാളം</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Action Controls -->
+                    <div class="header-actions" style="display: flex; align-items: center; gap: 10px;">
+                        <button type="button" id="voiceSpeakToggle" class="header-action-btn" title="Toggle Voice Output" style="background: none; border: none; font-size: 14px; color: var(--text-muted); cursor: pointer; padding: 4px;">
+                            <i class="fas fa-volume-mute"></i>
+                        </button>
+                        <button type="button" id="darkModeToggle" class="header-action-btn" title="Toggle Dark Mode" style="background: none; border: none; font-size: 14px; color: var(--text-muted); cursor: pointer; padding: 4px;">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                        <button type="button" id="floatMinimizeBtn" class="header-action-btn" title="Minimize Chat" style="background: none; border: none; font-size: 14px; color: var(--text-muted); cursor: pointer; padding: 4px;">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button type="button" id="floatCloseBtn" class="header-action-btn" title="Close Chat" style="background: none; border: none; font-size: 14px; color: var(--text-muted); cursor: pointer; padding: 4px;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
-        </div>
-        <iframe src="{% url 'ai_assistant:chat' %}?embedded=true" style="width: 100%; height: calc(100% - 44px); border: none;"></iframe>
+
+            <!-- Chat History Viewport -->
+            <div class="chat-history-viewport" id="chatViewport" style="flex: 1; overflow-y: auto; padding: 20px;">
+                <!-- Medical Disclaimer Banner inside Viewport -->
+                <div class="medical-disclaimer-card persistent-banner">
+                    <div class="disclaimer-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="disclaimer-text">
+                        <p><strong>⚠️ Important Notice:</strong> I am <strong>not</strong> a doctor. I <strong>cannot</strong> diagnose diseases, prescribe medicines, or provide treatment plans. I can only help you describe symptoms, find the right specialist, and book appointments. For emergencies, call emergency services immediately.</p>
+                    </div>
+                </div>
+
+                <!-- Conversation messages will flow here -->
+                <div class="messages-container" id="messagesContainer">
+                    <div class="welcome-message-bot">
+                        <div class="bot-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-bubble-wrapper">
+                            <div class="message-bubble">
+                                <p>Hello! 👋 I am your <strong>HMS AI Medical Appointment Assistant</strong> 🏥</p>
+                                <p style="margin-top: 8px;">I can help you:<br>• Describe your symptoms<br>• Find the right specialist doctor<br>• Book appointments</p>
+                                <p style="margin-top: 8px;">Please describe your symptoms or health concern, and I will recommend the appropriate specialist for you.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="typingIndicator" class="typing-indicator hidden">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+
+            <!-- Chat Input Bar -->
+            <form class="chat-input-bar" id="chatInputForm" method="POST" enctype="multipart/form-data" style="padding: 15px 20px; border-top: 1px solid var(--border-color); background: var(--panel-bg); flex-shrink: 0;">
+                {% csrf_token %}
+                <div class="chat-input-wrapper" style="position: relative; display: flex; align-items: center; gap: 8px;">
+                    <button type="button" class="upload-media-btn" id="mediaUploadBtn" title="Upload Media (Images/PDFs)">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <input type="file" id="mediaFileInput" accept="image/*,application/pdf" style="display: none;">
+                    
+                    <input type="text" id="userInputField" placeholder="Describe your symptoms or health concern..." autocomplete="off" style="padding-right: 50px; flex: 1; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--main-bg); color: var(--text-main);">
+                    
+                    <!-- Voice Input (Mic) button inside input wrapper -->
+                    <button type="button" class="voice-input-btn" id="voiceInputBtn" title="Speak (Voice Input)" style="position: absolute; right: 65px; background: none; border: none; font-size: 16px; color: var(--text-muted); cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s;">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    
+                    <button type="submit" class="send-message-btn" id="sendBtn" title="Send Message" style="padding: 10px; border-radius: 12px; border: none; background: #2563EB; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <!-- Character Counter / Status info row -->
+                <div class="input-status-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px; padding: 0 4px; font-size: 11px; color: var(--text-muted);">
+                    <span id="voiceStatusMsg">Press mic to dictate symptoms</span>
+                    <span id="charCounter">0 / 250</span>
+                </div>
+            </form>
+        </section>
     </div>
 
-    <!-- Floating Widget Toggling Logic -->
+    <!-- Floating Widget Toggling & Native AJAX Configuration -->
     <script>
+        const csrfToken = '{{ csrf_token }}';
+        const sendApiUrl = '{% url "ai_assistant:api_send" %}';
+        const historyApiUrl = '{% url "ai_assistant:api_history" %}';
+        const sessionsApiUrl = '{% url "ai_assistant:api_sessions" %}';
+        const uploadApiUrl = '{% url "ai_assistant:api_upload" %}';
+        const logCallApiUrl = '{% url "ai_assistant:api_log_call" %}';
+
         document.addEventListener('DOMContentLoaded', () => {
             const floatBtn = document.getElementById('mediassist-floating-btn');
             const floatWindow = document.getElementById('mediassist-floating-window');
@@ -711,17 +820,22 @@
                 badge.style.display = 'none';
             });
 
-            floatClose.addEventListener('click', (e) => {
-                e.stopPropagation();
-                floatWindow.classList.add('hide');
-            });
+            if (floatClose) {
+                floatClose.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    floatWindow.classList.add('hide');
+                });
+            }
 
-            floatMin.addEventListener('click', (e) => {
-                e.stopPropagation();
-                floatWindow.classList.add('hide');
-            });
+            if (floatMin) {
+                floatMin.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    floatWindow.classList.add('hide');
+                });
+            }
         });
     </script>
+    <script src="{% static 'js/chat.js' %}?v=4.0"></script>
     {% endif %}
 
     {% block extra_js %}{% endblock %}

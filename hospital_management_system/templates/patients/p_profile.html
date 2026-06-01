@@ -8,46 +8,47 @@
 {% block header_title %}My Profile{% endblock %}
 {% block header_subtitle %}Manage your personal and medical information{% endblock %}
 
-{% block header_actions %}
-    <button class="btn-primary" onclick="toggleEdit()"><i class="fas fa-edit"></i> Edit Profile</button>
-{% endblock %}
-
 {% block content %}
-<div class="profile-header-card" style="background: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-main);">
-    <div class="profile-avatar-large" style="background: var(--hover-bg); color: var(--primary-blue); display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative;">
-        {% if request.user.profile_image %}
-            <img src="{{ request.user.profile_image.url }}" alt="Profile" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover; object-position: center;" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='flex';">
-            <div id="avatar-fallback" style="display: none; width: 100%; height: 100%; justify-content: center; align-items: center; font-size: 48px;"><i class="fas fa-user"></i></div>
-        {% else %}
-            <i class="fas fa-user"></i>
-        {% endif %}
-    </div>
-    <div class="profile-main-info">
-        <h2 style="color: var(--text-main);">{{ request.user.username }}</h2>
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="label" style="color: var(--text-muted);">Email</div>
-                <div class="value" style="color: var(--text-main);">{{ request.user.email }}</div>
-            </div>
-            <div class="info-item">
-                <div class="label" style="color: var(--text-muted);">Phone</div>
-                <div class="value" style="color: var(--text-main);">{{ request.user.phone|default:"Not Set" }}</div>
-            </div>
-            <div class="info-item">
-                <div class="label" style="color: var(--text-muted);">Age</div>
-                <div class="value" style="color: var(--text-main);">{{ profile.age|default:"N/A" }} Years</div>
-            </div>
-            <div class="info-item">
-                <div class="label" style="color: var(--text-muted);">Blood Group</div>
-                <div class="value" style="color: #ef4444;">{{ profile.blood_group|default:"N/A" }}</div>
+<div class="profile-header-card" style="background: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-main); display: flex; justify-content: space-between; align-items: center; gap: 30px;">
+    <div style="display: flex; align-items: center; gap: 30px; flex: 1;">
+        <div class="profile-avatar-large" style="background: var(--hover-bg); color: var(--primary-blue); display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; flex-shrink: 0;">
+            {% if request.user.profile_image %}
+                <img src="{{ request.user.profile_image.url }}" alt="Profile" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover; object-position: center;" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='flex';">
+                <div id="avatar-fallback" style="display: none; width: 100%; height: 100%; justify-content: center; align-items: center; font-size: 48px;"><i class="fas fa-user"></i></div>
+            {% else %}
+                <i class="fas fa-user"></i>
+            {% endif %}
+        </div>
+        <div class="profile-main-info" style="flex: 1;">
+            <h2 style="color: var(--text-main); margin-top: 0;">{{ request.user.username }}</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="label" style="color: var(--text-muted);">Email</div>
+                    <div class="value" style="color: var(--text-main);">{{ request.user.email }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label" style="color: var(--text-muted);">Phone</div>
+                    <div class="value" style="color: var(--text-main);">{{ request.user.phone|default:"Not Set" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label" style="color: var(--text-muted);">Age</div>
+                    <div class="value" style="color: var(--text-main);">{{ profile.age|default:"N/A" }} Years</div>
+                </div>
+                <div class="info-item">
+                    <div class="label" style="color: var(--text-muted);">Blood Group</div>
+                    <div class="value" style="color: #ef4444;">{{ profile.blood_group|default:"N/A" }}</div>
+                </div>
             </div>
         </div>
+    </div>
+    <div class="profile-actions" style="flex-shrink: 0;">
+        <button class="btn-primary" onclick="toggleEdit()" style="padding: 12px 24px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;"><i class="fas fa-edit"></i> Edit Profile</button>
     </div>
 </div>
 
 <div id="editForm" class="edit-form-container" style="background: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-main);">
     <h3 style="margin-bottom: 20px;">Edit Medical Profile</h3>
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-row">
             {% for field in form %}

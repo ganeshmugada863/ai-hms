@@ -1,17 +1,26 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 from .forms import PatientProfileForm
 from .models import PatientProfile
 from appointments.models import Appointment
 
+@login_required
 def create_patient_profile(request):
-    # Check if a profile already exists for the user to avoid IntegrityError on update
-    profile = request.user.patientprofile if hasattr(request.user, 'patientprofile') else None
+    # Ensure profile exists using get_or_create
+    profile, created = PatientProfile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
-        form = PatientProfileForm(request.POST, instance=profile)
+        form = PatientProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
+            user = request.user
+            user.email = form.cleaned_data['email']
+            user.phone = form.cleaned_data['phone']
+            if 'profile_image' in request.FILES:
+                user.profile_image = request.FILES['profile_image']
+            user.save()
+
             patient = form.save(commit=False)
-            patient.user = request.user
+            patient.user = user
             patient.save()
             return redirect('/patient-dashboard/')
     else:
@@ -24,6 +33,7 @@ def create_patient_profile(request):
         'is_doctor': is_doctor,
     })
 
+@login_required
 def doctor_patient_list(request):
     doctor = getattr(request.user, 'doctorprofile', None)
     if not doctor:

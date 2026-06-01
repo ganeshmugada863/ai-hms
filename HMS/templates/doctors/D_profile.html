@@ -55,7 +55,7 @@
     <!-- Edit Form (Initially Hidden) -->
     <div id="editForm" class="section" style="display: none; animation: slideDown 0.4s ease;">
         <h2 style="margin-bottom: 25px;"><i class="fas fa-user-cog"></i> Edit Professional Details</h2>
-        <form method="POST" class="form-card" style="max-width: none; box-shadow: none; padding: 0; background: transparent; border: none;">
+        <form method="POST" enctype="multipart/form-data" class="form-card" style="max-width: none; box-shadow: none; padding: 0; background: transparent; border: none;">
             {% csrf_token %}
             <div class="form-grid">
                 {% for field in form %}
