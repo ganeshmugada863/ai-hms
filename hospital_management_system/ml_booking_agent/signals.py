@@ -9,24 +9,7 @@ _training_lock = threading.Lock()
 _is_training = False
 
 def run_background_training():
-    global _is_training
-    with _training_lock:
-        if _is_training:
-            print("[ML Signals] Retraining already in progress. Skipping.")
-            return
-        _is_training = True
-    
-    try:
-        print("[ML Signals] Initiating background medical model training...")
-        from ml_booking_agent.train_bot import train_medical_model
-        # Run training
-        train_medical_model()
-        print("[ML Signals] Background medical model training completed successfully.")
-    except Exception as e:
-        print(f"[ML Signals] Error in background training: {e}")
-    finally:
-        with _training_lock:
-            _is_training = False
+    print("[ML Signals] Background training request received. Skipping dynamic retrain as ModelTrainer handles pipeline asynchronously via AutoRetrainer.")
 
 @receiver(post_save, sender=PatientProfile)
 def patient_profile_saved(sender, instance, created, **kwargs):

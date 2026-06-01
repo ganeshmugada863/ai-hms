@@ -53,7 +53,8 @@ def chat_view(request):
         'patient': patient,
         'title': 'HMS AI Medical Appointment Assistant',
         'base_template': base_template,
-        'is_embedded': embedded
+        'is_embedded': embedded,
+        'is_ai_chat_page': True
     })
 
 

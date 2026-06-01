@@ -579,7 +579,7 @@
     </script>
     {% endif %}
 
-    {% if request.user.is_authenticated and not request.user.role == 'admin' and not request.user.role == 'doctor' and not request.resolver_match.view_name == 'ai_assistant:chat' %}
+    {% if request.user.is_authenticated and not request.user.role == 'admin' and not request.user.role == 'doctor' and not is_ai_chat_page %}
     <!-- Floating Chat Widget Styles -->
     <style>
         .mediassist-floating-btn {
@@ -680,8 +680,7 @@
         }
     </style>
 
-    <!-- Floating Chat Button and Window Markup -->
-    {% if not '/ai/' in request.path %}
+    {% if not is_ai_chat_page %}
     <div id="mediassist-floating-btn" class="mediassist-floating-btn" title="Ask MediAssist AI">
         <i class="fas fa-robot"></i>
         <span class="notification-badge">1</span>

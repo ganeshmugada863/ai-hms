@@ -6,8 +6,12 @@ from .forms import CustomUserRegistrationForm
 
 def role_based_redirect(user):
     if user.role == 'doctor':
+        if hasattr(user, 'doctorprofile'):
+            return redirect('/doctor-dashboard/')
         return redirect('/doctors/create-profile/')
     elif user.role == 'patient':
+        if hasattr(user, 'patientprofile'):
+            return redirect('/patient-dashboard/')
         return redirect('/patients/create-profile/')
     elif user.role == 'admin':
         return redirect('/admin-dashboard/')

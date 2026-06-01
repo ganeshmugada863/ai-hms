@@ -1,6 +1,6 @@
 // chat.js - Handles patient interactions with the AI assistant
 
-document.addEventListener('DOMContentLoaded', function () {
+function initChatbot() {
     // DOM Elements
     const chatInputForm = document.getElementById('chatInputForm');
     const userInputField = document.getElementById('userInputField');
@@ -777,4 +777,10 @@ document.addEventListener('DOMContentLoaded', function () {
             window.location.href = '/patients/dashboard/';
         });
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initChatbot);
+} else {
+    initChatbot();
+}
