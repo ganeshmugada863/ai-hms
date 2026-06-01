@@ -215,9 +215,10 @@ class ChatBot:
         # If currently collecting details or just starting a symptom discussion
         extracted_symptoms = []
         try:
-            from ai_assistant.symptom_engine import SymptomEngine
-            se = SymptomEngine()
-            se_res = se.extract_symptoms(english_message)
+            if not hasattr(self, 'symptom_engine') or self.symptom_engine is None:
+                from ai_assistant.symptom_engine import SymptomEngine
+                self.symptom_engine = SymptomEngine()
+            se_res = self.symptom_engine.extract_symptoms(english_message)
             extracted_symptoms = [item['name'] for item in se_res]
         except Exception as e:
             import logging
@@ -797,8 +798,10 @@ class ChatBot:
     def map_symptom_to_department(self, symptom: str) -> str:
         # Try finding the symptom in SymptomEngine to get its category and map it
         try:
-            from ai_assistant.symptom_engine import SymptomEngine
-            se = SymptomEngine()
+            if not hasattr(self, 'symptom_engine') or self.symptom_engine is None:
+                from ai_assistant.symptom_engine import SymptomEngine
+                self.symptom_engine = SymptomEngine()
+            se = self.symptom_engine
             category = None
             for s in se.symptoms:
                 if s['name'].lower() == symptom.lower():
