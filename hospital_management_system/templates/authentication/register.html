@@ -6,10 +6,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register — Smart Hospital</title>
     <meta name="description" content="Create your Smart Hospital Management account — secure, efficient, intelligent healthcare platform.">
+    <!-- Preconnect for faster CDN -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/authentication.css' %}?v=3.0">
+    <style>
+        /* Loading overlay */
+        #pageLoadingOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+        #pageLoadingOverlay.active { display: flex; }
+        .spinner-ring {
+            width: 48px; height: 48px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #2563EB;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner-text { font-size: 14px; color: #475569; font-weight: 600; }
+
+        /* Progress bar at top */
+        #topProgressBar {
+            position: fixed; top: 0; left: 0;
+            height: 3px; width: 0%;
+            background: linear-gradient(90deg, #2563EB, #818cf8);
+            z-index: 10000;
+            transition: width 0.3s ease;
+            border-radius: 0 2px 2px 0;
+        }
+
+        /* Button loading state */
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+            opacity: 0.85;
+        }
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            right: 16px; top: 50%;
+            transform: translateY(-50%);
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+    </style>
 </head>
 <body>
+
+<!-- Top progress bar -->
+<div id="topProgressBar"></div>
+
+<!-- Full page loading overlay -->
+<div id="pageLoadingOverlay">
+    <div class="spinner-ring"></div>
+    <div class="spinner-text">Creating your account...</div>
+</div>
 
 <!-- Floating background shapes -->
 <div class="bg-shapes">
@@ -35,7 +100,7 @@
         <div class="auth-card">
             <h2>Sign Up</h2>
             <p class="subtitle">Create your hospital account</p>
-            <form method="POST" enctype="multipart/form-data">
+            <form method="POST" enctype="multipart/form-data" id="registerForm">
                 {% csrf_token %}
                 {% if form.non_field_errors %}
                     <div class="alert alert-danger" role="alert" style="border-radius: 12px; font-size: 13.5px; margin-bottom: 20px; padding: 12px 18px; border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); color: #ef4444;">
@@ -62,7 +127,7 @@
                         </div>
                     {% endfor %}
                 </div>
-                <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+                <button type="submit" class="btn btn-primary w-100" id="submitBtn">Sign Up</button>
             </form>
             <p class="mt-3 text-center">
                 Already have an account?
@@ -77,6 +142,7 @@
 </div>
 
 <script>
+    // Quote rotator
     const quotes = [
         "The good physician treats the disease; the great physician treats the patient.",
         "Technology is best when it brings people together — especially in healthcare.",
@@ -87,10 +153,8 @@
         "A well-managed hospital is a well-healed community.",
         "Healthcare innovation begins with seamless operations and ends with saved lives."
     ];
-
     let currentIndex = 0;
     const quoteEl = document.getElementById('quoteText');
-
     function rotateQuote() {
         quoteEl.classList.add('fade-out');
         setTimeout(() => {
@@ -99,10 +163,32 @@
             quoteEl.classList.remove('fade-out');
         }, 600);
     }
-
     setInterval(rotateQuote, 5000);
 
-    // Fix autocomplete console warnings
+    // Form submit — show loading immediately
+    const registerForm = document.getElementById('registerForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const overlay = document.getElementById('pageLoadingOverlay');
+    const progressBar = document.getElementById('topProgressBar');
+
+    registerForm.addEventListener('submit', function(e) {
+        // Basic client-side validation — if form invalid, don't show loader
+        if (!registerForm.checkValidity()) return;
+
+        // Show progress bar animation
+        progressBar.style.width = '30%';
+        setTimeout(() => { progressBar.style.width = '70%'; }, 300);
+
+        // Show overlay
+        overlay.classList.add('active');
+
+        // Disable button with spinner
+        submitBtn.classList.add('btn-loading');
+        submitBtn.textContent = 'Creating Account...';
+        submitBtn.disabled = true;
+    });
+
+    // Fix autocomplete
     document.addEventListener('DOMContentLoaded', function() {
         const usernameInput = document.querySelector('input[name="username"]');
         const pass1 = document.querySelector('input[name="password1"]');
@@ -110,6 +196,13 @@
         if (usernameInput) usernameInput.setAttribute('autocomplete', 'username');
         if (pass1) pass1.setAttribute('autocomplete', 'new-password');
         if (pass2) pass2.setAttribute('autocomplete', 'new-password');
+    });
+
+    // If page loaded with errors, hide overlay (form was submitted but had errors)
+    window.addEventListener('load', function() {
+        overlay.classList.remove('active');
+        progressBar.style.width = '100%';
+        setTimeout(() => { progressBar.style.opacity = '0'; }, 400);
     });
 </script>
 </body>

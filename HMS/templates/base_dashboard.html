@@ -6,40 +6,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}MediCare Dashboard{% endblock %}</title>
+    <!-- DNS prefetch for faster CDN connections -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- FontAwesome loaded non-blocking -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     <link rel="stylesheet" href="{% static 'css/patient_dashboard.css' %}?v=13.0">
     {% if request.user.role == 'patient' %}
     <link rel="stylesheet" href="{% static 'css/patient_dashboard_unique.css' %}?v=8.0">
     {% endif %}
     {% block extra_css %}{% endblock %}
     <style>
+        /* Global top progress bar */
+        #globalProgressBar {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            width: 0%;
+            background: linear-gradient(90deg, #2563EB, #818cf8, #10B981);
+            z-index: 99999;
+            transition: width 0.25s ease;
+            border-radius: 0 2px 2px 0;
+            pointer-events: none;
+        }
+        #globalProgressBar.complete {
+            width: 100% !important;
+            opacity: 0;
+            transition: width 0.1s ease, opacity 0.4s ease 0.1s;
+        }
         @keyframes pulse {
-            0% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-            }
-            70% {
-                transform: scale(1);
-                box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
-            }
-            100% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-            }
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
-        .pulse-dot {
-            animation: pulse 1.5s infinite;
-        }
+        .pulse-dot { animation: pulse 1.5s infinite; }
     </style>
     <script>
         if (sessionStorage.getItem('sidebar_state') === 'expanded') {
             document.documentElement.classList.add('sidebar-was-expanded');
         }
+        // Start progress bar immediately on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            var bar = document.getElementById('globalProgressBar');
+            if (bar) { bar.style.width = '60%'; }
+        });
+        window.addEventListener('load', function() {
+            var bar = document.getElementById('globalProgressBar');
+            if (bar) { bar.classList.add('complete'); setTimeout(function(){ bar.style.display='none'; }, 600); }
+        });
     </script>
 </head>
 
 <body>
+    <!-- Global page loading progress bar -->
+    <div id="globalProgressBar"></div>
     <div class="container">
         <!-- Universal Sidebar -->
         <nav class="sidebar">
@@ -840,6 +863,38 @@
     {% endif %}
 
     {% block extra_js %}{% endblock %}
+
+    <script>
+    // Global navigation loading bar
+    (function() {
+        var bar = document.getElementById('globalProgressBar');
+        if (!bar) return;
+        // Intercept all internal link clicks
+        document.addEventListener('click', function(e) {
+            var link = e.target.closest('a');
+            if (!link) return;
+            var href = link.getAttribute('href');
+            if (!href || href.startsWith('#') || href.startsWith('javascript') ||
+                href.startsWith('mailto') || href.startsWith('tel') ||
+                link.target === '_blank') return;
+            // Show loading bar for internal navigation
+            bar.style.display = 'block';
+            bar.style.opacity = '1';
+            bar.style.width = '0%';
+            setTimeout(function(){ bar.style.width = '40%'; }, 10);
+            setTimeout(function(){ bar.style.width = '70%'; }, 200);
+        });
+        // Intercept form submits
+        document.addEventListener('submit', function(e) {
+            if (e.target.method && e.target.method.toLowerCase() === 'get') {
+                bar.style.display = 'block';
+                bar.style.opacity = '1';
+                bar.style.width = '0%';
+                setTimeout(function(){ bar.style.width = '50%'; }, 10);
+            }
+        });
+    })();
+    </script>
 </body>
 
 </html>
