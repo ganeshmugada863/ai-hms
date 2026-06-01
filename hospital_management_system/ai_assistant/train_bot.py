@@ -22,19 +22,22 @@ class ChatBot:
     def _check_security_violation(self, message: str, patient) -> bool:
         """
         Check for security violations (preventing accessing records of other patients).
+        Only triggers on 4+ digit numbers that look like real IDs, not everyday numbers like '3 days'.
         """
         msg_clean = message.lower().strip()
-        digit_sequences = re.findall(r'\b\d+\b', msg_clean)
+        # Only flag sequences of 4+ digits - these look like actual IDs, not symptom durations
+        digit_sequences = re.findall(r'\b\d{4,}\b', msg_clean)
         patient_id = str(patient.id)
         patient_user_id = str(patient.user.id)
         patient_phone = str(patient.emergency_contact or '').replace('-', '').replace(' ', '')
         
         for digits in digit_sequences:
-            if len(digits) >= 1:
-                if digits != patient_id and digits != patient_user_id and digits not in patient_phone:
-                    keywords = ['patient', 'history', 'profile', 'record', 'details', 'visit', 'show', 'view', 'check', 'get']
-                    if any(kw in msg_clean for kw in keywords) or 'id' in msg_clean or 'phone' in msg_clean:
-                        return True
+            if digits != patient_id and digits != patient_user_id and digits not in patient_phone:
+                # Only block if clearly trying to access someone else's record
+                keywords = ['patient id', 'patient record', 'patient history', 'patient profile',
+                            'patient details', 'show patient', 'view patient', 'get patient']
+                if any(kw in msg_clean for kw in keywords):
+                    return True
                         
         other_patient_indicators = [
             'other patient', 'another patient', 'someone else', "doctor's patient",
@@ -141,38 +144,38 @@ class ChatBot:
             ChatMessage.objects.create(session=session, role='bot', content=resp_html)
             return {'response': resp_html, 'analysis': None}
             
-        # 5b. Emergency Manual Command
-        elif 'emergency' in clean_msg or clean_msg == 'emergency help' or clean_msg == 'ambulance request':
+        # 5b. Emergency Manual Command (exact phrases only, not any message with 'emergency' in it)
+        elif clean_msg in ['emergency', 'emergency help', 'ambulance request', 'ambulance']:
             resp_html = self.get_emergency_banner_html(lang)
             ChatMessage.objects.create(session=session, role='bot', content=resp_html)
             return {'response': resp_html, 'analysis': {'symptoms': ['Emergency Prompt'], 'allergy_alerts': []}}
             
-        # 5c. Hospital Services Module
-        elif clean_msg == 'hospital services' or 'services' in clean_msg:
+        # 5c. Hospital Services Module (exact match only)
+        elif clean_msg in ['hospital services', 'services', 'our services']:
             resp_html = self.get_hospital_services_html(lang)
             ChatMessage.objects.create(session=session, role='bot', content=resp_html)
             return {'response': resp_html, 'analysis': None}
             
-        # 5d. Explore Departments
-        elif clean_msg == 'explore departments' or clean_msg == 'departments' or 'department' in clean_msg:
+        # 5d. Explore Departments (exact match only)
+        elif clean_msg in ['explore departments', 'departments', 'show departments', 'all departments']:
             resp_html = self.get_departments_html(lang)
             ChatMessage.objects.create(session=session, role='bot', content=resp_html)
             return {'response': resp_html, 'analysis': None}
             
-        # 5e. Track Appointment
-        elif clean_msg == 'track appointment' or 'track' in clean_msg:
+        # 5e. Track Appointment (exact match only)
+        elif clean_msg in ['track appointment', 'my appointments', 'track my appointment', 'appointment status']:
             resp_html = self.get_track_appointments_html(patient, lang)
             ChatMessage.objects.create(session=session, role='bot', content=resp_html)
             return {'response': resp_html, 'analysis': None}
             
-        # 5f. Lab Reports Checking
-        elif clean_msg == 'lab reports' or clean_msg == 'reports' or 'lab report' in clean_msg:
+        # 5f. Lab Reports Checking (exact match only)
+        elif clean_msg in ['lab reports', 'reports', 'lab report', 'my reports', 'my lab reports']:
             resp_html = self.get_lab_reports_html(patient, lang)
             ChatMessage.objects.create(session=session, role='bot', content=resp_html)
             return {'response': resp_html, 'analysis': None}
             
-        # 5g. Find Doctor Option Start
-        elif clean_msg == 'find doctor' or clean_msg == 'book appointment':
+        # 5g. Find Doctor Option Start (exact match only)
+        elif clean_msg in ['find doctor', 'book appointment', 'find a doctor', 'find doctor please']:
             # Ask symptom
             resp = self.get_multilingual_response('ask_symptom', lang)
             state_dict['state'] = 'awaiting_symptom'
@@ -210,7 +213,17 @@ class ChatBot:
 
         # 6. SYMPTOM ANALYSIS & EVALUATION PIPELINE
         # If currently collecting details or just starting a symptom discussion
-        extracted_symptoms = self.extract_symptoms_local(english_message)
+        extracted_symptoms = []
+        try:
+            from ai_assistant.symptom_engine import SymptomEngine
+            se = SymptomEngine()
+            se_res = se.extract_symptoms(english_message)
+            extracted_symptoms = [item['name'] for item in se_res]
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"SymptomEngine extraction failed: {e}. Using rule fallback.")
+            extracted_symptoms = self.extract_symptoms_local(english_message)
         
         if extracted_symptoms:
             # Map symptom to Department
@@ -226,7 +239,44 @@ class ChatBot:
             ChatMessage.objects.create(session=session, role='bot', content=resp)
             return {'response': resp, 'analysis': {'symptoms': session.extracted_symptoms, 'allergy_alerts': []}}
 
-        # 7. Fallback Default Response
+        # 7. Broader keyword-based symptom detection as secondary fallback
+        # Catches messages like 'stomach pain', 'my head hurts', 'i feel dizzy' etc.
+        broad_symptom_map = [
+            (['stomach', 'nausea', 'vomit', 'diarrhea', 'acidity', 'gastric', 'digestive', 'abdomen', 'belly', 'gut'], 'Gastroenterology'),
+            (['chest', 'heart', 'palpitation', 'cardiac', 'pressure in chest'], 'Cardiology'),
+            (['head', 'migraine', 'brain', 'dizzy', 'dizziness', 'vertigo', 'epilepsy', 'nervous', 'numbness'], 'Neurology'),
+            (['skin', 'rash', 'itch', 'itching', 'acne', 'allergy', 'hives', 'eczema', 'psoriasis'], 'Dermatology'),
+            (['cough', 'breath', 'lung', 'asthma', 'wheezing', 'tb', 'tuberculosis', 'sputum'], 'Pulmonology'),
+            (['bone', 'joint', 'knee', 'back pain', 'spine', 'fracture', 'shoulder', 'hip', 'ankle', 'wrist', 'elbow', 'arthritis'], 'Orthopedics'),
+            (['eye', 'vision', 'blur', 'blurry', 'cataract', 'glaucoma', 'retina', 'conjunctivitis'], 'Ophthalmology'),
+            (['ear', 'nose', 'throat', 'tonsil', 'sinus', 'hearing', 'hoarse', 'voice', 'adenoid'], 'ENT'),
+            (['child', 'baby', 'infant', 'kid', 'toddler', 'pediatric', 'children'], 'Pediatrics'),
+            (['mental', 'anxiety', 'depression', 'stress', 'mood', 'phobia', 'panic', 'insomnia', 'sleep', 'bipolar', 'ocd'], 'Psychiatry'),
+            (['pregnancy', 'pregnant', 'gynec', 'menstrual', 'period', 'uterus', 'ovary', 'female', 'period pain'], 'Gynecology'),
+            (['kidney', 'urine', 'urinary', 'bladder', 'renal', 'dialysis', 'uti', 'frequent urination'], 'Nephrology'),
+            (['tooth', 'teeth', 'dental', 'gum', 'mouth', 'jaw', 'cavity', 'toothache'], 'Dentistry'),
+            (['diabetes', 'thyroid', 'hormonal', 'hormone', 'endocrine', 'sugar', 'insulin', 'adrenal'], 'Endocrinology'),
+            (['fever', 'flu', 'cold', 'fatigue', 'weakness', 'tired', 'body ache', 'body pain', 'pain', 'general'], 'General Physician'),
+        ]
+        
+        broad_matched_dept = None
+        for keywords, dept in broad_symptom_map:
+            if any(kw in clean_msg for kw in keywords):
+                broad_matched_dept = dept
+                break
+        
+        if broad_matched_dept:
+            # Found a symptom keyword match
+            extracted_symptoms = [clean_msg]  # Use the message as the symptom
+            session.extracted_symptoms = list(set((session.extracted_symptoms or []) + extracted_symptoms))
+            session.risk_level = 'medium'
+            session.save()
+            
+            resp = self.get_doctor_recommendations_html(broad_matched_dept, lang, session, state_dict)
+            ChatMessage.objects.create(session=session, role='bot', content=resp)
+            return {'response': resp, 'analysis': {'symptoms': session.extracted_symptoms, 'allergy_alerts': []}}
+
+        # 8. Final Fallback Default Response - always return something useful
         resp = self.get_multilingual_response('fallback', lang)
         ChatMessage.objects.create(session=session, role='bot', content=resp)
         return {'response': resp, 'analysis': None}
@@ -543,6 +593,15 @@ class ChatBot:
             </div>
             """
 
+        if not cards_html:
+            cards_html = """
+            <div style="background: rgba(248, 250, 252, 0.7); border: 1px dashed rgba(37,99,235,0.2); border-radius: 14px; padding: 16px; text-align: center; color: #475569;">
+                <i class="fas fa-user-md" style="font-size: 24px; color: #2563EB; margin-bottom: 8px;"></i>
+                <p style="margin: 0; font-size: 13px; font-weight: 600; color: #1E293B;">No specialist doctors are currently active for online booking in this department.</p>
+                <p style="margin: 4px 0 0 0; font-size: 11.5px; color: #64748B;">Please consult our 24/7 general triage or check back later.</p>
+            </div>
+            """
+
         final_html = f"""
         <div style="margin-bottom:12px;">
             <p style="font-size:13.5px; color:#0F172A; line-height:1.5; font-weight:500; margin-bottom:10px;">{t_safety}</p>
@@ -736,7 +795,52 @@ class ChatBot:
         return extracted
 
     def map_symptom_to_department(self, symptom: str) -> str:
-        # Strictly matches welcome/symptom/specialty mappings inside prompt
+        # Try finding the symptom in SymptomEngine to get its category and map it
+        try:
+            from ai_assistant.symptom_engine import SymptomEngine
+            se = SymptomEngine()
+            category = None
+            for s in se.symptoms:
+                if s['name'].lower() == symptom.lower():
+                    category = s['category'].lower()
+                    break
+            
+            if category:
+                category_mapping = {
+                    'cardiovascular': 'Cardiology',
+                    'dermatological': 'Dermatology',
+                    'skin': 'Dermatology',
+                    'respiratory': 'Pulmonology',
+                    'gastrointestinal': 'Gastroenterology',
+                    'neurological': 'Neurology',
+                    'musculoskeletal': 'Orthopedics',
+                    'orthopedic': 'Orthopedics',
+                    'ophthalmological': 'Ophthalmology',
+                    'eye': 'Ophthalmology',
+                    'psychiatric': 'Psychiatry',
+                    'mental': 'Psychiatry',
+                    'pediatric': 'Pediatrics',
+                    'gynecological': 'Gynecology',
+                    'pregnancy': 'Gynecology',
+                    'urological': 'Nephrology',
+                    'renal': 'Nephrology',
+                    'kidney': 'Nephrology',
+                    'endocrine': 'Endocrinology',
+                    'hormonal': 'Endocrinology',
+                    'rheumatological': 'Rheumatology',
+                    'joint': 'Rheumatology',
+                    'dental': 'Dentistry',
+                    'mouth': 'Dentistry',
+                    'ent': 'ENT',
+                    'ears': 'ENT',
+                    'throat': 'ENT'
+                }
+                if category in category_mapping:
+                    return category_mapping[category]
+        except Exception:
+            pass
+
+        # Fallback to local hardcoded mapping
         mapping = {
             'fever': 'General Physician',
             'cough': 'General Physician',

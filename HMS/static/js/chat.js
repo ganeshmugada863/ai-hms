@@ -642,35 +642,44 @@ function initChatbot() {
     let isListening = false;
 
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
+        try {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
 
-        recognition.onstart = function () {
-            isListening = true;
-            if (voiceInputBtn) voiceInputBtn.style.color = '#ef4444';
-            if (voiceStatusMsg) voiceStatusMsg.textContent = "Listening... Speak now";
-        };
+            recognition.onstart = function () {
+                isListening = true;
+                if (voiceInputBtn) voiceInputBtn.style.color = '#ef4444';
+                if (voiceStatusMsg) voiceStatusMsg.textContent = "Listening... Speak now";
+            };
 
-        recognition.onresult = function (event) {
-            const resultText = event.results[0][0].transcript;
-            userInputField.value = resultText;
-            if (userInputField) {
-                userInputField.dispatchEvent(new Event('input'));
+            recognition.onresult = function (event) {
+                const resultText = event.results[0][0].transcript;
+                userInputField.value = resultText;
+                if (userInputField) {
+                    userInputField.dispatchEvent(new Event('input'));
+                }
+                if (voiceStatusMsg) voiceStatusMsg.textContent = "Voice captured!";
+            };
+
+            recognition.onerror = function (event) {
+                console.error("Speech recognition error:", event.error);
+                if (voiceStatusMsg) voiceStatusMsg.textContent = "Error: " + event.error;
+                stopListening();
+            };
+
+            recognition.onend = function () {
+                stopListening();
+            };
+        } catch (e) {
+            console.warn("Speech recognition initialization failed:", e);
+            recognition = null;
+            if (voiceInputBtn) {
+                voiceInputBtn.title = "Voice recognition initialization failed";
+                voiceInputBtn.style.opacity = '0.5';
             }
-            if (voiceStatusMsg) voiceStatusMsg.textContent = "Voice captured!";
-        };
-
-        recognition.onerror = function (event) {
-            console.error("Speech recognition error:", event.error);
-            if (voiceStatusMsg) voiceStatusMsg.textContent = "Error: " + event.error;
-            stopListening();
-        };
-
-        recognition.onend = function () {
-            stopListening();
-        };
+        }
     } else {
         if (voiceInputBtn) {
             voiceInputBtn.title = "Voice recognition not supported in this browser";
@@ -738,6 +747,7 @@ function initChatbot() {
     }
 
     function speakBotResponse(text) {
+        if (!text) return;
         if (!speakEnabled || !('speechSynthesis' in window)) return;
         
         window.speechSynthesis.cancel();
