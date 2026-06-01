@@ -35,17 +35,28 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Event Listeners
-    chatInputForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        sendMessage();
-    });
-
-    userInputField.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
+    if (chatInputForm) {
+        chatInputForm.addEventListener('submit', function (e) {
             e.preventDefault();
             sendMessage();
-        }
-    });
+        });
+    }
+
+    if (sendBtn) {
+        sendBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            sendMessage();
+        });
+    }
+
+    if (userInputField) {
+        userInputField.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
 
     if (langSelect) {
         langSelect.addEventListener('change', function () {

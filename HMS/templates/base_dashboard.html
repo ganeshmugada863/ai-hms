@@ -681,6 +681,7 @@
     </style>
 
     <!-- Floating Chat Button and Window Markup -->
+    {% if not '/ai/' in request.path %}
     <div id="mediassist-floating-btn" class="mediassist-floating-btn" title="Ask MediAssist AI">
         <i class="fas fa-robot"></i>
         <span class="notification-badge">1</span>
@@ -836,6 +837,7 @@
         });
     </script>
     <script src="{% static 'js/chat.js' %}?v=4.0"></script>
+    {% endif %}
     {% endif %}
 
     {% block extra_js %}{% endblock %}
