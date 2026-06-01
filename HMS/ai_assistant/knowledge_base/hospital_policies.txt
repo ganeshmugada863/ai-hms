@@ -1,8 +1,0 @@
-Policy: Patient Data Privacy and Security Policy (HIPAA Compliant)
-Details: Sri Lakshmi Hospital strictly enforces HIPAA equivalent privacy controls. All medical histories, consultation call logs, and uploaded files are encrypted and accessible only to authorized medical staff. Patients must complete identification verification before receiving confidential reports.
-
-Policy: Suspicious Activity Detection
-Details: Any attempt to access profile histories or reports belonging to another patient ID or phone number will be flagged as suspicious. The assistant will log the warning and politely refuse the action, directing the user to the front desk.
-
-Policy: File upload validation
-Details: Patients are allowed to upload X-rays, report PDFs, images, and prescriptions. These files are stored in patient-doctor isolated secure directories: /media/uploads/patient_{id}/doctor_{id}/filename.

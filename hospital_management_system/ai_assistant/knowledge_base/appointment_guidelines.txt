@@ -1,8 +1,0 @@
-Guideline: Appointment Booking Policy
-Details: Appointments at Sri Lakshmi Hospital can be booked online through our patient portal or by interacting with MediBot. Patients should select their preferred doctor, department, and time slot. Confirmation is sent via SMS and email.
-
-Guideline: Cancellation and Rescheduling Windows
-Details: If you need to cancel or reschedule your appointment, you must do so at least 2 hours before the scheduled appointment time. Cancellations made within this 2-hour window will not be eligible for a refund.
-
-Guideline: Slot Availability and Timing
-Details: Doctor consultation slots are scheduled hourly. Specialty clinic slots (Cardiology, Neurology) are limited and must be booked at least 24 hours in advance. Emergency walk-in slots are managed separately by the front desk.
