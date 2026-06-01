@@ -44,6 +44,7 @@ urlpatterns = [
     path('reminders/', include('reminders.urls')),
     path('ml-booking-agent/', include('ml_booking_agent.urls')),
     path('departments/', include('departments.urls')),
+    path('ai/', include('ai_assistant.urls')),
 ]
 
 

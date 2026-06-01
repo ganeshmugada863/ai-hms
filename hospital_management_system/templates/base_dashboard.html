@@ -111,6 +111,11 @@
                         <i class="fas fa-building"></i> <span>Department Management</span>
                     </a>
                 </li>
+                <li class="{% block active_admin_ai_chat %}{% endblock %}">
+                    <a href="{% url 'ai_assistant:chat' %}">
+                        <i class="fas fa-brain"></i> <span>AI Assistant Portal</span>
+                    </a>
+                </li>
 
 
                 {% elif request.user.role == 'doctor' %}
@@ -154,6 +159,11 @@
                 <li class="{% block active_patient_home %}{% endblock %}">
                     <a href="{% url 'patient_dashboard' %}">
                         <i class="fas fa-home"></i> <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="{% block active_patient_ai_chat %}{% endblock %}">
+                    <a href="{% url 'ai_assistant:chat' %}">
+                        <i class="fas fa-comment-medical"></i> <span>AI Health Assistant</span>
                     </a>
                 </li>
 

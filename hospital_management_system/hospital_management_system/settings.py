@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     'ml_module',
     'ml_booking_agent',
     'home',
+    'ai_assistant',
 ]
 
 AUTH_USER_MODEL = 'authentication.CustomUser'
