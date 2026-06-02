@@ -19,4 +19,4 @@ RUN python manage.py collectstatic --noinput --clear
 
 EXPOSE 7860
 
-CMD ["sh", "-c", "python manage.py migrate && gunicorn --bind 0.0.0.0:7860 hospital_management_system.wsgi:application"]
+CMD ["sh", "-c", "python manage.py migrate && gunicorn --bind 0.0.0.0:7860 --access-logfile - --error-logfile - hospital_management_system.wsgi:application"]
