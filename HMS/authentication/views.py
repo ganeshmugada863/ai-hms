@@ -23,7 +23,7 @@ def register_view(request):
         form = CustomUserRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            login(request, user, backend='authentication.backends.EmailOrUsernameBackend')
             return role_based_redirect(user)
     else:
         form = CustomUserRegistrationForm()
