@@ -1507,4 +1507,79 @@ body {
             transform: translate(-50%, 0);
         }
     }
+
+    /* Make clinical data tables responsive cards on mobile */
+    .data-table, 
+    .data-table thead, 
+    .data-table tbody, 
+    .data-table th, 
+    .data-table td, 
+    .data-table tr {
+        display: block !important;
+    }
+    
+    .data-table thead {
+        display: none !important;
+    }
+    
+    .data-table tr {
+        border: 1px solid var(--border-color) !important;
+        border-radius: 16px !important;
+        padding: 15px !important;
+        margin-bottom: 20px !important;
+        background: var(--panel-bg) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02) !important;
+    }
+    
+    .data-table td {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        border-bottom: 1px solid var(--border-color) !important;
+        padding: 10px 0 !important;
+        text-align: right !important;
+        font-size: 13px !important;
+    }
+    
+    .data-table td:last-child {
+        border-bottom: none !important;
+        justify-content: center !important;
+        padding-top: 15px !important;
+    }
+    
+    .data-table td::before {
+        content: attr(data-label) !important;
+        font-weight: 700 !important;
+        color: var(--text-muted) !important;
+        text-align: left !important;
+        flex: 1 !important;
+    }
 }
+
+
+/* Dark Mode Form Inputs & Select elements theme overrides */
+body.dark-mode input[type="text"],
+body.dark-mode input[type="number"],
+body.dark-mode input[type="email"],
+body.dark-mode input[type="password"],
+body.dark-mode input[type="date"],
+body.dark-mode input[type="time"],
+body.dark-mode select,
+body.dark-mode textarea {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    border-color: #334155 !important;
+}
+
+body.dark-mode select option {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+}
+
+body.dark-mode input:focus,
+body.dark-mode select:focus,
+body.dark-mode textarea:focus {
+    border-color: #3b82f6 !important;
+    outline: none !important;
+}
+

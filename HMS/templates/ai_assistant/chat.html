@@ -17,18 +17,36 @@
     }
 
     /* Force full viewport layout on chat page */
-    .content-wrapper, .main-panel, .main-content, html, body {
+    html, body {
         height: 100vh !important;
-        margin: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .main-content {
         padding: 0 !important;
+        max-width: none !important;
+        margin: 0 !important;
+        height: 100vh !important;
+        display: flex !important;
+        flex-direction: column !important;
         overflow: hidden !important;
         background-color: var(--chat-bg) !important;
     }
 
-    .main-content {
+    .header {
+        margin-bottom: 0 !important;
+        padding: 12px 24px !important;
+        background-color: var(--chat-sidebar-bg) !important;
+        border-bottom: 1px solid var(--chat-border) !important;
+    }
+
+    .chat-gpt-container {
         display: flex !important;
         flex-direction: row !important;
-        max-width: none !important;
+        flex: 1 !important;
+        width: 100% !important;
+        overflow: hidden !important;
+        background-color: var(--chat-bg) !important;
     }
 
     /* Left Sidebar */
@@ -38,7 +56,7 @@
         border-right: 1px solid var(--chat-border);
         display: flex;
         flex-direction: column;
-        height: 100vh;
+        height: 100% !important;
         flex-shrink: 0;
         z-index: 10;
         color: var(--chat-text-main);
@@ -163,7 +181,7 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        height: 100vh;
+        height: 100% !important;
         position: relative;
         background-color: var(--chat-bg);
     }
@@ -536,8 +554,9 @@
 {% endblock %}
 
 {% block content %}
-<!-- ChatGPT-style Left Sidebar -->
-<aside class="chat-gpt-sidebar">
+<div class="chat-gpt-container">
+    <!-- ChatGPT-style Left Sidebar -->
+    <aside class="chat-gpt-sidebar">
     <div class="sidebar-header">
         <button id="newChatBtn" class="new-chat-btn">
             <i class="fas fa-plus"></i> New Chat
@@ -670,7 +689,8 @@
             </div>
         </form>
     </div>
-</section>
+    </section>
+</div>
 {% endblock %}
 
 {% block extra_js %}

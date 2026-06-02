@@ -47,3 +47,17 @@
     color: #fff;
     border-color: var(--primary-blue);
 }
+
+.reminder-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 30px;
+}
+
+@media (max-width: 768px) {
+    .reminder-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
