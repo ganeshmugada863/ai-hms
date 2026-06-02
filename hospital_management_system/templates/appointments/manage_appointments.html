@@ -34,7 +34,7 @@
                             </div>
                             <div>
                                 <div style="font-weight: 600;">{{ appt.patient.user.username }}</div>
-                                <div style="font-size: 11px; color: var(--text-muted);">PID: #{{ appt.patient.id|add:1000 }}</div>
+                                <div style="font-size: 11px; color: var(--text-muted);">PID: #{{ appt.patient.id|add:1000 }} &bull; ID: #{{ appt.appointment_id }}</div>
                             </div>
                         </div>
                     </td>
@@ -70,9 +70,15 @@
                                 </a>
                             {% endif %}
                             
-                            <a href="{% url 'edit_appointment' appt.id %}" class="btn-small" style="background: var(--hover-bg); color: var(--text-main);" title="Edit Details">
-                                <i class="fas fa-pen-nib"></i>
-                            </a>
+                            {% if appt.appointment_date <= tomorrow %}
+                                <a href="{% url 'edit_appointment' appt.id %}" class="btn-small" style="background: var(--hover-bg); color: var(--text-main);" title="Edit Details">
+                                    <i class="fas fa-pen-nib"></i>
+                                </a>
+                            {% else %}
+                                <span class="btn-small locked-btn" style="opacity: 0.55; cursor: not-allowed; background: var(--hover-bg); color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center;" title="Editing locked until 1 day before appointment">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>

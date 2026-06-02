@@ -13,6 +13,8 @@ class Appointment(models.Model):
         ('Cancelled', 'Cancelled'),
     )
 
+    appointment_id = models.IntegerField(unique=True, db_index=True, null=True, blank=True)
+
     patient = models.ForeignKey(
         PatientProfile,
         on_delete=models.CASCADE,
@@ -66,3 +68,13 @@ class Appointment(models.Model):
 
     def __str__(self):
         return f"{self.patient.user.username} → Dr. {self.doctor.user.username}"
+
+    def save(self, *args, **kwargs):
+        import random
+        if not self.appointment_id:
+            while True:
+                new_id = random.randint(1000, 9999)
+                if not Appointment.objects.filter(appointment_id=new_id).exists():
+                    self.appointment_id = new_id
+                    break
+        super().save(*args, **kwargs)

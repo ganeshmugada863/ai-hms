@@ -475,12 +475,20 @@
                     <tbody>
                         {% for appt in appointments|slice:":5" %}
                         <tr>
-                            <td><strong>{{ appt.patient.user.username }}</strong></td>
+                            <td>
+                                <strong>{{ appt.patient.user.username }}</strong>
+                                <br>
+                                <span style="font-size: 11px; color: var(--text-muted); font-weight: 550;">ID: #{{ appt.appointment_id }}</span>
+                            </td>
                             <td>{{ appt.appointment_date|date:"M d, Y" }} at {{ appt.appointment_time }}</td>
                             <td><span class="status {{ appt.status|lower }}">{{ appt.status }}</span></td>
                             <td>
-                                <div style="display: flex; gap: 8px;">
-                                    <a href="{% url 'edit_appointment' appt.id %}" class="btn-small">Edit</a>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    {% if appt.appointment_date <= tomorrow %}
+                                        <a href="{% url 'edit_appointment' appt.id %}" class="btn-small">Edit</a>
+                                    {% else %}
+                                        <span class="btn-small locked-btn" style="opacity: 0.55; cursor: not-allowed; background: var(--hover-bg); color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px;" title="Editing locked until 1 day before appointment"><i class="fas fa-lock"></i> Locked</span>
+                                    {% endif %}
                                     {% if appt.status != 'Completed' %}
                                         <a href="{% url 'complete_appointment' appt.id %}" class="btn-small btn-secondary">Complete</a>
                                     {% else %}
@@ -504,6 +512,37 @@
     <!-- Right Column: Today's Reminder Card -->
     <div class="sidebar-dashboard-content" style="display: flex; flex-direction: column; gap: 20px;">
         
+        <!-- Instant 4-Digit Appointment ID Search Bar Card -->
+        <div class="section search-appointment-card" style="padding: 24px; border-radius: 20px; background: var(--panel-bg); border: 1px solid var(--border-color); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02); margin-bottom: 0;">
+            <div style="margin-top: 0; font-size: 15px; margin-bottom: 12px; color: var(--text-main); font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-search" style="color: var(--primary-blue);"></i> Instant Patient Finder
+            </div>
+            <div style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 15px;">
+                Enter a 4-digit Appointment ID to look up detailed patient history.
+            </div>
+            <div class="search-input-wrapper" style="position: relative; display: flex; flex-direction: column; gap: 8px;">
+                <div style="position: relative;">
+                    <i class="fas fa-hashtag" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px;"></i>
+                    <input type="text" id="appt-search-input" placeholder="e.g. 4837" maxlength="4" style="width: 100%; padding: 12px 14px 12px 36px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--hover-bg); color: var(--text-main); font-size: 14px; font-weight: 600; outline: none; transition: border-color 0.2s;" autocomplete="off">
+                </div>
+                <div id="appt-search-feedback" style="font-size: 11px; color: #ef4444; font-weight: 550; display: none;"></div>
+            </div>
+
+            <!-- Instant search results summary panel (hidden by default) -->
+            <div id="appt-search-results-panel" style="margin-top: 18px; border-top: 1px solid var(--border-color); padding-top: 15px; display: none; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div id="search-pat-avatar" style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">P</div>
+                    <div>
+                        <div id="search-pat-name" style="font-weight: 600; font-size: 13.5px; color: var(--text-main);">Patient Name</div>
+                        <div id="search-appt-info" style="font-size: 11.5px; color: var(--text-muted);">Date &amp; Time</div>
+                    </div>
+                </div>
+                <button type="button" id="btn-view-search-details" class="btn-primary" style="width: 100%; padding: 10px 0; border-radius: 10px; font-size: 12px; font-weight: 600; text-align: center; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <i class="fas fa-file-alt"></i> View Full Medical File
+                </button>
+            </div>
+        </div>
+
         <!-- Today's Appointment Reminder Card -->
         <div id="today-reminder-card" class="section" style="display: none; padding: 24px; border-radius: 20px; background: var(--panel-bg); border: 1px solid var(--border-color); box-shadow: 0 8px 24px rgba(239, 68, 68, 0.05); margin-bottom: 0;">
             <div class="calendar-reminders-title" style="margin-top: 0; font-size: 15px; margin-bottom: 12px; color: var(--text-main); font-weight: 700; display: flex; align-items: center; gap: 8px;">
@@ -518,6 +557,129 @@
     </div>
 
 </div>
+
+<!-- Premium Medical File Modal -->
+<div id="premium-medical-modal" class="premium-modal-overlay" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; transition: all 0.3s ease;">
+    <div class="premium-modal-card" style="background: var(--panel-bg); border: 1px solid var(--border-color); width: 100%; max-width: 800px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); display: flex; flex-direction: column; max-height: 85vh; overflow: hidden; animation: modalFadeIn 0.3s ease;">
+        <!-- Modal Header -->
+        <div style="padding: 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--hover-bg);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(37, 99, 235, 0.1); color: var(--primary-blue); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                    <i class="fas fa-id-card-alt"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text-main);">Appointment File #<span id="modal-title-id">0000</span></h3>
+                    <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Confidential Patient Medical Information</p>
+                </div>
+            </div>
+            <button type="button" id="close-medical-modal" style="background: transparent; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">&times;</button>
+        </div>
+        
+        <!-- Modal Body (Scrollable) -->
+        <div style="padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; font-family: inherit;">
+            <!-- Grid: Patient Profile Overview -->
+            <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary-blue);">Patient Profile</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; background: var(--hover-bg); padding: 18px; border-radius: 16px; border: 1px solid var(--border-color);">
+                    <div>
+                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Full Name</div>
+                        <div id="modal-pat-name" style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Loading...</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Username / Contact</div>
+                        <div id="modal-pat-username" style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Loading...</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Age &amp; Gender</div>
+                        <div id="modal-pat-age-gender" style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Loading...</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Blood Group</div>
+                        <div id="modal-pat-blood" style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Loading...</div>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Emergency Contact</div>
+                        <div id="modal-pat-emergency" style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consultation Details -->
+            <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary-blue);">Consultation Context</h4>
+                <div style="background: var(--hover-bg); padding: 18px; border-radius: 16px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 14px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+                        <div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Scheduled Date</div>
+                            <div id="modal-appt-date" style="font-size: 13px; font-weight: 600; color: var(--text-main);">Loading...</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Consultation Type</div>
+                            <div id="modal-appt-type" style="font-size: 13px; font-weight: 600; color: var(--text-main);">Loading...</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Urgency Level</div>
+                            <div id="modal-appt-urgency" style="font-size: 13px; font-weight: 600; color: var(--text-main);">Loading...</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Chief Complaint / Reason</div>
+                        <div id="modal-appt-reason" style="font-size: 13px; color: var(--text-main); margin-top: 4px; white-space: pre-wrap; line-height: 1.5;">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical History -->
+            <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary-blue);">Patient Medical History Log</h4>
+                <div style="background: var(--hover-bg); padding: 18px; border-radius: 16px; border: 1px solid var(--border-color);">
+                    <div id="modal-pat-history" style="font-size: 13px; color: var(--text-main); white-space: pre-wrap; line-height: 1.5;">No history available.</div>
+                </div>
+            </div>
+
+            <!-- Prescriptions Table -->
+            <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary-blue);">Active Prescriptions</h4>
+                <div style="overflow-x: auto; border: 1px solid var(--border-color); border-radius: 12px;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12.5px;">
+                        <thead>
+                            <tr style="background: var(--hover-bg); border-bottom: 1px solid var(--border-color);">
+                                <th style="padding: 12px 16px; font-weight: 700; color: var(--text-main);">Diagnosis</th>
+                                <th style="padding: 12px 16px; font-weight: 700; color: var(--text-main);">Medicines</th>
+                                <th style="padding: 12px 16px; font-weight: 700; color: var(--text-main);">Instructions</th>
+                                <th style="padding: 12px 16px; font-weight: 700; color: var(--text-main);">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal-prescriptions-table-body">
+                            <!-- JS populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Uploaded Medical Reports -->
+            <div>
+                <h4 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary-blue);">Uploaded Labs &amp; Reports</h4>
+                <div id="modal-reports-container" style="display: flex; flex-direction: column; gap: 10px;">
+                    <!-- JS populated -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal Footer -->
+        <div style="padding: 18px 24px; border-top: 1px solid var(--border-color); background: var(--hover-bg); display: flex; justify-content: flex-end;">
+            <button type="button" id="btn-close-modal-footer" class="btn-primary" style="padding: 10px 24px; border-radius: 12px; font-weight: 600; font-size: 13px; border: none; cursor: pointer;">Close File</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes modalFadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+</style>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -593,7 +755,7 @@
                     dayCell.addEventListener('click', () => {
                         const detailBox = document.getElementById('appt-detail-box');
                         if (detailBox) {
-                            document.getElementById('appt-detail-patient').innerHTML = `<strong>Patient:</strong> ${appt.patient_name}`;
+                            document.getElementById('appt-detail-patient').innerHTML = `<strong>Patient:</strong> ${appt.patient_name} <br><small style="color: var(--text-muted); font-size: 11px;">ID: #${appt.appointment_id}</small>`;
                             document.getElementById('appt-detail-time').innerHTML = `<strong>Time:</strong> ${appt.time}`;
                             document.getElementById('appt-detail-status').innerHTML = `<strong>Status:</strong> <span class="status ${appt.status.toLowerCase()}">${appt.status}</span>`;
                             detailBox.style.display = 'block';
@@ -667,6 +829,145 @@
         // Initial execution
         renderCalendar(currentMonth, currentYear);
         updateReminders();
+        
+        // Appointment Search AJAX & Live Validation
+        const searchInput = document.getElementById('appt-search-input');
+        const feedback = document.getElementById('appt-search-feedback');
+        const resultsPanel = document.getElementById('appt-search-results-panel');
+        const patAvatar = document.getElementById('search-pat-avatar');
+        const patName = document.getElementById('search-pat-name');
+        const apptInfo = document.getElementById('search-appt-info');
+        const viewDetailsBtn = document.getElementById('btn-view-search-details');
+        
+        const medicalModal = document.getElementById('premium-medical-modal');
+        const closeModals = [document.getElementById('close-medical-modal'), document.getElementById('btn-close-modal-footer')];
+        
+        let activeSearchedData = null;
+
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                let val = e.target.value.replace(/\D/g, '');
+                e.target.value = val;
+                
+                feedback.style.display = 'none';
+                resultsPanel.style.display = 'none';
+                
+                if (val.length === 0) {
+                    return;
+                }
+                
+                if (val.length < 4) {
+                    feedback.textContent = "Please enter a valid 4-digit Appointment ID.";
+                    feedback.style.display = 'block';
+                    return;
+                }
+                
+                if (val.length === 4) {
+                    fetch(`/appointments/api/search/?q=${val}`, {
+                        headers: {
+                            'x-requested-with': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(res => {
+                        if (!res.ok) {
+                            return res.json().then(err => { throw new Error(err.message || 'Search failed'); });
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        activeSearchedData = data;
+                        patAvatar.textContent = data.patient.username.substring(0, 1).toUpperCase();
+                        patName.textContent = data.patient.full_name;
+                        apptInfo.textContent = `Appt: ${data.appointment.appointment_date} at ${data.appointment.appointment_time}`;
+                        resultsPanel.style.display = 'flex';
+                    })
+                    .catch(err => {
+                        feedback.textContent = err.message;
+                        feedback.style.display = 'block';
+                    });
+                }
+            });
+        }
+
+        if (viewDetailsBtn) {
+            viewDetailsBtn.addEventListener('click', () => {
+                if (!activeSearchedData) return;
+                
+                const data = activeSearchedData;
+                document.getElementById('modal-title-id').textContent = data.appointment.appointment_id;
+                document.getElementById('modal-pat-name').textContent = data.patient.full_name;
+                document.getElementById('modal-pat-username').textContent = `@${data.patient.username} (${data.patient.email})`;
+                document.getElementById('modal-pat-age-gender').textContent = `${data.patient.age} yrs / ${data.patient.gender}`;
+                document.getElementById('modal-pat-blood').textContent = data.patient.blood_group;
+                document.getElementById('modal-pat-emergency').textContent = data.patient.emergency_contact;
+                
+                document.getElementById('modal-appt-date').textContent = `${data.appointment.appointment_date} at ${data.appointment.appointment_time}`;
+                document.getElementById('modal-appt-type').textContent = data.appointment.consultation_type;
+                document.getElementById('modal-appt-urgency').textContent = data.appointment.is_emergency ? 'CRITICAL / EMERGENCY' : 'Normal';
+                document.getElementById('modal-appt-urgency').style.color = data.appointment.is_emergency ? '#ef4444' : 'var(--text-main)';
+                document.getElementById('modal-appt-reason').textContent = data.appointment.reason;
+                
+                document.getElementById('modal-pat-history').textContent = data.patient.medical_history || 'No medical history notes recorded.';
+                
+                const pBody = document.getElementById('modal-prescriptions-table-body');
+                pBody.innerHTML = '';
+                if (data.prescriptions.length === 0) {
+                    pBody.innerHTML = `<tr><td colspan="4" style="padding: 16px; text-align: center; color: var(--text-muted);">No prescriptions issued for this appointment.</td></tr>`;
+                } else {
+                    data.prescriptions.forEach(p => {
+                        pBody.innerHTML += `
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 12px 16px; color: var(--text-main); font-weight: 600;">${p.diagnosis}</td>
+                                <td style="padding: 12px 16px; color: var(--text-main); font-family: monospace;">${p.medicines}</td>
+                                <td style="padding: 12px 16px; color: var(--text-muted);">${p.dosage_instructions}</td>
+                                <td style="padding: 12px 16px; color: var(--text-muted); white-space: nowrap;">${p.prescribed_date}</td>
+                            </tr>
+                        `;
+                    });
+                }
+                
+                const rContainer = document.getElementById('modal-reports-container');
+                rContainer.innerHTML = '';
+                if (data.medical_records.length === 0) {
+                    rContainer.innerHTML = `<div style="padding: 12px; text-align: center; color: var(--text-muted); font-size: 13px; background: var(--hover-bg); border-radius: 12px;">No uploaded reports found.</div>`;
+                } else {
+                    data.medical_records.forEach(mr => {
+                        const downloadBtn = mr.report_file_url ? 
+                            `<a href="${mr.report_file_url}" target="_blank" style="padding: 6px 12px; background: var(--primary-blue); color: white; border-radius: 8px; font-size: 11px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 4px;"><i class="fas fa-download"></i> Download</a>` : 
+                            `<span style="font-size: 11px; color: var(--text-muted);">No file</span>`;
+                        
+                        rContainer.innerHTML += `
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 12px;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 13px; color: var(--text-main);">${mr.report_name}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">Uploaded on ${mr.uploaded_at} (${mr.file_type}) • From: ${mr.from_info}</div>
+                                </div>
+                                ${downloadBtn}
+                            </div>
+                        `;
+                    });
+                }
+                
+                medicalModal.style.display = 'flex';
+            });
+        }
+        
+        closeModals.forEach(btn => {
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    medicalModal.style.display = 'none';
+                });
+            }
+        });
+        
+        if (medicalModal) {
+            medicalModal.addEventListener('click', (e) => {
+                if (e.target === medicalModal) {
+                    medicalModal.style.display = 'none';
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

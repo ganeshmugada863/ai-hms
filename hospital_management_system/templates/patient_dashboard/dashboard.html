@@ -422,7 +422,11 @@
                         <tbody>
                             {% for appt in upcoming_appointments|slice:":5" %}
                             <tr>
-                                <td>Dr. {{ appt.doctor.user.username }}</td>
+                                <td>
+                                    <strong>Dr. {{ appt.doctor.user.username }}</strong>
+                                    <br>
+                                    <span style="font-size: 11px; color: var(--text-muted); font-weight: 550;">ID: #{{ appt.appointment_id }}</span>
+                                </td>
                                 <td>{{ appt.appointment_date|date:"M d, Y" }} at {{ appt.appointment_time }}</td>
                                 <td><span class="status {{ appt.status|lower }}">{{ appt.status }}</span></td>
                                 <td><a href="/appointments/{{ appt.id }}/" class="btn-small">View</a></td>
@@ -592,7 +596,7 @@
                     dayCell.addEventListener('click', () => {
                         const detailBox = document.getElementById('appt-detail-box');
                         if (detailBox) {
-                            document.getElementById('appt-detail-doctor').innerHTML = `<strong>Doctor:</strong> Dr. ${appt.doctor_name}`;
+                            document.getElementById('appt-detail-doctor').innerHTML = `<strong>Doctor:</strong> Dr. ${appt.doctor_name} <br><small style="color: var(--text-muted); font-size: 11px;">ID: #${appt.appointment_id}</small>`;
                             document.getElementById('appt-detail-time').innerHTML = `<strong>Time:</strong> ${appt.time}`;
                             document.getElementById('appt-detail-status').innerHTML = `<strong>Status:</strong> <span class="status ${appt.status.toLowerCase()}">${appt.status}</span>`;
                             detailBox.style.display = 'block';
