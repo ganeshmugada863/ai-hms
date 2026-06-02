@@ -67,9 +67,9 @@ def api_send_message(request):
     doctor = None
     
     if user.role == 'patient':
-        patient = getattr(user, 'patientprofile', None)
+        patient = PatientProfile.objects.filter(user=user).first()
         if not patient:
-            patient = PatientProfile.objects.create(user=user)
+            patient, _ = PatientProfile.objects.get_or_create(user=user)
     elif user.role == 'doctor':
         doctor = getattr(user, 'doctorprofile', None)
 
@@ -128,6 +128,8 @@ def api_send_message(request):
         # Check if user attempts to pass another patient's ID
         digit_ids = re.findall(r'\b\d{2,}\b', clean_msg)
         for d in digit_ids:
+            if d in user.username or (user.email and d in user.email):
+                continue
             if d != str(user.id) and d != str(patient.id):
                 security_flag = True
                 action_taken = 'Security Block'
@@ -542,7 +544,7 @@ def api_sessions(request):
     AJAX endpoint to return dynamic list of chat logs in sidebar.
     """
     if request.user.role == 'patient':
-        patient = getattr(request.user, 'patientprofile', None)
+        patient = PatientProfile.objects.filter(user=request.user).first()
         if not patient:
             return JsonResponse({'sessions': []})
         sessions = ChatSession.objects.filter(patient=patient).order_by('-started_at')

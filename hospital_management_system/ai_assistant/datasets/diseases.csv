@@ -1,0 +1,15 @@
+disease_id,disease_name,disease_name_te,common_symptoms,department,severity,description
+1,Angina Pectoris,గుండె జబ్బు,"chest pain,breathing difficulty",Cardiology,high,Coronary artery condition causing chest pain
+2,Contact Dermatitis,చర్మ వ్యాధి,skin rash,Dermatology,mild,Skin inflammation due to contact with allergy triggers
+3,Conjunctivitis,కండ్లకలక,eye pain,Ophthalmology,medium,Pink eye infection causing pain and redness
+4,Otitis Media,చెవి ఇన్ఫెక్షన్,"ear pain,fever",ENT,mild,Middle ear infection common in children
+5,Dental Caries,పంటి పుచ్చు,tooth pain,Dentistry,mild,Tooth decay causing sensitivity and cavities
+6,Osteoarthritis,కీళ్ల వాతము,joint pain,Orthopedics,medium,Degenerative joint disease causing stiffness
+7,Pregnancy Care,గర్భధారణ సంరక్షణ,pregnancy,Gynecology,medium,Prenatal health monitoring and routine checks
+8,Pediatric Flu,పిల్లల జ్వరం,"child health,fever",Pediatrics,medium,Viral infections in young infants and children
+9,General Anxiety Disorder,ఆందోళన,mental stress,Psychiatry,medium,Excessive anxiety and stress interference
+10,Acute Gastroenteritis,కడుపు ఇన్ఫెక్షన్,stomach pain,Gastroenterology,medium,Stomach flu causing cramps and nausea
+11,Urinary Tract Infection,యూరినరీ ట్రాక్ట్ ఇన్ఫెక్షన్,"kidney pain,fever",Nephrology,high,Infection inside the renal tract causing pain
+12,Asthma Bronchiale,అస్తమా,breathing difficulty,Pulmonology,high,Chronic respiratory disease causing breathlessness
+13,Influenza,సరి జ్వరం,"fever,headache",General Physician,medium,Seasonal flu infection with fever and body aches
+14,Migraine,తలనొప్పి,headache,Neurology,medium,"Severe throbbing headache, often one-sided"

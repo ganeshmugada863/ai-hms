@@ -3,11 +3,15 @@ import csv
 import re
 import numpy as np
 
-try:
-    from sentence_transformers import SentenceTransformer, util
-    HAS_TRANSFORMERS = True
-except ImportError:
+# Force HAS_TRANSFORMERS = False in Hugging Face environment to avoid OOM crash (due to limited RAM)
+if 'SPACE_ID' in os.environ or os.environ.get('DISABLE_TRANSFORMERS') == 'true':
     HAS_TRANSFORMERS = False
+else:
+    try:
+        from sentence_transformers import SentenceTransformer, util
+        HAS_TRANSFORMERS = True
+    except ImportError:
+        HAS_TRANSFORMERS = False
 
 class SymptomEngine:
     def __init__(self, dataset_dir=None):
