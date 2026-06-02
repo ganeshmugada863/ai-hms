@@ -219,3 +219,9 @@ AI_ASSISTANT = {
 
 # Login Redirects Configuration
 LOGIN_URL = '/auth/login/'
+
+AUTHENTICATION_BACKENDS = [
+    'authentication.backends.EmailOrUsernameBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+

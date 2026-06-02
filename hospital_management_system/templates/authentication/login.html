@@ -187,12 +187,18 @@
         submitBtn.disabled = true;
     });
 
-    // Fix autocomplete
+    // Fix autocomplete and add placeholders
     document.addEventListener('DOMContentLoaded', function() {
         const usernameInput = document.querySelector('input[name="username"]');
         const passwordInput = document.querySelector('input[name="password"]');
-        if (usernameInput) usernameInput.setAttribute('autocomplete', 'username');
-        if (passwordInput) passwordInput.setAttribute('autocomplete', 'current-password');
+        if (usernameInput) {
+            usernameInput.setAttribute('autocomplete', 'username');
+            usernameInput.setAttribute('placeholder', 'e.g. username or email');
+        }
+        if (passwordInput) {
+            passwordInput.setAttribute('autocomplete', 'current-password');
+            passwordInput.setAttribute('placeholder', 'Enter your password');
+        }
     });
 
     // If page loaded with errors, hide overlay
