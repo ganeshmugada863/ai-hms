@@ -188,14 +188,31 @@
         submitBtn.disabled = true;
     });
 
-    // Fix autocomplete
+    // Fix autocomplete and add placeholders
     document.addEventListener('DOMContentLoaded', function() {
         const usernameInput = document.querySelector('input[name="username"]');
+        const emailInput = document.querySelector('input[name="email"]');
+        const phoneInput = document.querySelector('input[name="phone"]');
         const pass1 = document.querySelector('input[name="password1"]');
         const pass2 = document.querySelector('input[name="password2"]');
-        if (usernameInput) usernameInput.setAttribute('autocomplete', 'username');
-        if (pass1) pass1.setAttribute('autocomplete', 'new-password');
-        if (pass2) pass2.setAttribute('autocomplete', 'new-password');
+        if (usernameInput) {
+            usernameInput.setAttribute('autocomplete', 'username');
+            usernameInput.setAttribute('placeholder', 'e.g. johndoe');
+        }
+        if (emailInput) {
+            emailInput.setAttribute('placeholder', 'e.g. john@example.com');
+        }
+        if (phoneInput) {
+            phoneInput.setAttribute('placeholder', 'e.g. +1234567890');
+        }
+        if (pass1) {
+            pass1.setAttribute('autocomplete', 'new-password');
+            pass1.setAttribute('placeholder', 'Enter password');
+        }
+        if (pass2) {
+            pass2.setAttribute('autocomplete', 'new-password');
+            pass2.setAttribute('placeholder', 'Confirm password');
+        }
     });
 
     // If page loaded with errors, hide overlay (form was submitted but had errors)
