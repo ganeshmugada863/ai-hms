@@ -6,7 +6,9 @@ from patients.models import PatientProfile
 
 class ChatSession(models.Model):
     session_id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True)
-    patient = models.ForeignKey(PatientProfile, on_delete=models.CASCADE, related_name='ai_chat_sessions')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='ai_chat_sessions', null=True, blank=True)
+    patient = models.ForeignKey(PatientProfile, on_delete=models.CASCADE, related_name='ai_chat_sessions', null=True, blank=True)
+
     started_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     language = models.CharField(max_length=10, default='en')

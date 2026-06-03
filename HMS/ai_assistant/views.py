@@ -43,10 +43,8 @@ def chat_view(request):
     elif request.user.is_staff or request.user.is_superuser:
         pass  # Admins can use the chat
 
-    # Setup context
-    recent_sessions = []
-    if request.user.role == 'patient' and patient:
-        recent_sessions = ChatSession.objects.filter(patient=patient).order_by('-started_at')[:8]
+    # Setup context: Filter sessions strictly belonging to the logged-in user
+    recent_sessions = ChatSession.objects.filter(user=request.user).order_by('-started_at')[:8]
 
     return render(request, 'ai_assistant/chat.html', {
         'recent_sessions': recent_sessions,
@@ -87,23 +85,14 @@ def api_send_message(request):
     session = None
     if session_id_str:
         try:
-            if user.role == 'patient':
-                session = ChatSession.objects.filter(patient=patient, session_id=session_id_str, is_active=True).first()
-            else:
-                session = ChatSession.objects.filter(session_id=session_id_str, is_active=True).first()
+            # Secure ownership check: Session must belong to the logged-in user
+            session = ChatSession.objects.filter(user=user, session_id=session_id_str, is_active=True).first()
         except Exception:
             pass
 
     if not session:
-        if user.role == 'patient' and patient:
-            session = ChatSession.objects.create(patient=patient, is_active=True)
-        else:
-            # For non-patients, look up or create a dummy/admin session
-            temp_patient = PatientProfile.objects.first()
-            if not temp_patient:
-                # Need at least one patient record to attach session
-                return JsonResponse({'error': 'No patient profiles exist in the system.'}, status=400)
-            session = ChatSession.objects.create(patient=temp_patient, is_active=True)
+        # Create session belonging to the logged-in user
+        session = ChatSession.objects.create(user=user, patient=patient, is_active=True)
 
     # Save user message to database
     ChatMessage.objects.create(session=session, role='user', content=message_text)
@@ -1043,8 +1032,8 @@ def api_chat_history(request):
         
     session = get_object_or_404(ChatSession, session_id=session_id_str)
     
-    # Secure ownership check
-    if request.user.role == 'patient' and session.patient.user != request.user:
+    # Secure ownership check: Strict ownership check for all roles
+    if session.user != request.user:
         return JsonResponse({'error': 'Unauthorized access.'}, status=403)
 
     msgs = session.messages.all().order_by('timestamp')
@@ -1067,13 +1056,8 @@ def api_sessions(request):
     """
     AJAX endpoint to return dynamic list of chat logs in sidebar.
     """
-    if request.user.role == 'patient':
-        patient = PatientProfile.objects.filter(user=request.user).first()
-        if not patient:
-            return JsonResponse({'sessions': []})
-        sessions = ChatSession.objects.filter(patient=patient).order_by('-started_at')
-    else:
-        sessions = ChatSession.objects.all().order_by('-started_at')[:10]
+    # Secure session list check: Filter strictly by logged-in user
+    sessions = ChatSession.objects.filter(user=request.user).order_by('-started_at')
 
     data = []
     for s in sessions:
