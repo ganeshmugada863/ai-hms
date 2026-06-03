@@ -124,6 +124,12 @@
                         <i class="fas fa-home"></i> <span>Dashboard</span>
                     </a>
                 </li>
+                <li class="{% block active_doctor_ai_chat %}{% endblock %}">
+                    <a href="{% url 'ai_assistant:chat' %}">
+                        <i class="fas fa-comment-medical"></i> <span>AI Health Assistant</span>
+                    </a>
+                </li>
+
                 <li class="{% block active_consultations %}{% endblock %}">
                     <a href="{% url 'consultations_index' %}" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                         <div style="display: flex; align-items: center; gap: 10px;">

@@ -3,6 +3,10 @@
 
 {% block title %}Medicare AI Healthcare Assistant Portal{% endblock %}
 
+{% block active_patient_ai_chat %}active{% endblock %}
+{% block active_doctor_ai_chat %}active{% endblock %}
+{% block active_admin_ai_chat %}active{% endblock %}
+
 {% block extra_css %}
 <style>
     /* Reset & Override Dashboard CSS for a Full-Viewport ChatGPT experience */
@@ -605,7 +609,7 @@
             <button type="button" id="voiceSpeakToggle" class="header-btn" title="Toggle Voice Output">
                 <i class="fas fa-volume-mute"></i>
             </button>
-            <button type="button" class="header-btn" onclick="window.location.href='/patient-dashboard/';" title="Exit Assistant">
+            <button type="button" class="header-btn" onclick="{% if user.role == 'admin' %}window.location.href='/admin-dashboard/';{% elif user.role == 'doctor' %}window.location.href='/doctor-dashboard/';{% else %}window.location.href='/patient-dashboard/';{% endif %}" title="Exit Assistant">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
         </div>
