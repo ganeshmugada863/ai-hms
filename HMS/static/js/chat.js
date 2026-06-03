@@ -15,7 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const voiceSpeakToggle = document.getElementById('voiceSpeakToggle');
     const typingIndicator = document.getElementById('typingIndicator');
 
-    let activeSessionId = localStorage.getItem('medi_ai_session_id') || '';
+    const currentRole = (typeof userRole !== 'undefined') ? userRole : 'patient';
+    const storageKey = 'medi_ai_session_id_' + currentRole;
+    let activeSessionId = localStorage.getItem(storageKey) || '';
     let voiceSpeakEnabled = false;
     let recognition = null;
     let isListening = false;
@@ -30,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (newChatBtn) {
         newChatBtn.addEventListener('click', () => {
             activeSessionId = '';
-            localStorage.removeItem('medi_ai_session_id');
+            localStorage.removeItem(storageKey);
             messagesContainer.innerHTML = '';
             welcomeContainer.style.display = 'flex';
             document.querySelectorAll('.session-item').forEach(el => el.classList.remove('active'));
@@ -96,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch conversation history
     function loadSessionHistory(sessionId) {
         activeSessionId = sessionId;
-        localStorage.setItem('medi_ai_session_id', sessionId);
+        localStorage.setItem(storageKey, sessionId);
         
         // Highlight in sidebar
         document.querySelectorAll('.session-item').forEach(el => {
@@ -166,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data.session_id && data.session_id !== activeSessionId) {
                 activeSessionId = data.session_id;
-                localStorage.setItem('medi_ai_session_id', activeSessionId);
+                localStorage.setItem(storageKey, activeSessionId);
                 loadSessionsList();
             }
 

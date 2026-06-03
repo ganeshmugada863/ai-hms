@@ -769,6 +769,7 @@
     const sendApiUrl = "{% url 'ai_assistant:api_send' %}";
     const historyApiUrl = "{% url 'ai_assistant:api_history' %}";
     const sessionsApiUrl = "{% url 'ai_assistant:api_sessions' %}";
+    const userRole = '{{ user.role }}';
 
     function submitChatBooking(form) {
         const docId = form.doctor_id.value;

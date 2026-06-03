@@ -13,6 +13,7 @@ class ChatSession(models.Model):
     is_active = models.BooleanField(default=True)
     language = models.CharField(max_length=10, default='en')
     risk_level = models.CharField(max_length=20, default='low')
+    assistant_role = models.CharField(max_length=20, default='patient', choices=CustomUser.ROLE_CHOICES)
     context_data = models.TextField(default='{}')  # Stores session memory JSON (e.g., preferred doctor, previous queries)
 
     def get_memory(self):
@@ -26,7 +27,8 @@ class ChatSession(models.Model):
         self.save()
 
     def __str__(self):
-        return f"Session {str(self.session_id)[:8]} - {self.patient.user.username}"
+        username = self.user.username if self.user else (self.patient.user.username if self.patient else "Unknown")
+        return f"Session {str(self.session_id)[:8]} - {username} ({self.assistant_role})"
 
 
 class ChatMessage(models.Model):
