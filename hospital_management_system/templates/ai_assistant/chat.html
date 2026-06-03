@@ -311,8 +311,9 @@
     }
 
     .input-pill-wrapper {
-        background-color: var(--chat-card-bg);
-        border: 1px solid var(--chat-border);
+        background: transparent;
+        border: 1px solid rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
         border-radius: 28px;
         padding: 8px 16px;
         display: flex;
@@ -616,18 +617,19 @@
         <div class="welcome-container" id="welcomeContainer">
             <h2 class="welcome-title">What's on the agenda today?</h2>
             
+            {% if user.role == 'patient' %}
             <div class="welcome-options-grid">
                 <button class="option-pill-btn" data-query="Show my previous appointment">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Show previous appointment</span>
                     <span class="pill-subtitle">View your latest session</span>
                 </button>
-                <button class="option-pill-btn" data-query="Show my blood test reports">
+                <button class="option-pill-btn" data-query="Show my blood reports">
                     <i class="fas fa-vial"></i>
                     <span>Show my blood reports</span>
                     <span class="pill-subtitle">Retrieve last blood test details</span>
                 </button>
-                <button class="option-pill-btn" data-query="Show my prescription history">
+                <button class="option-pill-btn" data-query="Show my prescriptions">
                     <i class="fas fa-file-prescription"></i>
                     <span>Show prescriptions</span>
                     <span class="pill-subtitle">List medications and dosage</span>
@@ -635,7 +637,7 @@
             </div>
             
             <div class="welcome-options-grid" style="margin-top: 15px;">
-                <button class="option-pill-btn" data-query="Show my patient timeline">
+                <button class="option-pill-btn" data-query="Show my health timeline">
                     <i class="fas fa-history"></i>
                     <span>My Health Timeline</span>
                     <span class="pill-subtitle">Chronological record summary</span>
@@ -651,6 +653,62 @@
                     <span class="pill-subtitle">Triage phone numbers central</span>
                 </button>
             </div>
+            
+            {% elif user.role == 'doctor' %}
+            <div class="welcome-options-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <button class="option-pill-btn" data-query="Show my appointments today">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Appointments</span>
+                    <span class="pill-subtitle">View Today's Appointments</span>
+                </button>
+                <button class="option-pill-btn" data-query="Search patient records">
+                    <i class="fas fa-search-plus"></i>
+                    <span>Patient Records</span>
+                    <span class="pill-subtitle">Search Patient By ID</span>
+                </button>
+                <button class="option-pill-btn" data-query="View and manage prescriptions">
+                    <i class="fas fa-file-medical"></i>
+                    <span>Prescriptions</span>
+                    <span class="pill-subtitle">View and Manage Prescriptions</span>
+                </button>
+            </div>
+            
+            {% else %}
+            <div class="welcome-options-grid">
+                <button class="option-pill-btn" data-query="Show hospital analytics">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Hospital Analytics</span>
+                    <span class="pill-subtitle">Total Doctors, Patients, Revenue...</span>
+                </button>
+                <button class="option-pill-btn" data-query="Show patient analytics">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Patient Analytics</span>
+                    <span class="pill-subtitle">Today's Appointments & Analytics</span>
+                </button>
+                <button class="option-pill-btn" data-query="Show inactive doctors">
+                    <i class="fas fa-user-slash"></i>
+                    <span>Doctor Management</span>
+                    <span class="pill-subtitle">Show inactive / active doctors</span>
+                </button>
+            </div>
+            <div class="welcome-options-grid" style="margin-top: 15px;">
+                <button class="option-pill-btn" data-query="Show top rated doctors">
+                    <i class="fas fa-star"></i>
+                    <span>Top Rated Doctors</span>
+                    <span class="pill-subtitle">View best performing doctors</span>
+                </button>
+                <button class="option-pill-btn" data-query="Show cardiologists">
+                    <i class="fas fa-heartbeat"></i>
+                    <span>Search Cardiologists</span>
+                    <span class="pill-subtitle">Locate heart specialists</span>
+                </button>
+                <button class="option-pill-btn" data-query="Are ICU beds available?">
+                    <i class="fas fa-bed"></i>
+                    <span>ICU Bed Availability</span>
+                    <span class="pill-subtitle">Check hospital capacity</span>
+                </button>
+            </div>
+            {% endif %}
         </div>
 
         <div id="messagesContainer" style="display: flex; flex-direction: column; gap: 20px; width: 100%;">
@@ -672,7 +730,14 @@
                 <button type="button" class="input-action-btn" id="attachmentBtn" title="Upload Media (Images/PDFs)">
                     <i class="fas fa-paperclip"></i>
                 </button>
-                <input type="text" id="userInputField" placeholder="Ask anything..." autocomplete="off">
+                
+                {% if user.role == 'patient' %}
+                <input type="text" id="userInputField" placeholder="Describe your symptoms..." autocomplete="off">
+                {% elif user.role == 'doctor' %}
+                <input type="text" id="userInputField" placeholder="Search patient by ID..." autocomplete="off">
+                {% else %}
+                <input type="text" id="userInputField" placeholder="Ask anything about hospital data..." autocomplete="off">
+                {% endif %}
                 
                 <!-- Voice mic button -->
                 <button type="button" class="input-action-btn" id="voiceInputBtn" title="Voice dictation">
@@ -699,6 +764,39 @@
     const sendApiUrl = "{% url 'ai_assistant:api_send' %}";
     const historyApiUrl = "{% url 'ai_assistant:api_history' %}";
     const sessionsApiUrl = "{% url 'ai_assistant:api_sessions' %}";
+
+    function submitChatBooking(form) {
+        const docId = form.doctor_id.value;
+        const name = form.patient_name.value;
+        const age = form.age.value;
+        const gen = form.gender.value;
+        const mob = form.mobile.value;
+        const email = form.email.value;
+        const sym = form.symptoms.value;
+        const date = form.preferred_date.value;
+        const time = form.preferred_time.value;
+        const notes = form.notes.value;
+        
+        const msg = `submit_booking: doctor_id=${docId}, patient_name=${name}, age=${age}, gender=${gen}, mobile=${mob}, email=${email}, symptoms=${sym}, date=${date}, time=${time}, notes=${notes}`;
+        
+        const input = document.getElementById('userInputField');
+        input.value = msg;
+        const send = document.getElementById('sendBtn');
+        send.click();
+    }
+
+    function saveDraftPrescription(form) {
+        const patId = form.patient_id.value;
+        const diagnosis = form.diagnosis.value;
+        const medicines = form.medicines.value;
+        
+        const msg = `save_prescription: patient_id=${patId}, diagnosis=${diagnosis}, medicines=${medicines.replace(/\n/g, ';')}`;
+        
+        const input = document.getElementById('userInputField');
+        input.value = msg;
+        const send = document.getElementById('sendBtn');
+        send.click();
+    }
 </script>
 <script src="{% static 'js/chat.js' %}?v=4.0"></script>
 {% endblock %}
