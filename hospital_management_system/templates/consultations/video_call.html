@@ -356,6 +356,18 @@
     let activeDeviceIndex = 0;
     let videoDevices = [];
 
+    let peerConnection = null;
+    const isDoctor = {% if is_doctor %}true{% else %}false{% endif %};
+    const appointmentId = "{{ appointment.id }}";
+    
+    const rtcConfig = {
+        iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' }
+        ]
+    };
+
     // Generate mock video and audio stream when hardware is blocked/unavailable
     function createMockLocalStream() {
         console.log("Generating mock media stream fallback...");
@@ -436,6 +448,166 @@
         return combinedStream;
     }
 
+    // Cookie parsing helper for Django CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Post signaling message
+    async function postSignal(type, data) {
+        try {
+            await fetch('/consultations/api/post-webrtc-signal/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    appointment_id: appointmentId,
+                    sender: isDoctor ? 'doctor' : 'patient',
+                    type: type,
+                    data: data
+                })
+            });
+        } catch (e) {
+            console.error("Error posting WebRTC signal:", e);
+        }
+    }
+
+    // Create RTCPeerConnection
+    function createPeerConnection() {
+        console.log("Creating RTCPeerConnection...");
+        peerConnection = new RTCPeerConnection(rtcConfig);
+
+        // Add local tracks
+        if (localStream) {
+            localStream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, localStream);
+            });
+        }
+
+        // On remote track
+        peerConnection.ontrack = (event) => {
+            console.log("Remote track received:", event.streams[0]);
+            const remoteVideo = document.getElementById('remoteVideo');
+            if (remoteVideo) {
+                const overlay = document.getElementById('connectingOverlay');
+                if (overlay) overlay.style.display = 'none';
+                
+                remoteVideo.srcObject = event.streams[0];
+                remoteVideo.play().catch(err => console.warn("Error playing remote video:", err));
+                document.getElementById('callStatusText').textContent = 'Call Connected (Secure)';
+                document.getElementById('callStatusText').style.color = '#10b981';
+            }
+        };
+
+        // On local ICE candidate
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                console.log("Sending local ICE candidate:", event.candidate);
+                postSignal('ice_candidate', event.candidate);
+            }
+        };
+
+        peerConnection.onconnectionstatechange = (event) => {
+            console.log("Connection state changed:", peerConnection.connectionState);
+            if (peerConnection.connectionState === 'connected') {
+                document.getElementById('callStatusText').textContent = 'Call Connected (Secure)';
+                document.getElementById('callStatusText').style.color = '#10b981';
+            } else if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'failed') {
+                document.getElementById('callStatusText').textContent = 'Call Disconnected';
+                document.getElementById('callStatusText').style.color = '#ef4444';
+            }
+        };
+    }
+
+    // Signaling Polling loop
+    let signalPollInterval = null;
+    let processedCandidates = new Set();
+    let hasReceivedOffer = false;
+    let hasReceivedAnswer = false;
+
+    function startSignalPolling() {
+        console.log("Starting WebRTC signaling poll...");
+        signalPollInterval = setInterval(async () => {
+            try {
+                const res = await fetch(`/consultations/api/get-webrtc-signal/?appointment_id=${appointmentId}&receiver=${isDoctor ? 'doctor' : 'patient'}`);
+                const data = await res.json();
+                
+                if (!isDoctor) {
+                    // Patient pulls offer
+                    if (data.offer && !hasReceivedOffer) {
+                        hasReceivedOffer = true;
+                        console.log("Received Offer:", data.offer);
+                        await handleOffer(data.offer);
+                    }
+                } else {
+                    // Doctor pulls answer
+                    if (data.answer && !hasReceivedAnswer) {
+                        hasReceivedAnswer = true;
+                        console.log("Received Answer:", data.answer);
+                        await handleAnswer(data.answer);
+                    }
+                }
+                
+                // Add remote candidates
+                if (data.ice_candidates && data.ice_candidates.length > 0) {
+                    for (const candidateData of data.ice_candidates) {
+                        const candidateStr = JSON.stringify(candidateData);
+                        if (!processedCandidates.has(candidateStr)) {
+                            processedCandidates.add(candidateStr);
+                            console.log("Adding remote candidate:", candidateData);
+                            if (peerConnection) {
+                                try {
+                                    await peerConnection.addIceCandidate(new RTCIceCandidate(candidateData));
+                                } catch (e) {
+                                    console.error("Error adding candidate:", e);
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Error polling signaling data:", e);
+            }
+        }, 1500);
+    }
+
+    async function handleOffer(offer) {
+        if (!peerConnection) {
+            createPeerConnection();
+        }
+        try {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            await postSignal('answer', answer);
+        } catch (e) {
+            console.error("Error handling offer:", e);
+        }
+    }
+
+    async function handleAnswer(answer) {
+        if (peerConnection) {
+            try {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+            } catch (e) {
+                console.error("Error setting answer remote desc:", e);
+            }
+        }
+    }
+
     // Initiate Audio/Video permissions on demand
     async function initiateCall() {
         document.getElementById('permissionModal').style.display = 'none';
@@ -456,51 +628,62 @@
                 localStream.getTracks().forEach(track => track.stop());
             }
 
-            // Check if mediaDevices is supported (e.g. non-SSL / headless check)
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                throw new Error("navigator.mediaDevices.getUserMedia not supported in this browser environment");
+                throw new Error("getUserMedia not supported");
             }
 
-            // Request permission
             localStream = await navigator.mediaDevices.getUserMedia(constraints);
             
-            // Set local stream to video
             const localVideo = document.getElementById('localVideo');
             localVideo.srcObject = localStream;
             
-            // Hide placeholders
             document.getElementById('localVideoPlaceholder').style.display = 'none';
             document.getElementById('connectingOverlay').style.display = 'none';
+            document.getElementById('callStatusText').textContent = 'Connecting...';
             
-            // Set Status text
-            document.getElementById('callStatusText').textContent = 'Connected (Secure)';
-            
-            // Enumerate video input devices for switching capability
             const devices = await navigator.mediaDevices.enumerateDevices();
             videoDevices = devices.filter(device => device.kind === 'videoinput');
 
-            // Begin simulated remote feed
-            startSimulatedRemoteFeed();
+            // Establish PeerConnection
+            createPeerConnection();
+
+            if (isDoctor) {
+                // Doctor initiates the call - Clear previous signals & Create SDP Offer
+                await postSignal('clear', {});
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                await postSignal('offer', offer);
+            }
+
+            // Start signaling polling
+            startSignalPolling();
 
         } catch (error) {
             console.warn('Error accessing media devices, starting mock stream fallback.', error);
             
-            // Stop existing stream if any
             if (localStream) {
                 if (localStream.cleanupInterval) clearInterval(localStream.cleanupInterval);
                 localStream.getTracks().forEach(track => track.stop());
             }
 
-            // Safe fallback to simulated stream
             localStream = createMockLocalStream();
             const localVideo = document.getElementById('localVideo');
             localVideo.srcObject = localStream;
             
             document.getElementById('localVideoPlaceholder').style.display = 'none';
             document.getElementById('connectingOverlay').style.display = 'none';
-            document.getElementById('callStatusText').textContent = 'Connected (Simulated Feed)';
+            document.getElementById('callStatusText').textContent = 'Connecting (Simulated)...';
             
-            startSimulatedRemoteFeed();
+            createPeerConnection();
+
+            if (isDoctor) {
+                await postSignal('clear', {});
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                await postSignal('offer', offer);
+            }
+
+            startSignalPolling();
         }
     }
 
@@ -549,13 +732,12 @@
         }
     }
 
-    // Switch between Front (user) and Back (environment) camera
+    // Switch camera
     async function switchCamera() {
         if (!localStream) return;
         
         currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
         
-        // If we have listed devices, toggle index
         if (videoDevices.length > 1) {
             activeDeviceIndex = (activeDeviceIndex + 1) % videoDevices.length;
             const targetDevice = videoDevices[activeDeviceIndex];
@@ -570,16 +752,23 @@
             };
             
             try {
-                // Keep audio track going or stop video only
                 const videoTracks = localStream.getVideoTracks();
                 videoTracks.forEach(track => track.stop());
                 
                 const newStream = await navigator.mediaDevices.getUserMedia(constraints);
                 const newVideoTrack = newStream.getVideoTracks()[0];
                 
-                // Replace video track in current stream
                 localStream.removeTrack(videoTracks[0]);
                 localStream.addTrack(newVideoTrack);
+                
+                // Replace track on the WebRTC connection
+                if (peerConnection) {
+                    const senders = peerConnection.getSenders();
+                    const videoSender = senders.find(sender => sender.track && sender.track.kind === 'video');
+                    if (videoSender) {
+                        videoSender.replaceTrack(newVideoTrack);
+                    }
+                }
                 
                 document.getElementById('localVideo').srcObject = localStream;
                 
@@ -610,13 +799,22 @@
             
             localStream.removeTrack(videoTracks[0]);
             localStream.addTrack(newVideoTrack);
+            
+            if (peerConnection) {
+                const senders = peerConnection.getSenders();
+                const videoSender = senders.find(sender => sender.track && sender.track.kind === 'video');
+                if (videoSender) {
+                    videoSender.replaceTrack(newVideoTrack);
+                }
+            }
+            
             document.getElementById('localVideo').srcObject = localStream;
         } catch (err) {
             console.error("FacingMode switch failed:", err);
         }
     }
 
-    // Toggle native browser Picture-in-Picture for the remote video stream
+    // Toggle Picture-in-Picture
     async function togglePictureInPicture() {
         const remoteVideo = document.getElementById('remoteVideo');
         if (!remoteVideo) return;
@@ -634,14 +832,6 @@
         } catch (error) {
             console.error("PiP error:", error);
         }
-    }
-
-    // Simulates receiving a remote stream from the peer
-    function startSimulatedRemoteFeed() {
-        const remoteVideo = document.getElementById('remoteVideo');
-        remoteVideo.src = "https://assets.mixkit.co/videos/preview/mixkit-medical-consultation-with-a-doctor-41618-large.mp4";
-        remoteVideo.loop = true;
-        remoteVideo.play().catch(err => console.log("Auto-playing remote video requires interaction or page load: ", err));
     }
 
     // Draggable code for local video window
@@ -715,9 +905,6 @@
                     window.location.href = "{% if appointment %}{% url 'appointment_detail' appointment.id %}{% else %}{% url 'consultations_index' %}{% endif %}";
                 } else if (data.status === 'ringing') {
                     document.getElementById('callStatusText').textContent = data.is_doctor ? 'Calling Patient (Ringing)...' : 'Ringing...';
-                } else if (data.status === 'active') {
-                    document.getElementById('callStatusText').textContent = 'Call Connected (Secure)';
-                    document.getElementById('callStatusText').style.color = '#10b981';
                 }
             })
             .catch(err => console.error("Error polling call status:", err));
@@ -731,11 +918,13 @@
         document.getElementById('hangupLink').addEventListener('click', (e) => {
             e.preventDefault();
             if (callStatusPollInterval) clearInterval(callStatusPollInterval);
+            if (signalPollInterval) clearInterval(signalPollInterval);
             
             fetch('/consultations/api/update-call-status/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
                 },
                 body: JSON.stringify({
                     appointment_id: "{{ appointment.id }}",
@@ -756,7 +945,9 @@
         if (callStatusPollInterval) {
             clearInterval(callStatusPollInterval);
         }
-        // Send beacon to notify the call has ended
+        if (signalPollInterval) {
+            clearInterval(signalPollInterval);
+        }
         const data = JSON.stringify({ appointment_id: "{{ appointment.id }}", status: 'ended' });
         navigator.sendBeacon('/consultations/api/update-call-status/', data);
     });

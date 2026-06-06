@@ -301,6 +301,18 @@
 {% endblock %}
 
 {% block content %}
+{% if search_query %}
+<div class="panel" style="padding: 15px 20px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 16px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-info-circle" style="color: var(--primary-blue); font-size: 18px;"></i>
+        <span style="font-size: 14px; font-weight: 500; color: var(--text-main);">Dashboard records filtered by: <strong>"{{ search_query }}"</strong></span>
+    </div>
+    <a href="/patient-dashboard/" class="btn-primary" style="padding: 8px 16px; font-size: 12px; border-radius: 8px; text-decoration: none; display: flex; align-items: center; gap: 6px;">
+        <i class="fas fa-times-circle"></i> Clear Filter
+    </a>
+</div>
+{% endif %}
+
 <!-- Main Responsive Two-Column Layout -->
 <div class="patient-dashboard-layout" style="display: grid; gap: 25px;">
     

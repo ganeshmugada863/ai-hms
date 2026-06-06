@@ -6,6 +6,8 @@ from doctors.models import DoctorProfile
 from .video_call import start_video_call
 from .audio_call import start_audio_call
 from .chat import process_chat_message
+import os
+from django.conf import settings
 
 def index(request):
     """Consultations main page showing the three options."""
@@ -213,4 +215,99 @@ def get_call_status(request):
         'status': appointment.call_session_status,
         'is_doctor': is_doctor,
     })
+
+
+SIGNAL_DIR = os.path.join(settings.BASE_DIR, 'webrtc_signaling')
+
+def _get_signal_filepath(appointment_id):
+    if not os.path.exists(SIGNAL_DIR):
+        os.makedirs(SIGNAL_DIR, exist_ok=True)
+    return os.path.join(SIGNAL_DIR, f"{appointment_id}.json")
+
+@csrf_exempt
+def post_webrtc_signal(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Unauthenticated'}, status=401)
+    
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+        
+    try:
+        data = json.loads(request.body)
+        appointment_id = data.get('appointment_id')
+        sender = data.get('sender') # 'doctor' or 'patient'
+        signal_type = data.get('type') # 'offer', 'answer', 'ice_candidate', 'clear'
+        signal_data = data.get('data')
+        
+        if not appointment_id or not sender or not signal_type:
+            return JsonResponse({'success': False, 'error': 'Missing parameters'}, status=400)
+            
+        filepath = _get_signal_filepath(appointment_id)
+        
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, 'r') as f:
+                    file_data = json.load(f)
+            except Exception:
+                file_data = {}
+        else:
+            file_data = {}
+            
+        if signal_type == 'offer':
+            file_data['offer'] = signal_data
+        elif signal_type == 'answer':
+            file_data['answer'] = signal_data
+        elif signal_type == 'ice_candidate':
+            key = 'doctor_ice' if sender == 'doctor' else 'patient_ice'
+            if key not in file_data:
+                file_data[key] = []
+            if signal_data not in file_data[key]:
+                file_data[key].append(signal_data)
+        elif signal_type == 'clear':
+            file_data = {}
+            
+        with open(filepath, 'w') as f:
+            json.dump(file_data, f)
+            
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+def get_webrtc_signal(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Unauthenticated'}, status=401)
+        
+    appointment_id = request.GET.get('appointment_id')
+    receiver = request.GET.get('receiver') # 'doctor' or 'patient'
+    
+    if not appointment_id or not receiver:
+        return JsonResponse({'error': 'Missing parameters'}, status=400)
+        
+    filepath = _get_signal_filepath(appointment_id)
+    
+    if not os.path.exists(filepath):
+        return JsonResponse({
+            'offer': None,
+            'answer': None,
+            'ice_candidates': []
+        })
+        
+    try:
+        with open(filepath, 'r') as f:
+            file_data = json.load(f)
+    except Exception:
+        file_data = {}
+        
+    if receiver == 'doctor':
+        return JsonResponse({
+            'offer': file_data.get('offer'),
+            'answer': file_data.get('answer'),
+            'ice_candidates': file_data.get('patient_ice', [])
+        })
+    else:
+        return JsonResponse({
+            'offer': file_data.get('offer'),
+            'answer': file_data.get('answer'),
+            'ice_candidates': file_data.get('doctor_ice', [])
+        })
 

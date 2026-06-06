@@ -53,6 +53,138 @@
 {% endblock %}
 
 {% block content %}
+{% if search_query %}
+<div class="section" style="margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px;">
+        <h2 style="margin: 0;"><i class="fas fa-search" style="color: var(--primary-blue); margin-right: 8px;"></i> Search Results for "{{ search_query }}"</h2>
+        <a href="/admin-dashboard/" class="btn-primary" style="padding: 8px 16px; font-size: 12px; border-radius: 8px; text-decoration: none; display: flex; align-items: center; gap: 6px;">
+            <i class="fas fa-times-circle"></i> Clear Search
+        </a>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 30px;">
+        <!-- Doctors Section -->
+        <div>
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 10px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-user-md" style="color: var(--primary-blue);"></i> Matching Doctors ({{ search_doctors.count|default:0 }})
+            </h3>
+            {% if search_doctors %}
+            <div style="overflow-x: auto;">
+                <table class="table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-size: 12.5px;">
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border-color);">Doctor ID</th>
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border-color);">Name</th>
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border-color);">Specialization</th>
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border-color);">Department</th>
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border-color);">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in search_doctors %}
+                        <tr style="border-bottom: 1px solid var(--border-color); font-size: 13.5px;">
+                            <td style="padding: 12px; font-weight: 600;">{{ doc.doctor_id|default:"-" }}</td>
+                            <td style="padding: 12px;">Dr. {{ doc.user.username }}</td>
+                            <td style="padding: 12px;">{{ doc.specialization }}</td>
+                            <td style="padding: 12px;">{{ doc.department.name|default:"-" }}</td>
+                            <td style="padding: 12px;">
+                                {% if doc.is_approved %}
+                                <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">Approved</span>
+                                {% else %}
+                                <span class="badge" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">Pending</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p style="font-size: 13px; color: var(--text-muted); padding: 10px 0;">No matching doctors found.</p>
+            {% endif %}
+        </div>
+
+        <!-- Patients Section -->
+        <div>
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 10px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-users" style="color: #10b981;"></i> Matching Patients ({{ search_patients.count|default:0 }})
+            </h3>
+            {% if search_patients %}
+            <div style="overflow-x: auto;">
+                <table class="table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-size: 12.5px;">
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border-color);">Patient ID</th>
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border-color);">Name</th>
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border-color);">Email</th>
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border-color);">Phone</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pat in search_patients %}
+                        <tr style="border-bottom: 1px solid var(--border-color); font-size: 13.5px;">
+                            <td style="padding: 12px; font-weight: 600;">{{ pat.patient_id|default:"-" }}</td>
+                            <td style="padding: 12px;">{{ pat.user.username }}</td>
+                            <td style="padding: 12px;">{{ pat.user.email }}</td>
+                            <td style="padding: 12px;">{{ pat.user.phone|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p style="font-size: 13px; color: var(--text-muted); padding: 10px 0;">No matching patients found.</p>
+            {% endif %}
+        </div>
+
+        <!-- Appointments Section -->
+        <div>
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 10px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-calendar-check" style="color: #a855f7;"></i> Matching Appointments ({{ search_appointments.count|default:0 }})
+            </h3>
+            {% if search_appointments %}
+            <div style="overflow-x: auto;">
+                <table class="table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-size: 12.5px;">
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border-color);">Appointment ID</th>
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border-color);">Doctor</th>
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border-color);">Patient</th>
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border-color);">Date / Time</th>
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border-color);">Reason</th>
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border-color);">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appt in search_appointments %}
+                        <tr style="border-bottom: 1px solid var(--border-color); font-size: 13.5px;">
+                            <td style="padding: 12px; font-weight: 600;">{{ appt.appointment_id|default:"-" }}</td>
+                            <td style="padding: 12px;">Dr. {{ appt.doctor.user.username }}</td>
+                            <td style="padding: 12px;">{{ appt.patient.user.username }}</td>
+                            <td style="padding: 12px;">{{ appt.appointment_date }} / {{ appt.appointment_time }}</td>
+                            <td style="padding: 12px;">{{ appt.reason|truncatechars:40 }}</td>
+                            <td style="padding: 12px;">
+                                {% if appt.status == 'Approved' or appt.status == 'Scheduled' %}
+                                <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">{{ appt.status }}</span>
+                                {% elif appt.status == 'Pending' %}
+                                <span class="badge" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">{{ appt.status }}</span>
+                                {% else %}
+                                <span class="badge" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">{{ appt.status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p style="font-size: 13px; color: var(--text-muted); padding: 10px 0;">No matching appointments found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="dashboard-grid">
     <!-- Stats Section -->
     <div class="stats-section">

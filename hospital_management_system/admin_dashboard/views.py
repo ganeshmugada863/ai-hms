@@ -19,6 +19,8 @@ from medical_records.models import MedicalRecord
 
 @admin_required
 def admin_dashboard(request):
+    q = request.GET.get('q', '').strip()
+
     # AI Ranking Logic for Best Doctor
     best_doctor = DoctorProfile.objects.annotate(
         appointment_count=Count('appointments'),
@@ -42,6 +44,27 @@ def admin_dashboard(request):
         labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May']
         data = [10, 25, 45, 30, 60]
 
+    # Search Logic
+    search_doctors = None
+    search_patients = None
+    search_appointments = None
+    if q:
+        search_doctors = DoctorProfile.objects.filter(
+            Q(user__username__icontains=q) |
+            Q(specialization__icontains=q) |
+            Q(doctor_id__icontains=q)
+        )
+        search_patients = PatientProfile.objects.filter(
+            Q(user__username__icontains=q) |
+            Q(patient_id__icontains=q)
+        )
+        search_appointments = Appointment.objects.filter(
+            Q(appointment_id__icontains=q) |
+            Q(doctor__user__username__icontains=q) |
+            Q(patient__user__username__icontains=q) |
+            Q(reason__icontains=q)
+        ).order_by('-created_at')
+
     context = {
         'doctors_count': DoctorProfile.objects.count(),
         'patients_count': PatientProfile.objects.count(),
@@ -57,6 +80,12 @@ def admin_dashboard(request):
         
         # Additional data for charts
         'dept_usage': Department.objects.annotate(doc_count=Count('doctorprofile')),
+
+        # Search parameters
+        'search_query': q,
+        'search_doctors': search_doctors,
+        'search_patients': search_patients,
+        'search_appointments': search_appointments,
     }
 
     return render(request, 'admin_dashboard/dashboard.html', context)
