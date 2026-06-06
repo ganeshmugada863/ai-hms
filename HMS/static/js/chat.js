@@ -14,6 +14,58 @@ document.addEventListener('DOMContentLoaded', () => {
     const charCounter = document.getElementById('charCounter');
     const voiceSpeakToggle = document.getElementById('voiceSpeakToggle');
     const typingIndicator = document.getElementById('typingIndicator');
+    const mobileSuggestionsStack = document.getElementById('mobileSuggestionsStack');
+    const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+    const chatSidebar = document.querySelector('.chat-gpt-sidebar');
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+    const botTitleDropdownBtn = document.getElementById('botTitleDropdownBtn');
+    const quickPromptsDropdownMenu = document.getElementById('quickPromptsDropdownMenu');
+
+    // Toggle mobile sidebar drawer
+    if (mobileSidebarToggle && chatSidebar && sidebarBackdrop) {
+        mobileSidebarToggle.addEventListener('click', () => {
+            chatSidebar.classList.add('active');
+            sidebarBackdrop.classList.add('active');
+        });
+        sidebarBackdrop.addEventListener('click', () => {
+            chatSidebar.classList.remove('active');
+            sidebarBackdrop.classList.remove('active');
+        });
+    }
+
+    // Toggle header quick actions dropdown
+    if (botTitleDropdownBtn && quickPromptsDropdownMenu) {
+        botTitleDropdownBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const visible = quickPromptsDropdownMenu.style.display === 'block';
+            quickPromptsDropdownMenu.style.display = visible ? 'none' : 'block';
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!botTitleDropdownBtn.contains(e.target) && !quickPromptsDropdownMenu.contains(e.target)) {
+                quickPromptsDropdownMenu.style.display = 'none';
+            }
+        });
+    }
+
+    // Click handler for quick action queries in the dropdown
+    document.querySelectorAll('.dropdown-item-query').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const query = item.getAttribute('data-query');
+            if (quickPromptsDropdownMenu) quickPromptsDropdownMenu.style.display = 'none';
+            sendMessageText(query);
+        });
+    });
+
+    // Click handler for mobile suggestion stack cards
+    document.querySelectorAll('.mobile-suggestion-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const query = card.getAttribute('data-query');
+            sendMessageText(query);
+        });
+    });
 
     const currentRole = (typeof userRole !== 'undefined') ? userRole : 'patient';
     const storageKey = 'medi_ai_session_id_' + currentRole;
@@ -35,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem(storageKey);
             messagesContainer.innerHTML = '';
             welcomeContainer.style.display = 'flex';
+            if (mobileSuggestionsStack) mobileSuggestionsStack.style.display = 'flex';
             document.querySelectorAll('.session-item').forEach(el => el.classList.remove('active'));
         });
     }
@@ -106,6 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         welcomeContainer.style.display = 'none';
+        if (mobileSuggestionsStack) mobileSuggestionsStack.style.display = 'none';
         messagesContainer.innerHTML = '<div style="text-align: center; color: var(--chat-text-muted); font-size: 13.5px; padding: 20px;">Retrieving secure logs...</div>';
 
         fetch(`${historyApiUrl}?session_id=${sessionId}`)
@@ -128,6 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Main send message coordinator
     function sendMessageText(text) {
         welcomeContainer.style.display = 'none';
+        if (mobileSuggestionsStack) mobileSuggestionsStack.style.display = 'none';
         
         // Disable UI
         userInputField.disabled = true;

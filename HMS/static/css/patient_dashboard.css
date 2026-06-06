@@ -1583,3 +1583,53 @@ body.dark-mode textarea:focus {
     outline: none !important;
 }
 
+/* Custom Responsive Grid Utilities for Dashboard Components */
+.best-doctor-stats-grid {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.ml-insights-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 15px;
+}
+
+@media (max-width: 768px) {
+    /* Stack grid sections in admin/doctor/patient dashboards */
+    .dashboard-grid .section,
+    .patient-dashboard-layout .section {
+        grid-column: span 1 !important;
+    }
+    
+    .ml-insights-grid {
+        grid-template-columns: 1fr !important;
+        gap: 15px;
+    }
+    
+    .best-doctor-stats-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Stack stats cards vertically on small tablets and mobile */
+    .stats-section {
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Stack action buttons vertically on mobile */
+    .action-buttons-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .action-buttons {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+

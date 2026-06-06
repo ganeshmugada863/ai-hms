@@ -555,11 +555,303 @@
         0%, 80%, 100% { transform: scale(0); }
         40% { transform: scale(1); }
     }
+
+    /* Mobile Responsive ChatGPT Overrides (width <= 768px) */
+    @media (max-width: 768px) {
+        /* Hide regular base_dashboard sidebar bottom-bar since AI Assistant is full viewport */
+        html body .container nav.sidebar {
+            display: none !important;
+        }
+        html body .container .main-content {
+            margin-bottom: 0 !important;
+            padding: 0 !important;
+            height: 100vh !important;
+        }
+
+        .chat-gpt-container {
+            position: relative;
+            height: 100vh !important;
+            overflow: hidden;
+        }
+
+        /* Sidebar collapses into a drawer slide-in from left */
+        .chat-gpt-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 280px;
+            height: 100% !important;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 1050;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+        }
+
+        .chat-gpt-sidebar.active {
+            transform: translateX(0);
+        }
+
+        /* Sidebar backdrop overlay */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1040;
+            backdrop-filter: blur(4px);
+        }
+
+        .sidebar-backdrop.active {
+            display: block;
+        }
+
+        /* Header Layout */
+        .workspace-header {
+            padding: 10px 16px;
+            display: grid;
+            grid-template-columns: 40px 1fr 80px;
+            align-items: center;
+        }
+
+        .mobile-only-toggle {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            color: var(--chat-text-main);
+            font-size: 18px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        /* Center Dropdown wrapper */
+        .bot-title-dropdown-wrapper {
+            position: relative;
+            justify-self: center;
+        }
+
+        .bot-title-dropdown {
+            font-size: 15px;
+            color: var(--chat-text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background-color: rgba(255,255,255,0.03);
+            border: 1px solid var(--chat-border);
+            user-select: none;
+        }
+
+        .bot-title-dropdown:hover {
+            background-color: rgba(255,255,255,0.08);
+        }
+
+        .quick-prompts-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 250px;
+            background-color: #171719;
+            border: 1px solid var(--chat-border);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            z-index: 1080;
+            padding: 6px 0;
+        }
+
+        .quick-prompts-dropdown-menu .dropdown-header {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--chat-text-muted);
+            text-transform: uppercase;
+            padding: 8px 16px;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--chat-border);
+            margin-bottom: 4px;
+        }
+
+        .quick-prompts-dropdown-menu a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            font-size: 13.5px;
+            color: var(--chat-text-main);
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .quick-prompts-dropdown-menu a:hover {
+            background-color: #212124;
+        }
+
+        .quick-prompts-dropdown-menu a i {
+            color: var(--chat-accent);
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Viewport adjustments */
+        .chat-viewport {
+            padding: 16px 16px 80px 16px; /* space for input container */
+        }
+
+        /* Hide the large desktop welcome layout on mobile, use stack suggestions instead */
+        .welcome-container {
+            display: none !important;
+        }
+
+        /* Mobile Suggestions Stack (ChatGPT Style) */
+        .mobile-suggestions-stack {
+            display: flex !important;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: auto;
+            margin-bottom: 16px;
+            width: 100%;
+        }
+
+        .mobile-suggestion-card {
+            background-color: #171719;
+            border: 1px solid var(--chat-border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: var(--chat-text-main);
+            font-size: 14.5px;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .mobile-suggestion-card:hover {
+            background-color: #212124;
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .mobile-suggestion-card i {
+            font-size: 16px;
+            color: var(--chat-text-muted);
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Bottom input container overrides */
+        .input-bar-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 8px 12px 24px 12px;
+            background-color: var(--chat-bg);
+            border-top: none;
+            z-index: 5;
+        }
+
+        .input-pill-wrapper {
+            background-color: #212124;
+            border: 1px solid var(--chat-border);
+            border-radius: 28px;
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* + attachment button circle styling */
+        .input-action-btn#attachmentBtn {
+            background-color: rgba(255,255,255,0.08);
+            color: var(--chat-text-main);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .input-action-btn#attachmentBtn:hover {
+            background-color: rgba(255,255,255,0.15);
+        }
+
+        .input-pill-wrapper input {
+            font-size: 14px;
+            padding: 6px 0;
+        }
+
+        .input-action-btn#voiceInputBtn {
+            font-size: 16px;
+            color: var(--chat-text-muted);
+        }
+
+        /* White circular send button */
+        .input-action-btn.send-btn {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            flex-shrink: 0;
+            padding: 0 !important;
+        }
+
+        .input-action-btn.send-btn:hover {
+            background-color: #ececec !important;
+        }
+
+        /* Hide message avatar on user side on mobile for compact view */
+        .message-row.user .message-avatar {
+            display: none !important;
+        }
+        
+        .message-bubble-wrapper {
+            max-width: 90%;
+        }
+        
+        .message-bubble {
+            padding: 10px 14px;
+            font-size: 13.5px;
+        }
+    }
+
+    /* Hide desktop items on mobile query and vice versa */
+    .mobile-only-toggle {
+        display: none;
+    }
+    .mobile-suggestions-stack {
+        display: none;
+    }
+    @media (min-width: 769px) {
+        .bot-title-dropdown-wrapper {
+            position: relative;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="chat-gpt-container">
+    <!-- Sidebar Backdrop for Mobile Drawer -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    
     <!-- ChatGPT-style Left Sidebar -->
     <aside class="chat-gpt-sidebar">
     <div class="sidebar-header">
@@ -601,10 +893,43 @@
 <!-- Main Chat Workspace -->
 <section class="chat-gpt-workspace">
     <header class="workspace-header">
-        <div class="bot-title-dropdown">
-            <span>MediCore AI Assistant</span>
-            <span class="online-pulse"></span>
+        <!-- Hamburger Menu toggle for Mobile view -->
+        <button type="button" id="mobileSidebarToggle" class="header-btn mobile-only-toggle" title="Open Sidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <!-- Center Dropdown Selector -->
+        <div class="bot-title-dropdown-wrapper">
+            <div class="bot-title-dropdown" id="botTitleDropdownBtn">
+                <span>MediCore AI Assistant</span>
+                <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 2px;"></i>
+                <span class="online-pulse"></span>
+            </div>
+            
+            <div class="quick-prompts-dropdown-menu" id="quickPromptsDropdownMenu" style="display: none;">
+                <div class="dropdown-header">Quick Actions</div>
+                {% if user.role == 'patient' %}
+                <a href="#" class="dropdown-item-query" data-query="Show my previous appointment"><i class="fas fa-calendar-alt"></i> Previous Appointment</a>
+                <a href="#" class="dropdown-item-query" data-query="Show my blood reports"><i class="fas fa-vial"></i> Blood Reports</a>
+                <a href="#" class="dropdown-item-query" data-query="Show my prescriptions"><i class="fas fa-file-prescription"></i> Prescriptions</a>
+                <a href="#" class="dropdown-item-query" data-query="Show my health timeline"><i class="fas fa-history"></i> Health Timeline</a>
+                <a href="#" class="dropdown-item-query" data-query="Are ICU beds available?"><i class="fas fa-bed"></i> ICU Bed Availability</a>
+                <a href="#" class="dropdown-item-query" data-query="Show emergency contacts"><i class="fas fa-ambulance"></i> Emergency Contacts</a>
+                {% elif user.role == 'doctor' %}
+                <a href="#" class="dropdown-item-query" data-query="Show my appointments today"><i class="fas fa-calendar-check"></i> Today's Appointments</a>
+                <a href="#" class="dropdown-item-query" data-query="Search patient records"><i class="fas fa-search-plus"></i> Search Records</a>
+                <a href="#" class="dropdown-item-query" data-query="View and manage prescriptions"><i class="fas fa-file-medical"></i> Prescriptions</a>
+                {% else %}
+                <a href="#" class="dropdown-item-query" data-query="Show hospital analytics"><i class="fas fa-chart-line"></i> Hospital Analytics</a>
+                <a href="#" class="dropdown-item-query" data-query="Show patient analytics"><i class="fas fa-users-cog"></i> Patient Analytics</a>
+                <a href="#" class="dropdown-item-query" data-query="Show inactive doctors"><i class="fas fa-user-slash"></i> Doctor Management</a>
+                <a href="#" class="dropdown-item-query" data-query="Show top rated doctors"><i class="fas fa-star"></i> Top Rated Doctors</a>
+                <a href="#" class="dropdown-item-query" data-query="Show cardiologists"><i class="fas fa-heartbeat"></i> Search Cardiologists</a>
+                <a href="#" class="dropdown-item-query" data-query="Are ICU beds available?"><i class="fas fa-bed"></i> ICU Bed Availability</a>
+                {% endif %}
+            </div>
         </div>
+
         <div class="header-actions">
             <button type="button" id="voiceSpeakToggle" class="header-btn" title="Toggle Voice Output">
                 <i class="fas fa-volume-mute"></i>
@@ -715,6 +1040,50 @@
             {% endif %}
         </div>
 
+        <!-- Mobile suggestions stack above input bar -->
+        <div class="mobile-suggestions-stack" id="mobileSuggestionsStack">
+            {% if user.role == 'patient' %}
+            <button class="mobile-suggestion-card" data-query="Show my prescriptions">
+                <i class="fas fa-pencil-alt"></i>
+                <span>Show my prescriptions</span>
+            </button>
+            <button class="mobile-suggestion-card" data-query="Are ICU beds available?">
+                <i class="fas fa-globe"></i>
+                <span>ICU bed availability</span>
+            </button>
+            <button class="mobile-suggestion-card" data-query="Show my blood reports">
+                <i class="fas fa-image"></i>
+                <span>Show my blood reports</span>
+            </button>
+            {% elif user.role == 'doctor' %}
+            <button class="mobile-suggestion-card" data-query="Show my appointments today">
+                <i class="fas fa-calendar-check"></i>
+                <span>Appointments today</span>
+            </button>
+            <button class="mobile-suggestion-card" data-query="Search patient records">
+                <i class="fas fa-pencil-alt"></i>
+                <span>Search patient records</span>
+            </button>
+            <button class="mobile-suggestion-card" data-query="View and manage prescriptions">
+                <i class="fas fa-globe"></i>
+                <span>Prescription details</span>
+            </button>
+            {% else %}
+            <button class="mobile-suggestion-card" data-query="Show hospital analytics">
+                <i class="fas fa-globe"></i>
+                <span>Show hospital analytics</span>
+            </button>
+            <button class="mobile-suggestion-card" data-query="Show patient analytics">
+                <i class="fas fa-pencil-alt"></i>
+                <span>Show patient analytics</span>
+            </button>
+            <button class="mobile-suggestion-card" data-query="Show top rated doctors">
+                <i class="fas fa-image"></i>
+                <span>Show top rated doctors</span>
+            </button>
+            {% endif %}
+        </div>
+
         <div id="messagesContainer" style="display: flex; flex-direction: column; gap: 20px; width: 100%;">
             <!-- Chat history injected here -->
         </div>
@@ -732,7 +1101,7 @@
             {% csrf_token %}
             <div class="input-pill-wrapper">
                 <button type="button" class="input-action-btn" id="attachmentBtn" title="Upload Media (Images/PDFs)">
-                    <i class="fas fa-paperclip"></i>
+                    <i class="fas fa-plus"></i>
                 </button>
                 
                 {% if user.role == 'patient' %}
