@@ -909,9 +909,10 @@
             <div class="quick-prompts-dropdown-menu" id="quickPromptsDropdownMenu" style="display: none;">
                 <div class="dropdown-header">Quick Actions</div>
                 {% if user.role == 'patient' %}
+                <a href="#" class="dropdown-item-query" data-query="Book appointment with doctor"><i class="fas fa-calendar-plus"></i> Book Appointment</a>
+                <a href="#" class="dropdown-item-query" data-query="Show my prescriptions"><i class="fas fa-file-prescription"></i> Prescriptions</a>
                 <a href="#" class="dropdown-item-query" data-query="Show my previous appointment"><i class="fas fa-calendar-alt"></i> Previous Appointment</a>
                 <a href="#" class="dropdown-item-query" data-query="Show my blood reports"><i class="fas fa-vial"></i> Blood Reports</a>
-                <a href="#" class="dropdown-item-query" data-query="Show my prescriptions"><i class="fas fa-file-prescription"></i> Prescriptions</a>
                 <a href="#" class="dropdown-item-query" data-query="Show my health timeline"><i class="fas fa-history"></i> Health Timeline</a>
                 <a href="#" class="dropdown-item-query" data-query="Are ICU beds available?"><i class="fas fa-bed"></i> ICU Bed Availability</a>
                 <a href="#" class="dropdown-item-query" data-query="Show emergency contacts"><i class="fas fa-ambulance"></i> Emergency Contacts</a>
@@ -948,24 +949,29 @@
             
             {% if user.role == 'patient' %}
             <div class="welcome-options-grid">
-                <button class="option-pill-btn" data-query="Show my previous appointment">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span>Show previous appointment</span>
-                    <span class="pill-subtitle">View your latest session</span>
-                </button>
-                <button class="option-pill-btn" data-query="Show my blood reports">
-                    <i class="fas fa-vial"></i>
-                    <span>Show my blood reports</span>
-                    <span class="pill-subtitle">Retrieve last blood test details</span>
+                <button class="option-pill-btn" data-query="Book appointment with doctor">
+                    <i class="fas fa-calendar-plus"></i>
+                    <span>Book Appointment</span>
+                    <span class="pill-subtitle">Schedule a new consultation</span>
                 </button>
                 <button class="option-pill-btn" data-query="Show my prescriptions">
                     <i class="fas fa-file-prescription"></i>
                     <span>Show prescriptions</span>
                     <span class="pill-subtitle">List medications and dosage</span>
                 </button>
+                <button class="option-pill-btn" data-query="Show my previous appointment">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Show previous appointment</span>
+                    <span class="pill-subtitle">View your latest session</span>
+                </button>
             </div>
             
             <div class="welcome-options-grid" style="margin-top: 15px;">
+                <button class="option-pill-btn" data-query="Show my blood reports">
+                    <i class="fas fa-vial"></i>
+                    <span>Show my blood reports</span>
+                    <span class="pill-subtitle">Retrieve last blood test details</span>
+                </button>
                 <button class="option-pill-btn" data-query="Show my health timeline">
                     <i class="fas fa-history"></i>
                     <span>My Health Timeline</span>
@@ -975,11 +981,6 @@
                     <i class="fas fa-bed"></i>
                     <span>ICU bed availability</span>
                     <span class="pill-subtitle">Real-time room status query</span>
-                </button>
-                <button class="option-pill-btn" data-query="Show emergency contacts">
-                    <i class="fas fa-ambulance"></i>
-                    <span>Emergency Contacts</span>
-                    <span class="pill-subtitle">Triage phone numbers central</span>
                 </button>
             </div>
             

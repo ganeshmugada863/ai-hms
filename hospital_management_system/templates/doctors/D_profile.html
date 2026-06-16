@@ -140,7 +140,8 @@ function toggleEdit() {
 
     document.addEventListener('DOMContentLoaded', function() {
         const hasErrors = "{% if form.errors %}true{% else %}false{% endif %}" === "true";
-        if (hasErrors) {
+        const isNewProfile = "{% if not profile %}true{% else %}false{% endif %}" === "true";
+        if (hasErrors || isNewProfile) {
             toggleEdit();
         }
     });

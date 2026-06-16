@@ -22,6 +22,7 @@ class DoctorProfileForm(forms.ModelForm):
     class Meta:
         model = DoctorProfile
         fields = [
+            'department',
             'specialization',
             'qualification',
             'experience',
@@ -29,6 +30,7 @@ class DoctorProfileForm(forms.ModelForm):
             'available_days',
         ]
         widgets = {
+            'department': forms.Select(attrs={'class': 'form-select'}),
             'qualification': forms.TextInput(attrs={'class': 'form-control'}),
             'experience': forms.NumberInput(attrs={'class': 'form-control'}),
             'consultation_fee': forms.NumberInput(attrs={'class': 'form-control'}),
@@ -36,6 +38,8 @@ class DoctorProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['department'].required = True
+        self.fields['department'].empty_label = "Select Department"
         if self.instance and hasattr(self.instance, 'user') and self.instance.user:
             self.fields['email'].initial = self.instance.user.email
             self.fields['phone'].initial = self.instance.user.phone

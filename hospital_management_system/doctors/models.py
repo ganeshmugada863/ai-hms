@@ -31,4 +31,29 @@ class DoctorProfile(models.Model):
                 if not DoctorProfile.objects.filter(doctor_id=candidate).exists():
                     self.doctor_id = candidate
                     break
+        
+        # Auto-assign department based on specialization if department is null
+        if not self.department and self.specialization:
+            from departments.models import Department
+            spec_map = {
+                'Cardiology': 'Cardiology',
+                'Neurology': 'Neurology',
+                'Pediatrics': 'Pediatrics',
+                'Orthopedics': 'Orthopedics',
+                'Dermatology': 'Dermatology',
+                'General Medicine': 'General Physician',
+                'General Physician': 'General Physician',
+                'Ophthalmology': 'Ophthalmology',
+                'ENT': 'ENT',
+                'Dental': 'Dentistry',
+                'Dentistry': 'Dentistry',
+                'Psychiatry': 'Psychiatry',
+                'Pulmonology': 'Pulmonology',
+                'Gastroenterology': 'Gastroenterology',
+                'Gynecology': 'Gynecology'
+            }
+            target_name = spec_map.get(self.specialization, self.specialization)
+            dept = Department.objects.filter(name__iexact=target_name).first()
+            if dept:
+                self.department = dept
         super().save(*args, **kwargs)
