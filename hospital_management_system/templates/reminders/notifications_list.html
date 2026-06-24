@@ -1,0 +1,463 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Settings & Notifications - MediCare{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notification-center-container {
+        padding: 30px;
+        max-width: 900px;
+        margin: 0 auto;
+        font-family: 'Outfit', sans-serif;
+    }
+    .notif-header-panel {
+        background: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    }
+    .notif-stats {
+        display: flex;
+        gap: 20px;
+    }
+    .notif-stat-item {
+        display: flex;
+        flex-direction: column;
+    }
+    .notif-stat-val {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-main);
+    }
+    .notif-stat-lbl {
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+    .notif-actions-group {
+        display: flex;
+        gap: 12px;
+    }
+    .btn-notif {
+        padding: 10px 18px;
+        border-radius: 12px;
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        text-decoration: none;
+    }
+    .btn-notif-primary {
+        background: var(--primary-blue);
+        color: white;
+    }
+    .btn-notif-primary:hover {
+        background: #1d4ed8;
+    }
+    .btn-notif-secondary {
+        background: transparent;
+        border-color: var(--border-color);
+        color: var(--text-main);
+    }
+    .btn-notif-secondary:hover {
+        background: var(--hover-bg);
+    }
+    .btn-notif-danger {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+    }
+    .btn-notif-danger:hover {
+        background: #ef4444;
+        color: white;
+    }
+    .notif-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+    .notif-card {
+        background: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.01);
+    }
+    .notif-card.unread {
+        border-left: 4px solid var(--primary-blue);
+        background: var(--hover-bg);
+    }
+    .notif-card-left {
+        display: flex;
+        gap: 15px;
+        align-items: flex-start;
+        flex: 1;
+    }
+    .notif-icon-wrapper {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+    .notif-icon-appointment {
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--primary-blue);
+    }
+    .notif-icon-medicine {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+    .notif-icon-default {
+        background: rgba(107, 114, 128, 0.1);
+        color: #6b7280;
+    }
+    .notif-info {
+        flex: 1;
+    }
+    .notif-title-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 4px;
+        flex-wrap: wrap;
+    }
+    .notif-title {
+        font-size: 15.5px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0;
+    }
+    .notif-badge-unread {
+        background: var(--primary-blue);
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 20px;
+        text-transform: uppercase;
+    }
+    .notif-msg {
+        font-size: 13.5px;
+        color: var(--text-muted);
+        line-height: 1.4;
+        margin: 0 0 6px 0;
+    }
+    .notif-date {
+        font-size: 11.5px;
+        color: var(--text-muted);
+    }
+    .notif-card-actions {
+        display: flex;
+        gap: 8px;
+    }
+    .btn-action-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    .btn-action-icon:hover {
+        background: var(--hover-bg);
+        color: var(--text-main);
+    }
+    .btn-action-icon.btn-delete:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border-color: rgba(239, 68, 68, 0.2);
+    }
+    .btn-action-icon.btn-check:hover {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border-color: rgba(16, 185, 129, 0.2);
+    }
+    .no-notif-panel {
+        background: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 50px 30px;
+        text-align: center;
+        color: var(--text-muted);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    }
+    @media (max-width: 576px) {
+        .notification-center-container {
+            padding: 15px;
+        }
+        .notif-header-panel {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .notif-actions-group {
+            flex-direction: column;
+        }
+        .btn-notif {
+            justify-content: center;
+        }
+        .notif-card {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 15px;
+        }
+        .notif-card-actions {
+            justify-content: flex-end;
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}Notification Center{% endblock %}
+{% block header_subtitle %}Settings & History{% endblock %}
+
+{% block content %}
+<div class="notification-center-container">
+    {% if notifications %}
+    <!-- Header panel with statistics and global actions -->
+    <div class="notif-header-panel">
+        <div class="notif-stats">
+            <div class="notif-stat-item">
+                <span class="notif-stat-val" id="stats-total">{{ notifications|length }}</span>
+                <span class="notif-stat-lbl">Total Alerts</span>
+            </div>
+            {% if unread_notifications_count > 0 %}
+            <div class="notif-stat-item" id="stats-unread-container">
+                <span class="notif-stat-val" id="stats-unread" style="color: var(--primary-blue);">{{ unread_notifications_count }}</span>
+                <span class="notif-stat-lbl">New Messages</span>
+            </div>
+            {% endif %}
+        </div>
+        <div class="notif-actions-group">
+            {% if unread_notifications_count > 0 %}
+            <a href="{% url 'mark_all_notifications_read' %}" class="btn-notif btn-notif-primary" id="btn-mark-all">
+                <i class="fas fa-check-double"></i> Mark all read
+            </a>
+            {% endif %}
+            <a href="{% url 'clear_all_notifications' %}" onclick="return confirm('Are you sure you want to clear all notification history?');" class="btn-notif btn-notif-danger">
+                <i class="fas fa-trash-alt"></i> Clear history
+            </a>
+        </div>
+    </div>
+
+    <!-- Scrollable alert list -->
+    <ul class="notif-list" id="main-notif-list">
+        {% for notif in notifications %}
+        <li class="notif-card {% if not notif.is_read %}unread{% endif %}" id="page-notif-{{ notif.id }}">
+            <div class="notif-card-left">
+                <!-- Icon wrapper based on notification type -->
+                <div class="notif-icon-wrapper {% if notif.notification_type == 'appointment' %}notif-icon-appointment{% elif notif.notification_type == 'medicine' %}notif-icon-medicine{% else %}notif-icon-default{% endif %}">
+                    {% if notif.notification_type == 'appointment' %}
+                    <i class="fas fa-calendar-check"></i>
+                    {% elif notif.notification_type == 'medicine' %}
+                    <i class="fas fa-pills"></i>
+                    {% else %}
+                    <i class="fas fa-info-circle"></i>
+                    {% endif %}
+                </div>
+                <!-- Content -->
+                <div class="notif-info">
+                    <div class="notif-title-row">
+                        <h4 class="notif-title">{{ notif.title }}</h4>
+                        {% if not notif.is_read %}
+                        <span class="notif-badge-unread" id="badge-{{ notif.id }}">New</span>
+                        {% endif %}
+                    </div>
+                    <p class="notif-msg">{{ notif.message }}</p>
+                    <span class="notif-date"><i class="far fa-clock"></i> {{ notif.created_at|date:"d M Y, h:i A" }} ({{ notif.created_at|timesince }} ago)</span>
+                </div>
+            </div>
+            <!-- Individual card actions -->
+            <div class="notif-card-actions">
+                {% if not notif.is_read %}
+                <button onclick="markPageNotifRead('{{ notif.id }}')" class="btn-action-icon btn-check" id="btn-read-{{ notif.id }}" title="Mark as read">
+                    <i class="fas fa-check"></i>
+                </button>
+                {% endif %}
+                <button onclick="deletePageNotif('{{ notif.id }}')" class="btn-action-icon btn-delete" title="Delete notification">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <!-- Empty state panel -->
+    <div class="no-notif-panel">
+        <i class="far fa-bell-slash" style="font-size: 40px; margin-bottom: 15px; display: block; opacity: 0.4; color: var(--text-muted);"></i>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 5px;">No notifications found</h3>
+        <p style="font-size: 13.5px; color: var(--text-muted); margin: 0;">We'll alert you here when new actions or schedules are registered.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function markPageNotifRead(id) {
+        // Optimistically update the UI status
+        const card = document.getElementById(`page-notif-${id}`);
+        const badge = document.getElementById(`badge-${id}`);
+        const btnRead = document.getElementById(`btn-read-${id}`);
+        
+        if (card) {
+            card.classList.remove('unread');
+            card.style.borderLeft = 'none';
+            card.style.background = 'var(--panel-bg)';
+        }
+        if (badge) badge.remove();
+        if (btnRead) btnRead.remove();
+
+        // Update statistics indicators
+        const unreadStat = document.getElementById('stats-unread');
+        if (unreadStat) {
+            let val = parseInt(unreadStat.textContent.trim()) - 1;
+            if (val > 0) {
+                unreadStat.textContent = val;
+            } else {
+                const unreadContainer = document.getElementById('stats-unread-container');
+                if (unreadContainer) unreadContainer.remove();
+                const markAllBtn = document.getElementById('btn-mark-all');
+                if (markAllBtn) markAllBtn.remove();
+            }
+        }
+
+        // Keep dropdown in sync if open
+        const dropdownItem = document.getElementById(`notif-item-${id}`);
+        if (dropdownItem) {
+            dropdownItem.style.opacity = '0';
+            setTimeout(() => { dropdownItem.remove(); syncDropdownPlaceholder(); }, 300);
+        }
+
+        // Decrement bell badge
+        const bellBadge = document.querySelector('.notification-bell .badge');
+        if (bellBadge) {
+            let count = parseInt(bellBadge.textContent.trim()) - 1;
+            if (count > 0) {
+                bellBadge.textContent = count;
+            } else {
+                bellBadge.remove();
+            }
+        }
+
+        // Send backend request
+        fetch(`/reminders/mark-read/${id}/?ajax=true`, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => console.log('Notification read success:', data))
+        .catch(err => console.error('Error marking read:', err));
+    }
+
+    function deletePageNotif(id) {
+        const card = document.getElementById(`page-notif-${id}`);
+        const isUnread = card && card.classList.contains('unread');
+
+        if (card) {
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                card.remove();
+                
+                // If the entire main list is empty, show empty state
+                const list = document.getElementById('main-notif-list');
+                if (list && list.children.length === 0) {
+                    location.reload(); // Reload to render native empty state template
+                }
+            }, 300);
+        }
+
+        // Update total statistics count
+        const totalStat = document.getElementById('stats-total');
+        if (totalStat) {
+            totalStat.textContent = parseInt(totalStat.textContent.trim()) - 1;
+        }
+
+        if (isUnread) {
+            // Update unread statistics count
+            const unreadStat = document.getElementById('stats-unread');
+            if (unreadStat) {
+                let val = parseInt(unreadStat.textContent.trim()) - 1;
+                if (val > 0) {
+                    unreadStat.textContent = val;
+                } else {
+                    const unreadContainer = document.getElementById('stats-unread-container');
+                    if (unreadContainer) unreadContainer.remove();
+                    const markAllBtn = document.getElementById('btn-mark-all');
+                    if (markAllBtn) markAllBtn.remove();
+                }
+            }
+
+            // Decrement bell badge
+            const bellBadge = document.querySelector('.notification-bell .badge');
+            if (bellBadge) {
+                let count = parseInt(bellBadge.textContent.trim()) - 1;
+                if (count > 0) {
+                    bellBadge.textContent = count;
+                } else {
+                    bellBadge.remove();
+                }
+            }
+        }
+
+        // Keep dropdown in sync if open
+        const dropdownItem = document.getElementById(`notif-item-${id}`);
+        if (dropdownItem) {
+            dropdownItem.style.opacity = '0';
+            setTimeout(() => { dropdownItem.remove(); syncDropdownPlaceholder(); }, 300);
+        }
+
+        // Send delete request
+        fetch(`/reminders/delete/${id}/?ajax=true`, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => console.log('Notification deleted successfully:', data))
+        .catch(err => console.error('Error deleting:', err));
+    }
+
+    function syncDropdownPlaceholder() {
+        const list = document.getElementById('dropdownNotificationsList');
+        if (list && list.querySelectorAll('li[id^="notif-item-"]').length === 0) {
+            list.innerHTML = `
+                <li class="empty-notif-placeholder" style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12.5px; white-space: normal;">
+                    <i class="far fa-bell-slash" style="font-size: 18px; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
+                    No new notifications.
+                </li>
+            `;
+            const markAllBtn = document.getElementById('markAllReadBtn');
+            if (markAllBtn) markAllBtn.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}
